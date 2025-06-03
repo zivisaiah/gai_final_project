@@ -1,0 +1,16 @@
+[
+  {
+    "id": "cb4a755e-fbf1-449f-bd7e-69ae343e0870",
+    "role": "user",
+    "content": "Hello, I'm interested in the Python role",
+    "timestamp": "2025-06-04T01:56:55.336703",
+    "metadata": {}
+  },
+  {
+    "id": "e9584d03-5e75-4695-89eb-04bdd56f81c9",
+    "role": "assistant",
+    "content": "Great! Tell me about your experience.",
+    "timestamp": "2025-06-04T01:56:55.336798",
+    "metadata": {}
+  }
+]

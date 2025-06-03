@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+On the completion of every project step, before comitting the changes, update the TODO.md file and commit all the changed files and push them.

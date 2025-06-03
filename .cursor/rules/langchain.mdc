@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Agent Architecture must be implemeneted With LangChain & OpenAI API Endpoint and Models  
