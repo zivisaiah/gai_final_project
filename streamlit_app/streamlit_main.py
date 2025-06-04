@@ -31,7 +31,20 @@ class RecruitmentChatbot:
         """Initialize the chatbot with all components."""
         self.settings = get_settings()
         self.setup_logging()
-        self.initialize_agents()
+        
+        # Initialize agents only once using session state
+        if 'agents_initialized' not in st.session_state:
+            self.initialize_agents()
+            st.session_state.agents_initialized = True
+            st.session_state.core_agent = self.core_agent
+            st.session_state.scheduling_advisor = self.scheduling_advisor
+            st.session_state.conversation_context = self.conversation_context
+        else:
+            # Reuse existing agents from session state
+            self.core_agent = st.session_state.core_agent
+            self.scheduling_advisor = st.session_state.scheduling_advisor
+            self.conversation_context = st.session_state.conversation_context
+            
         self.chat_interface = create_chat_interface()
     
     def setup_logging(self):
@@ -76,26 +89,16 @@ class RecruitmentChatbot:
         """Process user message through the agent system."""
         try:
             # Get current conversation state
-            conversation_state = self.core_agent.conversation_state
+            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
             
-            # Add user message to conversation
-            conversation_state.add_message("user", user_message)
-            
-            # Update candidate info from message
-            extracted_info = conversation_state.extract_candidate_info(user_message)
-            if extracted_info:
-                self.chat_interface.update_candidate_info(extracted_info)
-            
-            # Get conversation messages for agents
-            conversation_messages = [
-                {"role": msg.role, "content": msg.content}
-                for msg in conversation_state.messages
-            ]
+            # Update candidate info from message (extract from all messages)
+            if conversation_state.candidate_info:
+                self.chat_interface.update_candidate_info(conversation_state.candidate_info)
             
             # Make decision with Core Agent
-            decision, reasoning, agent_response = self.core_agent.make_decision(
-                conversation_messages,
-                user_message
+            agent_response, decision, reasoning = self.core_agent.process_message(
+                user_message,
+                conversation_id="streamlit_session"
             )
             
             response_metadata = {
@@ -106,14 +109,21 @@ class RecruitmentChatbot:
             
             # Handle scheduling if needed
             if decision == AgentDecision.SCHEDULE:
-                scheduling_result = self.handle_scheduling_decision(
-                    conversation_messages,
+                # Get conversation messages for scheduling
+                conversation_messages = [
+                    {"role": msg["role"], "content": msg["content"]}
+                    for msg in conversation_state.messages
+                ]
+                
+                # Get candidate info to pass to scheduling advisor
+                candidate_info = conversation_state.candidate_info
+                
+                # Since Core Agent decided to SCHEDULE, get available slots directly
+                scheduling_result = self.get_available_slots_for_scheduling(
+                    candidate_info,
                     user_message
                 )
                 response_metadata.update(scheduling_result)
-            
-            # Add assistant response to conversation
-            conversation_state.add_message("assistant", agent_response)
             
             return {
                 'response': agent_response,
@@ -127,6 +137,41 @@ class RecruitmentChatbot:
                 'response': "I apologize, but I encountered an error processing your message. Please try again.",
                 'metadata': {'error': str(e), 'agent_type': 'error'},
                 'success': False
+            }
+    
+    def get_available_slots_for_scheduling(self, candidate_info: Dict, user_message: str) -> Dict:
+        """Get available slots when Core Agent has decided to schedule."""
+        try:
+            # Parse time preferences from user message
+            time_prefs = self.scheduling_advisor.parse_candidate_time_preference(user_message)
+            
+            # Get available slots based on preferences
+            from datetime import datetime
+            available_slots = self.scheduling_advisor._get_available_slots(
+                time_prefs.get('preferred_datetimes', []),
+                datetime.now(),
+                14  # 14 days ahead
+            )
+            
+            scheduling_metadata = {
+                'scheduling_decision': 'SCHEDULE',
+                'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
+                'suggested_slots': available_slots[:3]  # Top 3 slots
+            }
+            
+            # Update scheduling context
+            if available_slots:
+                self.chat_interface.update_scheduling_context({
+                    'slots_offered': available_slots[:3]
+                })
+            
+            return scheduling_metadata
+            
+        except Exception as e:
+            self.logger.error(f"Error getting available slots: {e}")
+            return {
+                'scheduling_error': str(e),
+                'suggested_slots': []
             }
     
     def handle_scheduling_decision(self, conversation_messages: List[Dict], user_message: str) -> Dict:

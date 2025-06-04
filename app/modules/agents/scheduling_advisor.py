@@ -388,14 +388,14 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
     def get_scheduling_statistics(self) -> Dict:
         """Get statistics about scheduling operations."""
         try:
-            # Get appointment statistics from database
-            stats = self.sql_manager.get_appointment_statistics()
+            # Get database statistics
+            stats = self.sql_manager.get_database_stats()
             
             return {
                 'total_appointments': stats.get('total_appointments', 0),
-                'scheduled_appointments': stats.get('scheduled_appointments', 0),
+                'scheduled_appointments': stats.get('appointments', 0),
                 'available_slots': stats.get('available_slots', 0),
-                'recruiter_count': stats.get('recruiter_count', 0)
+                'recruiter_count': stats.get('recruiters', 0)
             }
             
         except Exception as e:
