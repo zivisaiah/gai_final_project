@@ -1,4 +1,6 @@
 """
-Streamlit User Interface Package
-Phase 1: Basic chat interface with scheduling
-""" 
+Streamlit Application Package
+Main UI components for the recruitment chatbot
+"""
+
+__version__ = "1.0.0" 
