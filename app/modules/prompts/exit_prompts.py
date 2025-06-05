@@ -14,6 +14,11 @@ Key Responsibilities:
 3. Generate appropriate farewell messages
 4. Provide confidence scores for exit decisions
 
+IMPORTANT:
+- Do NOT end the conversation if the user is describing their experience, education, skills, or background. This is usually a sign of engagement and interest.
+- Only end the conversation if the user clearly expresses disinterest, says they want to stop, or gives an explicit exit signal.
+- If in doubt, prefer to continue the conversation.
+
 Consider the following factors:
 - Current conversation context and flow
 - User's explicit and implicit intentions
@@ -65,6 +70,15 @@ EXIT_EXAMPLES = [
             "confidence": 0.99,
             "reason": "Explicit exit request with gratitude",
             "farewell_message": "Thank you for your time! It was a pleasure assisting you. If you need anything else, don't hesitate to reach out. Have a wonderful day!"
+        }
+    },
+    {
+        "input": "I am a student who has just completed a certificate in deep-level Python development training.",
+        "output": {
+            "should_exit": False,
+            "confidence": 0.98,
+            "reason": "User is describing their background and is likely interested in continuing the conversation.",
+            "farewell_message": None
         }
     }
 ]
