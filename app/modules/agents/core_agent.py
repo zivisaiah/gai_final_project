@@ -18,12 +18,14 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.modules.prompts.phase1_prompts import Phase1Prompts
 from config.phase1_settings import get_settings
+from app.modules.agents.exit_advisor import ExitAdvisor, ExitDecision
 
 
 class AgentDecision(Enum):
     """Possible agent decisions."""
     CONTINUE = "CONTINUE"
     SCHEDULE = "SCHEDULE"
+    END = "END"
 
 
 class ConversationState:
@@ -114,6 +116,9 @@ class CoreAgent:
         
         # Create the decision chain
         self._setup_decision_chain()
+        
+        # Initialize ExitAdvisor
+        self.exit_advisor = ExitAdvisor()
     
     def _setup_decision_chain(self):
         """Set up the LangChain decision-making chain."""
@@ -143,48 +148,47 @@ class CoreAgent:
         self.conversations[new_conv.conversation_id] = new_conv
         return new_conv
     
-    def process_message(
+    async def process_message_async(
         self, 
         user_message: str, 
         conversation_id: str = None
     ) -> Tuple[str, AgentDecision, str]:
         """
-        Process a user message and return agent response, decision, and reasoning.
-        
-        Args:
-            user_message: The user's input message
-            conversation_id: Optional conversation ID for state tracking
-            
-        Returns:
-            Tuple of (agent_response, decision, reasoning)
+        Async version: Process a user message and return agent response, decision, and reasoning.
         """
         try:
-            # Get or create conversation state
             conversation = self.get_or_create_conversation(conversation_id)
-            
-            # Add user message to conversation history
             conversation.add_message("user", user_message)
-            
-            # Add to LangChain memory
             self.memory.chat_memory.add_user_message(user_message)
-            
-            # Generate decision and response
+            # --- NEW: Consult ExitAdvisor first ---
+            exit_decision: ExitDecision = await self.exit_advisor.analyze_conversation(
+                current_message=user_message,
+                conversation_history=[{"role": m["role"], "content": m["content"]} for m in conversation.messages]
+            )
+            if exit_decision.should_exit:
+                response = exit_decision.farewell_message or "Thank you for your time."
+                decision = AgentDecision.END
+                reasoning = exit_decision.reason
+                conversation.add_message("assistant", response)
+                conversation.add_decision(decision, reasoning, response)
+                self.memory.chat_memory.add_ai_message(response)
+                self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
+                return response, decision, reasoning
+            # --- Otherwise, continue with normal decision logic ---
             decision, reasoning, response = self._make_decision(user_message, conversation)
-            
-            # Add assistant response to conversation history
             conversation.add_message("assistant", response)
             conversation.add_decision(decision, reasoning, response)
-            
-            # Add to LangChain memory
             self.memory.chat_memory.add_ai_message(response)
-            
             self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
-            
             return response, decision, reasoning
-            
         except Exception as e:
             self.logger.error(f"Error processing message: {e}")
             return "I apologize, but I'm having technical difficulties. Could you please try again?", AgentDecision.CONTINUE, "Error occurred"
+
+    # Optionally, keep the sync process_message for backward compatibility
+    def process_message(self, user_message: str, conversation_id: str = None) -> Tuple[str, AgentDecision, str]:
+        import asyncio
+        return asyncio.run(self.process_message_async(user_message, conversation_id))
     
     def _make_decision(
         self, 

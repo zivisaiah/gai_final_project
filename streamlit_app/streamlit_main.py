@@ -1,6 +1,6 @@
 """
 Main Streamlit Application
-Recruitment Chatbot with Core Agent and Scheduling Advisor Integration
+Recruitment Chatbot with Core Agent, Scheduling Advisor, and Exit Advisor Integration
 """
 
 import streamlit as st
@@ -11,6 +11,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import asyncio
 import logging
+from dotenv import load_dotenv
+import traceback
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent
@@ -20,9 +22,12 @@ sys.path.insert(0, str(project_root))
 from streamlit_app.components.chat_interface import ChatInterface, create_chat_interface
 from app.modules.agents.core_agent import CoreAgent, AgentDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
+from app.modules.agents.exit_advisor import ExitAdvisor, ExitDecision
 from app.modules.utils.conversation import ConversationContext
 from config.phase1_settings import get_settings
 
+# Load environment variables
+load_dotenv()
 
 class RecruitmentChatbot:
     """Main recruitment chatbot application."""
@@ -38,11 +43,13 @@ class RecruitmentChatbot:
             st.session_state.agents_initialized = True
             st.session_state.core_agent = self.core_agent
             st.session_state.scheduling_advisor = self.scheduling_advisor
+            st.session_state.exit_advisor = self.exit_advisor
             st.session_state.conversation_context = self.conversation_context
         else:
             # Reuse existing agents from session state
             self.core_agent = st.session_state.core_agent
             self.scheduling_advisor = st.session_state.scheduling_advisor
+            self.exit_advisor = st.session_state.exit_advisor
             self.conversation_context = st.session_state.conversation_context
             
         self.chat_interface = create_chat_interface()
@@ -75,6 +82,12 @@ class RecruitmentChatbot:
                 model_name=self.settings.OPENAI_MODEL
             )
             
+            # Initialize Exit Advisor
+            self.exit_advisor = ExitAdvisor(
+                model_name=self.settings.OPENAI_MODEL,
+                temperature=0.1
+            )
+            
             # Initialize Conversation Context
             self.conversation_context = ConversationContext()
             
@@ -91,7 +104,32 @@ class RecruitmentChatbot:
             # Get current conversation state
             conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
             
-            # Update candidate info from message (extract from all messages)
+            # First, check if we should exit the conversation
+            conversation_messages = [
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in conversation_state.messages
+            ]
+            
+            # Run exit advisor analysis
+            exit_decision = asyncio.run(self.exit_advisor.analyze_conversation(
+                user_message,
+                conversation_messages
+            ))
+            
+            # If exit advisor suggests ending the conversation
+            if exit_decision.should_exit and exit_decision.confidence >= 0.7:
+                return {
+                    'response': exit_decision.farewell_message or "Thank you for your time! Have a great day!",
+                    'metadata': {
+                        'decision': 'EXIT',
+                        'reasoning': exit_decision.reason,
+                        'confidence': exit_decision.confidence,
+                        'agent_type': 'exit_advisor'
+                    },
+                    'success': True
+                }
+            
+            # Update candidate info from message
             if conversation_state.candidate_info:
                 self.chat_interface.update_candidate_info(conversation_state.candidate_info)
             
@@ -133,6 +171,10 @@ class RecruitmentChatbot:
             
         except Exception as e:
             self.logger.error(f"Error processing user message: {e}")
+            print(traceback.format_exc())
+            if st.sidebar.checkbox("Show Error Details", value=True):
+                st.sidebar.error(f"Exception: {e}")
+                st.sidebar.code(traceback.format_exc())
             return {
                 'response': "I apologize, but I encountered an error processing your message. Please try again.",
                 'metadata': {'error': str(e), 'agent_type': 'error'},
@@ -267,6 +309,7 @@ class RecruitmentChatbot:
             # Agent status
             st.write("**Core Agent:** ✅ Ready")
             st.write("**Scheduling Advisor:** ✅ Ready")
+            st.write("**Exit Advisor:** ✅ Ready")
             
             # Database status
             try:
@@ -370,6 +413,8 @@ class RecruitmentChatbot:
                     self.chat_interface.update_conversation_stage('scheduling')
                 elif result['metadata'].get('appointment_confirmed'):
                     self.chat_interface.update_conversation_stage('completed')
+                elif result['metadata'].get('decision') == 'EXIT':
+                    self.chat_interface.update_conversation_stage('ended')
                 
                 # Rerun to display new message
                 st.rerun()

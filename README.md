@@ -179,7 +179,7 @@ gai_final_project/
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key (required) | - |
-| `OPENAI_MODEL` | GPT model to use | `gpt-3.5-turbo` |
+| `OPENAI_MODEL` | GPT model to use | `ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF` |
 | `OPENAI_TEMPERATURE` | Model temperature | `0.7` |
 | `OPENAI_MAX_TOKENS` | Max tokens per response | `1000` |
 | `DATABASE_URL` | Database connection string | `sqlite:///data/recruitment.db` |
@@ -188,7 +188,7 @@ gai_final_project/
 
 ```python
 # config/phase1_settings.py
-OPENAI_MODEL = "gpt-3.5-turbo"  # or "gpt-4"
+OPENAI_MODEL = "ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF"  # fine-tuned Exit Advisor model
 OPENAI_TEMPERATURE = 0.7        # 0.0 = deterministic, 1.0 = creative
 OPENAI_MAX_TOKENS = 1000        # Response length limit
 ```

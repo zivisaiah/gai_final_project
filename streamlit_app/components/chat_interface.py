@@ -165,6 +165,10 @@ class ChatInterface:
     def handle_user_input(self) -> Optional[str]:
         """Handle user input and return the message if submitted."""
         
+        # If conversation ended, do not show input
+        if st.session_state.conversation_stage == 'ended':
+            return None
+        
         # Chat input
         user_input = st.chat_input("Type your message here...")
         
@@ -288,6 +292,12 @@ class ChatInterface:
         """Display quick action buttons."""
         st.subheader("⚡ Quick Actions")
         
+        # If conversation ended, only show Start Over
+        if st.session_state.conversation_stage == 'ended':
+            if st.button("👋 Start Over"):
+                self.add_user_quick_message("Hi, I'd like to start over.")
+            return
+        
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -350,6 +360,11 @@ Feel free to ask me anything or let me know if you're interested in scheduling a
         # Display quick actions
         with st.sidebar:
             self.display_quick_actions()
+        
+        # If conversation ended, show farewell and do not accept input
+        if st.session_state.conversation_stage == 'ended':
+            st.info("\n\n**השיחה הסתיימה. תודה ובהצלחה!**\n\nניתן להתחיל שיחה חדשה בלחיצה על 'Start Over'.")
+            return None
         
         # Handle user input
         return self.handle_user_input()

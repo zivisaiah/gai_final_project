@@ -1,0 +1,238 @@
+from typing import Dict, List, Optional, Tuple, Any
+from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from langchain.memory import ConversationBufferMemory
+from langchain.tools import Tool
+from pydantic import BaseModel
+import json
+import re
+
+from ..prompts.exit_prompts import (
+    EXIT_DETECTION_TEMPLATE,
+    get_farewell_template,
+    CONFIDENCE_THRESHOLDS,
+    EXIT_SIGNALS
+)
+
+class ExitDecision(BaseModel):
+    """Model for exit advisor's decision"""
+    should_exit: bool
+    confidence: float
+    reason: str
+    farewell_message: Optional[str] = None
+
+class ExitAdvisor:
+    """Agent responsible for detecting conversation end scenarios"""
+    
+    def __init__(
+        self,
+        model_name: str = "ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF",
+        temperature: float = 0.1,
+        memory: Optional[ConversationBufferMemory] = None
+    ):
+        """Initialize the Exit Advisor agent
+        
+        Args:
+            model_name: The OpenAI model to use
+            temperature: Model temperature (lower for more consistent decisions)
+            memory: Optional conversation memory
+        """
+        self.llm = ChatOpenAI(
+            model_name=model_name,
+            temperature=temperature
+        )
+        self.memory = memory or ConversationBufferMemory(
+            memory_key="chat_history",
+            input_key="input",
+            return_messages=True
+        )
+        
+        # Initialize tools for exit detection
+        self.tools = self._create_tools()
+        
+        # Initialize the agent
+        self._initialize_agent()
+
+    def _create_tools(self) -> List[Tool]:
+        """Create tools for exit detection"""
+        return [
+            Tool(
+                name="check_explicit_exit",
+                func=self._check_explicit_exit,
+                description="Check if the message contains explicit exit signals"
+            ),
+            Tool(
+                name="check_implicit_exit",
+                func=self._check_implicit_exit,
+                description="Check if the message contains implicit exit signals"
+            ),
+            Tool(
+                name="analyze_conversation_context",
+                func=self._analyze_conversation_context,
+                description="Analyze the conversation context for exit signals"
+            )
+        ]
+
+    def _check_explicit_exit(self, message: str) -> Dict[str, Any]:
+        """Check for explicit exit signals in the message"""
+        message_lower = message.lower()
+        found_signals = [
+            signal for signal in EXIT_SIGNALS["explicit"]
+            if signal in message_lower
+        ]
+        return {
+            "has_explicit_exit": len(found_signals) > 0,
+            "found_signals": found_signals,
+            "confidence": 0.9 if found_signals else 0.0
+        }
+
+    def _check_implicit_exit(self, message: str) -> Dict[str, Any]:
+        """Check for implicit exit signals in the message"""
+        message_lower = message.lower()
+        found_signals = [
+            signal for signal in EXIT_SIGNALS["implicit"]
+            if signal in message_lower
+        ]
+        return {
+            "has_implicit_exit": len(found_signals) > 0,
+            "found_signals": found_signals,
+            "confidence": 0.7 if found_signals else 0.0
+        }
+
+    def _analyze_conversation_context(
+        self,
+        current_message: str,
+        conversation_history: List[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """Analyze the conversation context for exit signals"""
+        # Check if the conversation has reached a natural conclusion
+        last_messages = conversation_history[-3:] if len(conversation_history) >= 3 else conversation_history
+        
+        # Check for task completion signals
+        task_completion_phrases = [
+            "scheduled", "booked", "confirmed", "completed",
+            "finished", "done", "got what I needed"
+        ]
+        
+        has_task_completion = any(
+            phrase in current_message.lower()
+            for phrase in task_completion_phrases
+        )
+        
+        # Check for satisfaction signals
+        satisfaction_phrases = [
+            "thank you", "thanks", "great", "perfect",
+            "excellent", "that's what I needed"
+        ]
+        
+        has_satisfaction = any(
+            phrase in current_message.lower()
+            for phrase in satisfaction_phrases
+        )
+        
+        return {
+            "has_task_completion": has_task_completion,
+            "has_satisfaction": has_satisfaction,
+            "confidence": 0.8 if (has_task_completion or has_satisfaction) else 0.0,
+            "context_length": len(conversation_history)
+        }
+
+    def _initialize_agent(self):
+        """Initialize the LangChain agent with prompts and tools"""
+        self.agent = create_openai_functions_agent(
+            llm=self.llm,
+            prompt=EXIT_DETECTION_TEMPLATE,
+            tools=self.tools
+        )
+        
+        self.agent_executor = AgentExecutor.from_agent_and_tools(
+            agent=self.agent,
+            tools=self.tools,
+            memory=self.memory,
+            verbose=True,
+            output_key="output"
+        )
+
+    async def analyze_conversation(
+        self,
+        current_message: str,
+        conversation_history: List[Dict[str, str]]
+    ) -> ExitDecision:
+        """Analyze the conversation and determine if it should end
+        
+        Args:
+            current_message: The latest message from the user
+            conversation_history: List of previous messages in the conversation
+            
+        Returns:
+            ExitDecision object containing the decision and reasoning
+        """
+        # Prepare conversation context
+        context = {
+            "current_message": current_message,
+            "conversation_history": conversation_history
+        }
+        
+        # Run the agent to analyze the conversation
+        result = await self.agent_executor.ainvoke({
+            "input": current_message,
+            "chat_history": conversation_history,
+            "agent_scratchpad": []
+        })
+        
+        try:
+            # Parse the agent's response
+            decision_data = json.loads(result["output"])
+            
+            # Create the exit decision
+            decision = ExitDecision(
+                should_exit=decision_data["should_exit"],
+                confidence=decision_data["confidence"],
+                reason=decision_data["reason"],
+                farewell_message=decision_data.get("farewell_message")
+            )
+            
+            # If we should exit but no farewell message was provided,
+            # generate one based on context
+            if decision.should_exit and not decision.farewell_message:
+                decision.farewell_message = get_farewell_template({
+                    "scheduling_completed": "scheduled" in current_message.lower(),
+                    "information_provided": "information" in current_message.lower(),
+                    "needs_consideration": any(phrase in current_message.lower() 
+                                            for phrase in ["think", "consider", "review"]),
+                    "technical_issue": any(phrase in current_message.lower() 
+                                         for phrase in ["error", "issue", "problem"])
+                })
+            
+            return decision
+            
+        except (json.JSONDecodeError, KeyError) as e:
+            # Fallback to basic exit detection if parsing fails
+            explicit_check = self._check_explicit_exit(current_message)
+            implicit_check = self._check_implicit_exit(current_message)
+            
+            should_exit = explicit_check["has_explicit_exit"] or implicit_check["has_implicit_exit"]
+            confidence = max(
+                explicit_check["confidence"],
+                implicit_check["confidence"]
+            )
+            
+            return ExitDecision(
+                should_exit=should_exit,
+                confidence=confidence,
+                reason="Fallback detection based on explicit/implicit signals",
+                farewell_message=get_farewell_template({}) if should_exit else None
+            )
+
+    def get_farewell_message(self, context: Dict[str, Any]) -> str:
+        """Generate an appropriate farewell message based on context
+        
+        Args:
+            context: Dictionary containing conversation context
+            
+        Returns:
+            A personalized farewell message
+        """
+        return get_farewell_template(context) 
