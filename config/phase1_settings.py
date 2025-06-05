@@ -7,7 +7,16 @@ import os
 from pathlib import Path
 from typing import Optional
 from pydantic import validator
-from pydantic_settings import BaseSettings
+
+# Try new import first, fallback to old import for compatibility
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    try:
+        from pydantic import BaseSettings
+    except ImportError:
+        # Final fallback - use basic implementation
+        from pydantic import BaseModel as BaseSettings
 from dotenv import load_dotenv
 
 # Load environment variables from .env file

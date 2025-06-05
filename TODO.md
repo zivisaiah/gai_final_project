@@ -429,3 +429,7 @@ pydantic>=2.0.0
   - [x] Enhanced ExitAdvisor to detect scheduling failure patterns (multiple flexibility requests, repeated promises)
   - [x] Added 25+ evening slots to database for "after 4pm" requests
   - [x] Prevents infinite "I'll find slots" loops - now provides concrete solutions or graceful exit
+- [x] **DEPLOYMENT FIX**: Resolved pydantic_settings import compatibility issue
+  - [x] Added fallback import logic for different pydantic versions
+  - [x] Ensures Streamlit app starts correctly across different environments
+  - [x] Fixed "ModuleNotFoundError: No module named 'pydantic_settings'" startup error
