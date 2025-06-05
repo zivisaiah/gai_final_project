@@ -110,6 +110,9 @@ class RecruitmentChatbot:
                 for msg in conversation_state.messages
             ]
             
+            # Debug logging for input
+            self.logger.info(f"CALLING EXIT ADVISOR with user_message='{user_message}' and {len(conversation_messages)} conversation messages")
+            
             # Run exit advisor analysis
             exit_decision = asyncio.run(self.exit_advisor.analyze_conversation(
                 user_message,
@@ -117,7 +120,7 @@ class RecruitmentChatbot:
             ))
             
             # Debug logging
-            self.logger.info(f"Exit Advisor Decision: should_exit={exit_decision.should_exit}, confidence={exit_decision.confidence}")
+            self.logger.info(f"Exit Advisor Decision: should_exit={exit_decision.should_exit}, confidence={exit_decision.confidence}, reason='{exit_decision.reason}'")
             
             # If exit advisor suggests ending the conversation
             if exit_decision.should_exit and exit_decision.confidence >= 0.7:
