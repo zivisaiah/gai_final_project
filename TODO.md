@@ -237,6 +237,15 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
 - [x] Appointment confirmation and display of details
 - [x] State management (slots_offered, selected_slot, appointment_confirmed)
 - [x] Manual end-to-end flow testing (conversation → SCHEDULE → slots → selection → confirmation)
+- [x] **CRITICAL BUG FIX**: Monday Scheduling Issue Resolution
+  - [x] Fixed candidate info being reset on every user message in ConversationState.add_message()
+  - [x] Changed from overwriting to merging candidate info to preserve existing values
+  - [x] Enhanced datetime parser with additional scheduling keywords ("can do", "only", "prefer")
+  - [x] Added plural day name support (mondays, tuesdays, etc.) for natural language parsing
+  - [x] Fixed get_available_slots_for_scheduling() parameter format for _get_available_slots
+  - [x] Added Monday slots to database for comprehensive testing
+  - [x] **VERIFIED**: "I can do Mondays only" now correctly returns Monday slots (3/3) instead of Friday slots
+  - [x] **WORKFLOW FIXED**: datetime parsing (85.5% confidence) → candidate validation → SCHEDULE decision → Monday slot selection
 
 ### 📊 2.6 Evaluation Metrics
 - [x] Implement evaluation pipeline for exit decisions
