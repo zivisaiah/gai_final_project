@@ -222,42 +222,112 @@ class SchedulingAdvisor:
             selected_slots = []
             used_days = set()
             used_time_blocks = set()  # Track morning/afternoon/evening blocks
+            used_global_time_blocks = set()  # Track time blocks globally across all days
             
-            # Sort slots by datetime to start with earliest available
-            sorted_slots = sorted(available_slots, key=lambda x: x['datetime'])
+            # Group slots by day to enable smart day+time selection
+            slots_by_day = {}
+            for slot in available_slots:
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                slot_date = slot_dt.date()
+                if slot_date not in slots_by_day:
+                    slots_by_day[slot_date] = []
+                slots_by_day[slot_date].append(slot)
             
-            # PHASE 1: Prioritize different days first
-            for slot in sorted_slots:
+            # Sort days by date to start with earliest available days
+            sorted_days = sorted(slots_by_day.keys())
+            
+            # PHASE 1: Select one slot per day, diversifying time blocks across days
+            time_block_priority = ['morning', 'afternoon', 'evening']  # Rotation preference
+            time_block_index = 0
+            
+            for day in sorted_days:
                 if len(selected_slots) >= max_slots:
                     break
                 
-                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
-                slot_date = slot_dt.date()
-                slot_hour = slot_dt.hour
+                day_slots = slots_by_day[day]
+                # Sort slots within this day by time
+                day_slots.sort(key=lambda x: x['datetime'])
                 
-                # Determine time block (morning: 6-12, afternoon: 12-17, evening: 17-22)
-                if 6 <= slot_hour < 12:
-                    time_block = 'morning'
-                elif 12 <= slot_hour < 17:
-                    time_block = 'afternoon'
-                else:
-                    time_block = 'evening'
+                # Try to find a slot in the preferred time block for diversity
+                preferred_time_block = time_block_priority[time_block_index % len(time_block_priority)]
+                selected_slot = None
                 
-                # ONLY select slots on new days in this phase
-                if slot_date not in used_days:
-                    selected_slots.append(slot)
-                    used_days.add(slot_date)
-                    used_time_blocks.add(f"{slot_date}_{time_block}")
-                    self.logger.debug(f"Selected slot for new day: {slot_date} at {slot_hour}:00 ({time_block})")
+                # First, try to find a slot in the preferred time block
+                for slot in day_slots:
+                    slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                    slot_hour = slot_dt.hour
+                    
+                    # Determine time block
+                    if 6 <= slot_hour < 12:
+                        time_block = 'morning'
+                    elif 12 <= slot_hour < 17:
+                        time_block = 'afternoon'
+                    else:
+                        time_block = 'evening'
+                    
+                    # Prefer the time block we haven't used globally yet
+                    if time_block == preferred_time_block and time_block not in used_global_time_blocks:
+                        selected_slot = slot
+                        break
+                
+                # If no slot in preferred time block, try any unused global time block
+                if not selected_slot:
+                    for slot in day_slots:
+                        slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                        slot_hour = slot_dt.hour
+                        
+                        if 6 <= slot_hour < 12:
+                            time_block = 'morning'
+                        elif 12 <= slot_hour < 17:
+                            time_block = 'afternoon'
+                        else:
+                            time_block = 'evening'
+                        
+                        if time_block not in used_global_time_blocks:
+                            selected_slot = slot
+                            break
+                
+                # If all global time blocks are used, just take the first available slot
+                if not selected_slot:
+                    selected_slot = day_slots[0]
+                
+                # Add the selected slot
+                if selected_slot:
+                    slot_dt = datetime.fromisoformat(selected_slot['datetime'].replace('Z', '+00:00'))
+                    slot_hour = slot_dt.hour
+                    
+                    if 6 <= slot_hour < 12:
+                        time_block = 'morning'
+                    elif 12 <= slot_hour < 17:
+                        time_block = 'afternoon'
+                    else:
+                        time_block = 'evening'
+                    
+                    selected_slots.append(selected_slot)
+                    used_days.add(day)
+                    used_time_blocks.add(f"{day}_{time_block}")
+                    used_global_time_blocks.add(time_block)
+                    
+                    self.logger.debug(f"Selected slot for new day: {day} at {slot_hour}:00 ({time_block}) - global time diversity")
+                    
+                    # Move to next time block for diversity
+                    time_block_index += 1
             
-            # PHASE 2: If we still need slots, add different time blocks on same days
+            # PHASE 2: If we still need slots, add different time blocks on existing days
             if len(selected_slots) < max_slots:
-                for slot in sorted_slots:
+                # Create a flat list of all remaining slots
+                all_remaining_slots = []
+                for day, day_slots in slots_by_day.items():
+                    for slot in day_slots:
+                        if slot not in selected_slots:
+                            all_remaining_slots.append(slot)
+                
+                # Sort remaining slots by datetime
+                all_remaining_slots.sort(key=lambda x: x['datetime'])
+                
+                for slot in all_remaining_slots:
                     if len(selected_slots) >= max_slots:
                         break
-                    
-                    if slot in selected_slots:
-                        continue  # Skip already selected slots
                     
                     slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
                     slot_date = slot_dt.date()
@@ -281,18 +351,41 @@ class SchedulingAdvisor:
             
             # PHASE 3: If we still need more slots, add any remaining ones
             if len(selected_slots) < max_slots:
-                for slot in sorted_slots:
+                # Get all remaining slots
+                all_remaining_slots = []
+                for day, day_slots in slots_by_day.items():
+                    for slot in day_slots:
+                        if slot not in selected_slots:
+                            all_remaining_slots.append(slot)
+                
+                all_remaining_slots.sort(key=lambda x: x['datetime'])
+                
+                for slot in all_remaining_slots:
                     if slot not in selected_slots and len(selected_slots) < max_slots:
                         selected_slots.append(slot)
             
-            self.logger.info(f"Diversified slot selection: {len(selected_slots)} slots across {len(used_days)} days")
+            # Calculate diversity metrics
+            unique_days = len(used_days)
+            unique_time_blocks = len(used_global_time_blocks)
+            
+            self.logger.info(f"Diversified slot selection: {len(selected_slots)} slots across {unique_days} days and {unique_time_blocks} time blocks")
             
             # Log the diversity for debugging
             for i, slot in enumerate(selected_slots, 1):
                 slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
                 day_name = slot_dt.strftime('%A')
                 time_str = slot_dt.strftime('%I:%M %p')
-                self.logger.debug(f"  Slot {i}: {day_name} {slot_dt.date()} at {time_str}")
+                
+                # Determine time block for logging
+                slot_hour = slot_dt.hour
+                if 6 <= slot_hour < 12:
+                    time_block = 'morning'
+                elif 12 <= slot_hour < 17:
+                    time_block = 'afternoon'
+                else:
+                    time_block = 'evening'
+                
+                self.logger.debug(f"  Slot {i}: {day_name} {slot_dt.date()} at {time_str} ({time_block})")
             
             return selected_slots
             

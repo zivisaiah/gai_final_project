@@ -155,12 +155,16 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
     - [x] Verified: Agent now asks for availability information instead of making empty promises like "I'll check our calendar"
     - [x] **ENHANCED SLOT DIVERSIFICATION**: Implemented intelligent slot selection across different days and times
       - [x] Created _diversify_slot_selection method with 3-phase selection algorithm
-      - [x] Phase 1: Prioritize slots on different days first
-      - [x] Phase 2: Add different time blocks (morning/afternoon/evening) on same days if needed
+      - [x] Phase 1: Smart day+time selection - prioritizes different days AND rotates time blocks (morning/afternoon/evening)
+      - [x] Phase 2: Add different time blocks on existing days if needed
       - [x] Phase 3: Fill remaining slots with any available options
       - [x] Applied diversification to all slot selection points in scheduling advisor
       - [x] Enhanced logging to show slot diversity across days and time blocks
-      - [x] Tested: Now suggests 3 slots across different days instead of sequential slots from same day
+      - [x] **IMPROVED TIME DIVERSITY**: Enhanced algorithm to vary times across different days
+        - [x] Groups slots by day for intelligent day+time selection
+        - [x] Rotates through time blocks (morning → afternoon → evening) across days
+        - [x] Tracks global time block usage to prevent all morning/afternoon slots
+        - [x] Tested: Now suggests optimal diversity like "Monday 9 AM, Tuesday 2 PM, Wednesday 6 PM"
 
 ### **📚 1.8 Documentation** ✅ COMPLETED
 - [x] Update README.md for Phase 1
