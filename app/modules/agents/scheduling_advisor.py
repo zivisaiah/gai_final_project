@@ -16,7 +16,6 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.modules.prompts.scheduling_prompts import SchedulingPrompts
-from app.modules.utils.datetime_parser import DateTimeParser
 from app.modules.database.sql_manager import SQLManager
 from config.phase1_settings import get_settings
 
@@ -49,9 +48,6 @@ class SchedulingAdvisor:
         
         # Initialize database manager
         self.sql_manager = SQLManager()
-        
-        # Initialize datetime parser
-        self.datetime_parser = DateTimeParser()
         
         # Initialize prompts
         self.prompts = SchedulingPrompts()
@@ -620,35 +616,6 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
         
         return decision, reasoning, suggested_slots, response_message
 
-    def parse_candidate_time_preference(
-        self,
-        user_message: str,
-        reference_datetime: datetime = None
-    ) -> Dict:
-        """
-        Parse time preferences from candidate message using unified LLM analysis.
-        
-        Args:
-            user_message: Candidate's message
-            reference_datetime: Reference time for parsing
-            
-        Returns:
-            Dictionary with parsed time preferences
-        """
-        # For backward compatibility, provide a simple analysis
-        # This method is now deprecated as the unified approach handles everything
-        self.logger.warning("parse_candidate_time_preference is deprecated. Use make_scheduling_decision for unified analysis.")
-        
-        # Provide basic time preference analysis
-        return {
-            'has_scheduling_intent': any(keyword in user_message.lower() 
-                                       for keyword in ['schedule', 'available', 'free', 'can do', 'meet', 'interview']),
-            'parsed_datetimes': [],
-            'confidence': 0.6,
-            'user_message': user_message,
-            'note': 'Use unified scheduling decision for full analysis'
-        }
-    
     def format_slots_for_candidate(self, slots: List[Dict]) -> str:
         """Format available slots for display to candidate."""
         return self.prompts.format_time_slots(slots)

@@ -19,6 +19,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from app.modules.prompts.phase1_prompts import Phase1Prompts
 from config.phase1_settings import get_settings
 from app.modules.agents.exit_advisor import ExitAdvisor, ExitDecision
+from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
 
 
 class AgentDecision(Enum):
@@ -40,8 +41,8 @@ class ConversationState:
         self.last_decision = None
         self.last_reasoning = None
         
-    def add_message(self, role: str, content: str, timestamp: datetime = None):
-        """Add a message to the conversation history."""
+    async def add_message(self, role: str, content: str, agent: 'CoreAgent', timestamp: datetime = None):
+        """Add a message and update state using LLM-based analysis."""
         message = {
             "role": role,
             "content": content,
@@ -49,19 +50,22 @@ class ConversationState:
         }
         self.messages.append(message)
         
-        # Update candidate info if this is a user message
+        # New: Use LLM-based extraction for all user messages for consistency
         if role == "user":
-            # Extract new info and merge with existing info (don't overwrite)
-            extracted_info = Phase1Prompts.extract_candidate_info(self.messages)
-            for key, value in extracted_info.items():
-                # Only update if we have new information and current value is None/unknown/False
-                if value and (
-                    self.candidate_info.get(key) is None or 
-                    self.candidate_info.get(key) == "unknown" or 
-                    (key == "availability_mentioned" and not self.candidate_info.get(key))
-                ):
-                    self.candidate_info[key] = value
-    
+            try:
+                # Use the agent's LLM extraction method
+                extracted_info = await agent.extract_candidate_info_llm(self)
+                
+                # Update candidate_info with new, non-empty values
+                for key, value in extracted_info.items():
+                    if value not in [None, "unknown", ""]:
+                        self.candidate_info[key] = value
+                
+                agent.logger.info(f"Updated candidate info via LLM: {self.candidate_info}")
+
+            except Exception as e:
+                agent.logger.error(f"Error during LLM info extraction in ConversationState: {e}")
+
     def add_decision(self, decision: AgentDecision, reasoning: str, response: str):
         """Record a decision made by the agent."""
         decision_record = {
@@ -127,8 +131,12 @@ class CoreAgent:
         # Create the decision chain
         self._setup_decision_chain()
         
-        # Initialize ExitAdvisor with model configuration
+        # Create candidate info extraction chain
+        self._setup_candidate_info_chain()
+        
+        # Initialize Advisors
         self.exit_advisor = ExitAdvisor()
+        self.scheduling_advisor = SchedulingAdvisor()
     
     def _setup_decision_chain(self):
         """Set up the LangChain decision-making chain."""
@@ -147,6 +155,16 @@ class CoreAgent:
             | self.decision_prompt
             | self.llm
         )
+    
+    def _setup_candidate_info_chain(self):
+        """Set up the LangChain candidate information extraction chain."""
+        # Create prompt template for candidate info extraction
+        self.candidate_info_prompt = ChatPromptTemplate.from_messages([
+            ("human", "{extraction_prompt}")
+        ])
+        
+        # Create the extraction chain
+        self.candidate_info_chain = self.candidate_info_prompt | self.llm
     
     def get_or_create_conversation(self, conversation_id: str = None) -> ConversationState:
         """Get existing conversation or create a new one."""
@@ -168,52 +186,49 @@ class CoreAgent:
         """
         try:
             conversation = self.get_or_create_conversation(conversation_id)
-            conversation.add_message("user", user_message)
+            await conversation.add_message("user", user_message, agent=self)
             self.memory.chat_memory.add_user_message(user_message)
+
             # --- NEW: Consult ExitAdvisor first ---
             exit_decision: ExitDecision = await self.exit_advisor.analyze_conversation(
                 current_message=user_message,
                 conversation_history=[{"role": m["role"], "content": m["content"]} for m in conversation.messages]
             )
+
             if exit_decision.should_exit and exit_decision.confidence >= 0.7:
                 response = exit_decision.farewell_message or "Thank you for your time."
                 decision = AgentDecision.END
                 reasoning = exit_decision.reason
-                conversation.add_message("assistant", response)
+                await conversation.add_message("assistant", response, agent=self)
                 conversation.add_decision(decision, reasoning, response)
                 self.memory.chat_memory.add_ai_message(response)
                 self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
                 return response, decision, reasoning
+            
             # --- Otherwise, continue with normal decision logic ---
-            decision, reasoning, response = self._make_decision(user_message, conversation)
-            conversation.add_message("assistant", response)
+            decision, reasoning, response = await self._make_decision(user_message, conversation)
+
+            await conversation.add_message("assistant", response, agent=self)
             conversation.add_decision(decision, reasoning, response)
             self.memory.chat_memory.add_ai_message(response)
             self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
             return response, decision, reasoning
         except Exception as e:
-            self.logger.error(f"Error processing message: {e}")
-            return "I apologize, but I'm having technical difficulties. Could you please try again?", AgentDecision.CONTINUE, "Error occurred"
+            self.logger.error(f"Error processing message: {e}", exc_info=True)
+            return "I apologize, but I'm having technical difficulties. Could you please try again?", AgentDecision.CONTINUE, f"Error occurred: {e}"
 
     # Optionally, keep the sync process_message for backward compatibility
     def process_message(self, user_message: str, conversation_id: str = None) -> Tuple[str, AgentDecision, str]:
         import asyncio
         return asyncio.run(self.process_message_async(user_message, conversation_id))
     
-    def _make_decision(
-        self, 
-        user_message: str, 
+    async def _make_decision(
+        self,
+        user_message: str,
         conversation: ConversationState
     ) -> Tuple[AgentDecision, str, str]:
         """
-        Make a decision about whether to continue or schedule based on conversation context.
-        
-        Args:
-            user_message: Latest user message
-            conversation: Current conversation state
-            
-        Returns:
-            Tuple of (decision, reasoning, response)
+        Make a decision, and if scheduling, proactively fetch and format time slots.
         """
         try:
             # Prepare input for the LangChain chain
@@ -224,53 +239,86 @@ class CoreAgent:
             }
             
             # Get response from LangChain
-            response = self.decision_chain.invoke(chain_input)
+            response = await self.decision_chain.ainvoke(chain_input)
             response_text = response.content
             
-            # Parse the response to extract decision, reasoning, and agent response
+            # Parse the response to extract decision, reasoning, and the initial agent response
             decision, reasoning, agent_response = self._parse_agent_response(response_text)
             
             # Validate decision based on conversation context
             decision = self._validate_decision(decision, conversation)
             
-            return decision, reasoning, agent_response
-            
-        except Exception as e:
-            self.logger.error(f"Error in decision making: {e}")
-            # Fallback to rule-based decision
-            return self._fallback_decision(user_message, conversation)
-    
-    def _parse_agent_response(self, response_text: str) -> Tuple[AgentDecision, str, str]:
-        """Parse the LLM response to extract decision, reasoning, and response."""
-        try:
-            # Look for structured response format
-            decision_match = re.search(r'DECISION:\s*(CONTINUE|SCHEDULE)', response_text, re.IGNORECASE)
-            reasoning_match = re.search(r'REASONING:\s*(.+?)(?=RESPONSE:|$)', response_text, re.DOTALL)
-            response_match = re.search(r'RESPONSE:\s*(.+)', response_text, re.DOTALL)
-            
-            if decision_match and reasoning_match and response_match:
-                decision = AgentDecision(decision_match.group(1).upper())
-                reasoning = reasoning_match.group(1).strip()
-                agent_response = response_match.group(1).strip()
+            # --- Proactive Scheduling Logic ---
+            if decision == AgentDecision.SCHEDULE:
+                self.logger.info("Decision is SCHEDULE. Consulting SchedulingAdvisor for available slots.")
                 
-                return decision, reasoning, agent_response
-            
-            # If structured format not found, try to infer from content
-            if any(keyword in response_text.lower() for keyword in ['schedule', 'interview', 'calendar', 'appointment']):
-                decision = AgentDecision.SCHEDULE
-                reasoning = "Response indicates scheduling intent"
-            else:
-                decision = AgentDecision.CONTINUE
-                reasoning = "Continuing conversation to gather more information"
-            
-            # Use entire response as agent response if not structured
-            agent_response = response_text.strip()
-            
+                # Use the entire conversation history for context
+                full_history = conversation.messages
+                # Corrected method call and arguments
+                (
+                    schedule_decision,
+                    schedule_reasoning,
+                    available_slots,
+                    _
+                ) = self.scheduling_advisor.make_scheduling_decision(
+                    candidate_info=conversation.candidate_info,
+                    conversation_messages=[{"role": m["role"], "content": m["content"]} for m in full_history],
+                    latest_message=user_message
+                )
+
+                if schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
+                    # We have slots, so let's format them proactively.
+                    slot_text = "\n".join([f"- {datetime.fromisoformat(slot['datetime']).strftime('%A, %B %d at %I:%M %p')}" for slot in available_slots])
+                    # The 'agent_response' from the LLM is a pre-confirmation. We append the slots to it.
+                    proactive_response = f"{agent_response}\n\nI found a few available time slots for you:\n{slot_text}\n\nPlease let me know which one works best for you."
+                    final_reasoning = f"Proactively providing schedule options. Advisor reason: {schedule_reasoning}"
+                    return decision, final_reasoning, proactive_response
+                else:
+                    # Advisor decided not to schedule or found no slots.
+                    # Use the original LLM response, which should be a commitment to find slots.
+                    final_reasoning = f"Scheduling decision made, but no slots available yet. Advisor reason: {schedule_reasoning}"
+                    return decision, final_reasoning, agent_response
+
+            # For CONTINUE or END, return the original parsed response
             return decision, reasoning, agent_response
             
         except Exception as e:
-            self.logger.error(f"Error parsing agent response: {e}")
-            return AgentDecision.CONTINUE, "Error parsing response", response_text
+            self.logger.error(f"Critical error in decision making: {e}", exc_info=True)
+            # Re-raise the exception to be caught by the main handler.
+            # This ensures we don't silently fail and can see the root cause.
+            raise
+
+    def _parse_agent_response(self, response_text: str) -> Tuple[AgentDecision, str, str]:
+        """Parse the LLM's JSON response to extract decision, reasoning, and response."""
+        try:
+            # The LLM is now instructed to only return JSON, but might wrap it in markdown.
+            response_text = response_text.strip().replace("```json", "").replace("```", "").strip()
+            
+            # Find the JSON object boundaries to handle potential leading/trailing text
+            json_start = response_text.find('{')
+            json_end = response_text.rfind('}') + 1
+            
+            if json_start == -1 or json_end == 0:
+                self.logger.error(f"No JSON object found in LLM response: {response_text}")
+                raise ValueError("Response does not contain a valid JSON object.")
+
+            json_str = response_text[json_start:json_end]
+            data = json.loads(json_str)
+
+            # Extract data from JSON
+            decision_str = data.get("decision", "CONTINUE").upper()
+            reasoning = data.get("reasoning", "No reasoning provided.")
+            agent_response = data.get("response", "I'm not sure how to respond to that, could you rephrase?")
+
+            # Convert decision string to Enum
+            decision = AgentDecision[decision_str]
+            
+            return decision, reasoning, agent_response
+
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            self.logger.error(f"Critical error parsing LLM JSON response: {e}. Raw response: {response_text}")
+            # Re-raise to be caught by the main error handler. We no longer use a fallback.
+            raise ValueError(f"Could not parse decision from LLM response: {response_text}") from e
     
     def _validate_decision(self, decision: AgentDecision, conversation: ConversationState) -> AgentDecision:
         """Validate and potentially override the decision based on conversation state."""
@@ -296,53 +344,61 @@ class CoreAgent:
         
         return decision
     
-    def _fallback_decision(
-        self, 
-        user_message: str, 
-        conversation: ConversationState
-    ) -> Tuple[AgentDecision, str, str]:
-        """Fallback rule-based decision making if LLM fails."""
-        candidate_info = conversation.candidate_info
-        user_lower = user_message.lower()
+    async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
+        """
+        Extract candidate information using LLM analysis (new unified approach).
         
-        # Clear scheduling intent
-        if any(word in user_lower for word in ['schedule', 'interview', 'when can', 'available']):
-            if candidate_info.get("interest_level") == "high":
-                return (
-                    AgentDecision.SCHEDULE,
-                    "User expressed scheduling intent and shows interest",
-                    "Great! Let me check our available interview slots for you."
-                )
-        
-        # Clear disinterest
-        if any(phrase in user_lower for phrase in ['not interested', 'no thanks', 'have a job']):
-            return (
-                AgentDecision.CONTINUE,
-                "User may not be interested, continuing to confirm",
-                "I understand. Thank you for your time, and feel free to reach out if your situation changes."
-            )
-        
-        # Information gathering phase
-        if not candidate_info.get("name") or candidate_info.get("experience") != "mentioned":
-            return (
-                AgentDecision.CONTINUE,
-                "Still gathering basic candidate information",
-                "Could you tell me a bit more about your Python experience and background?"
-            )
-        
-        # Default to continue
-        return (
-            AgentDecision.CONTINUE,
-            "Continuing conversation to build rapport",
-            "That's great to hear! What aspects of Python development interest you most?"
-        )
-    
+        This method demonstrates the proper LLM-based approach that should replace
+        the keyword-based extraction for architectural consistency.
+        """
+        try:
+            # Generate extraction prompt
+            extraction_prompt = self.prompts.get_candidate_info_extraction_prompt(conversation.messages)
+            
+            # Get LLM analysis
+            response = await self.candidate_info_chain.ainvoke({"extraction_prompt": extraction_prompt})
+            response_text = response.content.strip()
+            
+            # Parse JSON response
+            import json
+            import re
+            
+            # Extract JSON from response
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            extracted_data = json.loads(response_text)
+            
+            # Convert to compatible format
+            candidate_info = {
+                "name": extracted_data.get("name"),
+                "experience": "mentioned" if extracted_data.get("experience", {}).get("has_python") else "unknown",
+                "current_status": extracted_data.get("current_status"),
+                "interest_level": extracted_data.get("interest_level", "unknown"),
+                "availability_mentioned": extracted_data.get("availability_mentioned", False)
+            }
+            
+            self.logger.info(f"LLM-extracted candidate info: {candidate_info}")
+            return candidate_info
+            
+        except Exception as e:
+            self.logger.error(f"Error in LLM candidate info extraction: {e}")
+            # Fallback to keyword method for resilience, though it's deprecated
+            return Phase1Prompts.extract_candidate_info(conversation.messages)
+
     def start_conversation(self, conversation_id: str = None) -> Tuple[str, ConversationState]:
         """Start a new conversation with initial greeting."""
         conversation = self.get_or_create_conversation(conversation_id)
         
         greeting = self.prompts.get_template("greeting")
-        conversation.add_message("assistant", greeting)
+        # For the initial message, we don't need async complexity
+        message = {
+            "role": "assistant",
+            "content": greeting,
+            "timestamp": datetime.now()
+        }
+        conversation.messages.append(message)
         
         # Add to LangChain memory
         self.memory.chat_memory.add_ai_message(greeting)

@@ -19,43 +19,38 @@ class Phase1Prompts:
 - Answer basic questions about the Python developer position
 - Determine when to CONTINUE the conversation, SCHEDULE an interview, or END the conversation politely
 
-## Decision Framework:
-You must choose between THREE actions at each turn:
+## Decision Framework & Response Format:
+You must analyze the conversation and respond with a single, valid JSON object. Do not add any text, apologies, or explanations outside of the JSON structure. Your entire output must be only the JSON object.
+The JSON object must have the following structure:
+{{
+  "decision": "CONTINUE | SCHEDULE | END",
+  "reasoning": "A brief explanation for your decision.",
+  "response": "The natural, conversational message to send to the candidate."
+}}
 
 ### CONTINUE:
-Choose when:
+Choose when the conversation should proceed.
 - Candidate asks questions about the role, company, or process
 - You need more information from the candidate
 - Conversation is progressing but not ready for scheduling
-- Candidate shows interest but hasn't provided enough details
-- You're building rapport and gathering information
 
 ### SCHEDULE:
+Your goal is to transition the conversation to the scheduling phase.
 Choose when:
-- Candidate has expressed clear interest in the position
-- You have gathered basic information (name, experience level)
-- Candidate has indicated availability for an interview
-- Conversation has reached a natural scheduling point
-- Candidate explicitly asks to schedule an interview
+- Candidate has expressed clear interest and you have their basic info (name, experience).
+- Candidate has indicated availability for an interview (e.g., "I'm free next week").
+- **CRITICAL**: When you decide to SCHEDULE, your `response` in the JSON should be a message that *proactively offers to find time slots*. For example: "That's great to hear, Ziv! Let me check our calendar for available interview slots for you." The system will then automatically provide the slots in the next turn.
 
 ### END:
-Choose when:
-- Candidate clearly states they are not interested, unavailable, or want to stop
-- Candidate has already found a job or is not looking
-- Conversation has reached a natural, polite conclusion
-- You have confirmed the candidate is not interested in proceeding
-
-## Response Format:
-Always respond with:
-1. A natural, conversational message to the candidate
-2. Your decision: CONTINUE, SCHEDULE, or END
-3. Brief reasoning for your decision
+Choose when the conversation should conclude.
+- Candidate clearly states they are not interested or want to stop.
+- Candidate has already found a job.
 
 ## Tone & Style:
 - Professional but warm and approachable
 - Concise but informative
 - Encouraging and positive
-- Focus on moving toward interview scheduling as the end goal, unless the candidate is not interested
+- CRITICAL: Your entire response must be a single, valid JSON object and nothing else.
 
 ## Key Information to Gather:
 - Candidate's name
@@ -112,6 +107,15 @@ Always respond with:
             "decision": "SCHEDULE",
             "reasoning": "Candidate provided name, relevant experience, expressed enthusiasm, and directly asked to schedule. Clear scheduling moment.",
             "response": "Fantastic Alex! Your 5 years of Python/Django experience is exactly what we're looking for. Let me find some interview slots that work for your schedule."
+        },
+        {
+            "conversation_history": [
+                {"role": "assistant", "content": "Thanks for sharing that, Ziv. Your background sounds like a great fit. Are you generally available in the coming weeks?"},
+                {"role": "user", "content": "Yes, I'm free almost every day during the working hours."}
+            ],
+            "decision": "SCHEDULE",
+            "reasoning": "Candidate has confirmed their name, interest, and has given a strong, open-ended signal of availability. This is the perfect time to be proactive and move to scheduling.",
+            "response": "That's perfect, Ziv! I'll go ahead and check for some open slots for you during working hours and come back with a few options."
         }
     ]
     
@@ -137,7 +141,7 @@ The position offers competitive salary, remote work flexibility, and excellent g
         
         "next_steps": "Based on our conversation, I think you'd be a great fit for this role. Would you like to schedule a brief interview with one of our technical recruiters?",
         
-        "scheduling_transition": "Great! Let me check our available interview slots and find a time that works for you.",
+        "scheduling_transition": "Great! I have found some available interview slots for you. Please let me know which one works best.",
         
         "information_gathering": "Could you tell me a bit more about your Python experience and what kind of projects you've been working on recently?"
     }
@@ -157,14 +161,18 @@ Consider:
 4. Is this a natural scheduling moment?
 5. Has the candidate clearly stated they are not interested or want to stop?
 
-Your response must include:
-1. DECISION: CONTINUE, SCHEDULE, or END
-2. REASONING: Brief explanation of your decision
-3. RESPONSE: Natural message to send to the candidate
+Your response must be a valid JSON object with the following structure:
+{{
+  "decision": "CONTINUE | SCHEDULE | END",
+  "reasoning": "A brief explanation for your decision.",
+  "response": "The natural, conversational message to send to the candidate."
+}}
+
+Analyze the context carefully and provide your response in the specified JSON format only. Do not include any other text or formatting.
 
 Decision Guidelines:
 - CONTINUE: When you need more information, candidate has questions, or conversation isn't ready for scheduling
-- SCHEDULE: When candidate has shown interest, provided basic info, and indicated availability
+- SCHEDULE: When candidate has shown interest, provided basic info, and indicated availability. Your response should offer to find slots.
 - END: When candidate is not interested, unavailable, or conversation has reached a natural conclusion
 
 Format your response as:
@@ -216,51 +224,118 @@ RESPONSE: [Your message to the candidate]"""
         
         return "\n".join(formatted)
     
-    @classmethod
+    # Candidate Information Extraction Prompt
+    CANDIDATE_INFO_EXTRACTION_PROMPT = """Analyze the conversation history and extract candidate information using natural language understanding.
+
+## CONVERSATION HISTORY:
+{conversation_history}
+
+## EXTRACTION TASK:
+Extract the following information about the candidate from the conversation:
+
+1. **Name**: Candidate's first name (if mentioned)
+2. **Experience**: Technical experience level and details (Python, years, technologies)  
+3. **Interest Level**: Gauge their enthusiasm (high/medium/low/unknown)
+4. **Availability**: Whether they've mentioned scheduling availability
+5. **Current Status**: Job search status, employment situation
+
+## ANALYSIS GUIDELINES:
+
+### Name Extraction:
+- Look for: "I'm [Name]", "My name is [Name]", "Call me [Name]", etc.
+- Extract only the first name for privacy
+- Return null if no clear name is provided
+
+### Experience Assessment:
+- Specific details: "5 years Python", "worked with Django", "senior developer"
+- General mentions: "I have experience", "I'm a developer", "work with Python"
+- Null if no technical background mentioned
+
+### Interest Level:
+- **High**: "very interested", "excited", "love to", "definitely want", clear enthusiasm
+- **Medium**: "interested", "sounds good", "tell me more", neutral positive
+- **Low**: "not sure", "maybe", "just looking", uncertain responses
+- **Unknown**: insufficient information to determine
+
+### Availability Mentions:
+- Direct: "I'm available", "can schedule", "free next week"
+- Indirect: "when can we meet", "what's next", scheduling-related questions
+- False if no scheduling context mentioned
+
+### Current Status:
+- Job searching: "looking for", "open to opportunities", "seeking new role"
+- Employed: "current job", "working at", employment details
+- Just accepted: "just got a job", "starting new position"
+- Unknown: insufficient information
+
+## RESPONSE FORMAT:
+Respond with ONLY valid JSON:
+
+{{
+  "name": "FirstName or null",
+  "experience": {{
+    "level": "detailed description or null",
+    "years": "number if mentioned or null", 
+    "technologies": ["list of mentioned technologies"],
+    "has_python": true/false
+  }},
+  "interest_level": "high/medium/low/unknown",
+  "availability_mentioned": true/false,
+  "current_status": "detailed description or null",
+  "confidence": {{
+    "name": 0.0-1.0,
+    "experience": 0.0-1.0,
+    "interest": 0.0-1.0
+  }}
+}}
+
+Analyze carefully and respond with accurate JSON only."""
+
+    @classmethod  
     def extract_candidate_info(cls, conversation_history: List[Dict]) -> Dict:
-        """Extract candidate information from conversation history."""
+        """Extract candidate information using LLM analysis (deprecated keyword method)."""
+        # This method is now deprecated but kept for backward compatibility
+        # The new LLM-based extraction should be used instead
+        
         info = {
             "name": None,
-            "experience": None,
+            "experience": "unknown",  # Changed from None for compatibility
             "current_status": None,
             "interest_level": "unknown",
             "availability_mentioned": False
         }
         
-        # Simple keyword extraction (can be enhanced with NLP)
+        # Simple fallback analysis for systems that still call this method
         full_conversation = " ".join([msg['content'] for msg in conversation_history if msg['role'] == 'user'])
         lower_conv = full_conversation.lower()
         
-        # Look for name patterns
-        import re
-        name_patterns = [
-            r"i'm (\w+)",
-            r"i am (\w+)",
-            r"my name is (\w+)",
-            r"call me (\w+)"
-        ]
-        
-        for pattern in name_patterns:
-            match = re.search(pattern, lower_conv)
-            if match:
-                info["name"] = match.group(1).title()
-                break
-        
-        # Look for experience mentions
-        if any(term in lower_conv for term in ["years", "experience", "worked", "developer", "python"]):
-            info["experience"] = "mentioned"
-        
-        # Look for availability mentions
-        if any(term in lower_conv for term in ["available", "schedule", "interview", "time", "week", "day"]):
-            info["availability_mentioned"] = True
-        
-        # Assess interest level
-        positive_terms = ["interested", "great", "perfect", "love", "excited", "yes"]
-        negative_terms = ["not interested", "no thanks", "busy", "have a job"]
+        # Basic interest detection
+        positive_terms = ["interested", "great", "perfect", "love", "excited", "yes", "definitely"]
+        negative_terms = ["not interested", "no thanks", "busy", "have a job", "pass"]
         
         if any(term in lower_conv for term in positive_terms):
-            info["interest_level"] = "high"
+            info["interest_level"] = "medium"  # Conservative estimate
         elif any(term in lower_conv for term in negative_terms):
             info["interest_level"] = "low"
         
-        return info 
+        # Basic availability detection
+        if any(term in lower_conv for term in ["available", "schedule", "interview", "time", "week", "when"]):
+            info["availability_mentioned"] = True
+        
+        return info
+    
+    @classmethod
+    def get_candidate_info_extraction_prompt(cls, conversation_history: List[Dict]) -> str:
+        """Generate LLM prompt for extracting candidate information."""
+        # Format conversation history
+        if not conversation_history:
+            history_text = "No conversation history available."
+        else:
+            history_text = "\n".join([
+                f"{'Assistant' if msg['role'] == 'assistant' else 'Candidate'}: {msg['content']}"
+                for msg in conversation_history
+            ])
+        
+        return cls.CANDIDATE_INFO_EXTRACTION_PROMPT.format(
+            conversation_history=history_text
+        ) 

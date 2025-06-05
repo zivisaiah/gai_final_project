@@ -394,3 +394,21 @@ streamlit>=1.28.0
 python-dateutil>=2.8.0
 pydantic>=2.0.0
 ```
+
+# Project Roadmap
+
+## In Progress
+
+## Planned
+- [ ] Test Clarity API integration (more metadata, retries)
+- [ ] Narrative Analysis
+- [ ] Fine-tuning `ExitAdvisor` for better intent detection
+- [ ] Add more comprehensive tests for all agent interactions
+
+## Completed
+- [x] Initial project setup
+- [x] Modular refactor: scraper, enricher, serializer, utils
+- [x] Implemented unified, LLM-based scheduling intent analysis
+- [x] Replaced keyword-based candidate info extraction with LLM-based approach
+- [x] Fixed proactive scheduling flow to correctly parse LLM decisions and offer time slots
+- [x] Resolved critical parsing, state management, and proactivity bugs in `CoreAgent`
