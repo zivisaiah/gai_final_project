@@ -107,11 +107,11 @@ class ChatInterface:
             
             # Different buttons based on conversation stage
             if stage in ['completed', 'ended']:
-                if st.button("🆕 Start New Conversation", type="primary"):
+                if st.button("🆕 Start New Conversation", type="primary", key="sidebar_new_conversation"):
                     self.clear_conversation()
                     st.rerun()
             else:
-                if st.button("🗑️ Clear Conversation", type="secondary"):
+                if st.button("🗑️ Clear Conversation", type="secondary", key="sidebar_clear_conversation"):
                     self.clear_conversation()
                     st.rerun()
     
@@ -326,7 +326,7 @@ class ChatInterface:
         
         # If conversation ended or completed, only show Start Over
         if st.session_state.conversation_stage in ['ended', 'completed']:
-            if st.button("🆕 Start New Conversation", type="primary"):
+            if st.button("🆕 Start New Conversation", type="primary", key="quick_actions_new_conversation"):
                 self.clear_conversation()
                 st.rerun()
             st.info("Conversation has concluded. Start a new one to continue.")
@@ -335,15 +335,15 @@ class ChatInterface:
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("👋 Start Over"):
+            if st.button("👋 Start Over", key="quick_start_over"):
                 self.add_user_quick_message("Hi, I'd like to start over.")
         
         with col2:
-            if st.button("📅 Schedule Interview"):
+            if st.button("📅 Schedule Interview", key="quick_schedule"):
                 self.add_user_quick_message("I'd like to schedule an interview.")
         
         with col3:
-            if st.button("❓ Ask Question"):
+            if st.button("❓ Ask Question", key="quick_question"):
                 self.add_user_quick_message("I have a question about the role.")
     
     def add_user_quick_message(self, content: str):
