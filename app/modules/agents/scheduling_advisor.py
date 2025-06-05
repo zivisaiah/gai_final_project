@@ -163,7 +163,20 @@ class SchedulingAdvisor:
             end_date = start_date + timedelta(days=days_ahead)
             
             # Get available slots from database
-            all_slots = self.sql_manager.get_available_slots(start_date, end_date)
+            all_slots_raw = self.sql_manager.get_available_slots(start_date, end_date)
+            
+            # Convert AvailableSlotResponse objects to dictionaries for compatibility
+            all_slots = []
+            for slot in all_slots_raw:
+                slot_dict = {
+                    'id': slot.id,
+                    'datetime': datetime.combine(slot.slot_date, slot.start_time).isoformat(),
+                    'recruiter': slot.recruiter.name if slot.recruiter else 'Our team',
+                    'recruiter_id': slot.recruiter_id,
+                    'is_available': slot.is_available,
+                    'timezone': slot.timezone
+                }
+                all_slots.append(slot_dict)
             
             if not preferred_datetimes:
                 # No specific preferences, return next few available slots

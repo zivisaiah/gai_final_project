@@ -138,16 +138,31 @@ class ChatInterface:
                     if 'suggested_slots' in metadata and metadata['suggested_slots']:
                         st.subheader("📅 Available Time Slots")
                         for i, slot in enumerate(metadata['suggested_slots'], 1):
-                            slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                            # Handle both dict and AvailableSlotResponse object
+                            if hasattr(slot, 'slot_date') and hasattr(slot, 'start_time'):
+                                # AvailableSlotResponse object
+                                slot_dt = datetime.combine(slot.slot_date, slot.start_time)
+                                recruiter_name = slot.recruiter.name if hasattr(slot, 'recruiter') and slot.recruiter else 'Our team'
+                                slot_dict = {
+                                    'id': slot.id,
+                                    'datetime': slot_dt.isoformat(),
+                                    'recruiter': recruiter_name,
+                                    'recruiter_id': slot.recruiter_id
+                                }
+                            else:
+                                # Dictionary format (legacy)
+                                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                                recruiter_name = slot.get('recruiter', 'Our team')
+                                slot_dict = slot
+                            
                             formatted_time = slot_dt.strftime("%A, %B %d at %I:%M %p")
-                            recruiter = slot.get('recruiter', 'Our team')
                             
                             col1, col2 = st.columns([3, 1])
                             with col1:
-                                st.write(f"**{i}.** {formatted_time} with {recruiter}")
+                                st.write(f"**{i}.** {formatted_time} with {recruiter_name}")
                             with col2:
                                 if st.button(f"Select", key=f"slot_{i}_{slot_dt.timestamp()}"):
-                                    self.handle_slot_selection(slot)
+                                    self.handle_slot_selection(slot_dict)
                     
                     # Show appointment confirmation if available
                     if 'appointment_confirmed' in metadata and metadata['appointment_confirmed']:
