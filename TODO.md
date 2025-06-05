@@ -415,3 +415,4 @@ pydantic>=2.0.0
 - [x] Fixed post-confirmation slot offering issue (agent no longer offers more slots after user confirms)
 - [x] Fixed Streamlit method error by replacing non-existent `parse_candidate_time_preference` call
 - [x] Enhanced chat interface with clickable time slot selection buttons for better UX
+- [x] **MAJOR**: Replaced heuristic slot confirmation detection with intelligent LLM-based analysis (SchedulingAdvisor now uses CONFIRM_SLOT decision type with conversation context instead of error-prone string patterns)

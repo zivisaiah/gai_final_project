@@ -252,22 +252,6 @@ class CoreAgent:
             if decision == AgentDecision.SCHEDULE:
                 self.logger.info("Decision is SCHEDULE. Consulting SchedulingAdvisor for available slots.")
                 
-                # Check if the user is confirming a previously offered slot
-                recent_assistant_messages = [m for m in conversation.messages[-5:] if m["role"] == "assistant"]
-                has_offered_slots_recently = any("I found a few available time slots" in m.get("content", "") for m in recent_assistant_messages)
-                
-                # Check if the user message looks like a slot confirmation
-                slot_confirmation_indicators = [
-                    "would be great", "works for me", "that's perfect", "let's do", 
-                    "at ", "am", "pm", "o'clock", "sounds good", "yes", "that works"
-                ]
-                looks_like_confirmation = any(indicator.lower() in user_message.lower() for indicator in slot_confirmation_indicators)
-                
-                # If we recently offered slots and user seems to be confirming, don't offer more slots
-                if has_offered_slots_recently and looks_like_confirmation:
-                    self.logger.info("User appears to be confirming a previously offered slot. Not offering additional slots.")
-                    return decision, "User confirmed slot selection", agent_response
-                
                 # Use the entire conversation history for context
                 full_history = conversation.messages
                 # Corrected method call and arguments
@@ -282,7 +266,13 @@ class CoreAgent:
                     latest_message=user_message
                 )
 
-                if schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
+                # Handle different scheduling advisor decisions
+                if schedule_decision == SchedulingDecision.CONFIRM_SLOT:
+                    # User is confirming a previously offered slot - don't offer more slots
+                    self.logger.info("SchedulingAdvisor detected slot confirmation. Not offering additional slots.")
+                    return decision, f"Slot confirmation detected. Advisor reason: {schedule_reasoning}", agent_response
+                
+                elif schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
                     # We have slots, so let's format them proactively.
                     slot_text = "\n".join([f"- {datetime.fromisoformat(slot['datetime']).strftime('%A, %B %d at %I:%M %p')}" for slot in available_slots])
                     # The 'agent_response' from the LLM is a pre-confirmation. We append the slots to it.

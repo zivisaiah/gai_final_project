@@ -24,6 +24,7 @@ Analyze the message for scheduling intent with high accuracy:
 - Direct requests: "Let's schedule", "When can we meet?", "Book an interview"
 - Clear availability: "I'm free Monday", "Available next week", "Can do mornings"
 - Proceeding signals: "What's next?", "Ready to move forward", "Looking forward to next steps"
+- **SLOT CONFIRMATION**: "That works for me", "Friday at 2pm would be great", "I'll take the 9am slot", "Perfect, let's do Monday"
 
 **MODERATE SCHEDULING INTENT** (confidence 0.5-0.7):
 - Implied interest: "Would be great to connect", "Let's talk soon"
@@ -66,6 +67,11 @@ Determine whether to SCHEDULE or NOT_SCHEDULE based on:
 - Available slots match preferences
 - Conversation readiness
 
+**CONFIRM_SLOT Decision Criteria:**
+- User message references a specific time slot that was previously offered
+- Contains confirmation language ("works for me", "that's perfect", "let's do", specific time/date mentioned)
+- Candidate appears to be selecting from previously presented options
+
 **NOT_SCHEDULE Decision Criteria:**
 - Low scheduling intent (confidence < 0.5)
 - Missing essential candidate information
@@ -95,7 +101,7 @@ Your response must be structured JSON with this exact format:
     "exclusions": ["Wednesday"],
     "flexibility": "high"
   }},
-  "decision": "SCHEDULE",
+  "decision": "SCHEDULE|CONFIRM_SLOT|NOT_SCHEDULE",
   "reasoning": "comprehensive decision explanation",
   "suggested_slots": [
     {{
@@ -171,6 +177,27 @@ Your response must be structured JSON with this exact format:
                 {"datetime": "2024-01-14T09:00:00", "recruiter": "Alice Smith"}
             ],
             "response": "Excellent, Mike! I have availability that matches your preferences perfectly:\n\n**Tomorrow Afternoon:**\n• 2:00 PM with Alice Smith\n• 3:30 PM with Bob Johnson\n\n**Friday Morning:**\n• 9:00 AM with Alice Smith\n\nAll interviews are about 45 minutes. Which option works best for you?"
+        },
+        {
+            "conversation_context": {
+                "candidate_info": {"name": "Lisa", "experience": "4 years Python", "interest_level": "high"},
+                "latest_message": "Friday at 2pm would be perfect",
+                "availability_mentioned": True,
+                "message_count": 8,
+                "conversation_history": [
+                    {"role": "assistant", "content": "I have three available slots: Thursday 2pm, Friday 2pm, or Monday 10am"},
+                    {"role": "user", "content": "Friday at 2pm would be perfect"}
+                ]
+            },
+            "available_slots": [
+                {"datetime": "2024-01-19T14:00:00", "recruiter": "Sarah Wilson", "duration": 45}
+            ],
+            "decision": "CONFIRM_SLOT",
+            "reasoning": "User is specifically confirming the Friday 2pm slot that was previously offered. This is a clear slot confirmation rather than a new scheduling request.",
+            "suggested_slots": [
+                {"datetime": "2024-01-19T14:00:00", "recruiter": "Sarah Wilson"}
+            ],
+            "response": "Perfect! I'll book your interview for Friday, January 19th at 2:00 PM with Sarah Wilson. You'll receive a calendar invitation shortly with all the details."
         }
     ]
     
@@ -223,6 +250,7 @@ Which of these would work better for your schedule?"""
 - **Latest Message:** "{latest_message}"
 - **Message Count:** {message_count}
 - **Available Slots:** {available_slots}
+- **Conversation History:** {conversation_history}
 
 ## YOUR TASK:
 Analyze the latest message and provide a complete unified response covering:
@@ -300,7 +328,8 @@ IMPORTANT: Respond with valid JSON only, no other text."""
         latest_message: str,
         message_count: int,
         available_slots: List[Dict],
-        current_datetime: datetime = None
+        current_datetime: datetime = None,
+        conversation_history: List[Dict] = None
     ) -> str:
         """Generate unified scheduling decision prompt with context."""
         
@@ -317,12 +346,19 @@ IMPORTANT: Respond with valid JSON only, no other text."""
         current_dt = current_datetime or datetime.now()
         current_dt_str = current_dt.strftime("%Y-%m-%d %H:%M:%S")
         
+        # Format conversation history for context (last 5 messages for slot confirmation detection)
+        history_text = ""
+        if conversation_history:
+            recent_history = conversation_history[-5:]  # Last 5 messages
+            history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in recent_history])
+        
         return cls.SCHEDULING_DECISION_PROMPT.format(
             candidate_info=candidate_info,
             latest_message=latest_message,
             message_count=message_count,
             available_slots=slots_text,
-            current_datetime=current_dt_str
+            current_datetime=current_dt_str,
+            conversation_history=history_text
         )
     
     @classmethod

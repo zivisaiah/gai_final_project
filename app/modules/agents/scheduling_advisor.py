@@ -24,6 +24,7 @@ class SchedulingDecision(Enum):
     """Possible scheduling decisions."""
     SCHEDULE = "SCHEDULE"
     NOT_SCHEDULE = "NOT_SCHEDULE"
+    CONFIRM_SLOT = "CONFIRM_SLOT"  # User is confirming a previously offered slot
 
 
 class SchedulingAdvisor:
@@ -100,7 +101,8 @@ class SchedulingAdvisor:
                 latest_message=latest_message,
                 message_count=len(conversation_messages),
                 available_slots=available_slots,
-                current_datetime=reference_dt
+                current_datetime=reference_dt,
+                conversation_history=conversation_messages
             )
             
             # Get unified analysis from LLM
@@ -496,6 +498,8 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
             # Convert decision string to enum
             if decision_str == 'SCHEDULE':
                 decision = SchedulingDecision.SCHEDULE
+            elif decision_str == 'CONFIRM_SLOT':
+                decision = SchedulingDecision.CONFIRM_SLOT
             else:
                 decision = SchedulingDecision.NOT_SCHEDULE
             
