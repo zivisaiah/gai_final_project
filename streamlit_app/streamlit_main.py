@@ -366,7 +366,7 @@ class RecruitmentChatbot:
                 self.chat_interface.update_conversation_stage('scheduling')
             elif result['metadata'].get('appointment_confirmed'):
                 self.chat_interface.update_conversation_stage('completed')
-            elif result['metadata'].get('decision') == 'EXIT':
+            elif result['metadata'].get('decision') == 'END':
                 self.chat_interface.update_conversation_stage('ended')
             
             # Rerun to display new message
