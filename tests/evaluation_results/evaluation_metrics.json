@@ -1,0 +1,33 @@
+{
+  "CONTINUE": {
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1-score": 0.6666666666666666,
+    "support": 3.0
+  },
+  "END": {
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1-score": 0.6666666666666666,
+    "support": 4.0
+  },
+  "SCHEDULE": {
+    "precision": 1.0,
+    "recall": 0.6666666666666666,
+    "f1-score": 0.8,
+    "support": 3.0
+  },
+  "accuracy": 0.7,
+  "macro avg": {
+    "precision": 0.8333333333333334,
+    "recall": 0.7222222222222222,
+    "f1-score": 0.7111111111111111,
+    "support": 10.0
+  },
+  "weighted avg": {
+    "precision": 0.85,
+    "recall": 0.7,
+    "f1-score": 0.7066666666666667,
+    "support": 10.0
+  }
+}
