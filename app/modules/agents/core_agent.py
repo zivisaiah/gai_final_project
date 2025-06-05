@@ -90,10 +90,11 @@ class CoreAgent:
         """Initialize the Core Agent with LangChain components."""
         self.settings = get_settings()
         
-        # Initialize OpenAI client
+        # Initialize OpenAI client with Core Agent specific model
+        core_model = model_name or self.settings.get_core_agent_model()
         self.llm = ChatOpenAI(
             api_key=openai_api_key or self.settings.OPENAI_API_KEY,
-            model=model_name or self.settings.OPENAI_MODEL,
+            model=core_model,
             temperature=self.settings.OPENAI_TEMPERATURE,
             max_tokens=self.settings.OPENAI_MAX_TOKENS
         )
@@ -117,8 +118,7 @@ class CoreAgent:
         # Create the decision chain
         self._setup_decision_chain()
         
-        # Initialize ExitAdvisor
-        #self.exit_advisor = ExitAdvisor(model_name=model_name or self.settings.OPENAI_MODEL)
+        # Initialize ExitAdvisor with model configuration
         self.exit_advisor = ExitAdvisor()
     
     def _setup_decision_chain(self):

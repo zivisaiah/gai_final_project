@@ -24,7 +24,25 @@ class Settings(BaseSettings):
     
     # OpenAI API settings
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF")
+    
+    # Model configuration with fallback support
+    # Core Agent Model
+    CORE_AGENT_MODEL: str = os.getenv("CORE_AGENT_MODEL", "gpt-3.5-turbo")
+    
+    # Exit Advisor Model (fine-tuned if available, fallback to standard)
+    EXIT_ADVISOR_FINE_TUNED_MODEL: str = os.getenv("EXIT_ADVISOR_FINE_TUNED_MODEL", "")
+    EXIT_ADVISOR_FALLBACK_MODEL: str = os.getenv("EXIT_ADVISOR_FALLBACK_MODEL", "gpt-3.5-turbo")
+    
+    # Scheduling Advisor Model
+    SCHEDULING_ADVISOR_MODEL: str = os.getenv("SCHEDULING_ADVISOR_MODEL", "gpt-3.5-turbo")
+    
+    # Info Advisor Model (for future Phase 3)
+    INFO_ADVISOR_MODEL: str = os.getenv("INFO_ADVISOR_MODEL", "gpt-3.5-turbo")
+    
+    # Legacy support (deprecated - will be removed in future version)
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    
+    # Model parameters
     OPENAI_TEMPERATURE: float = float(os.getenv("OPENAI_TEMPERATURE", "0.7"))
     OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", "1000"))
     
@@ -67,13 +85,54 @@ class Settings(BaseSettings):
             return f"sqlite:///{data_dir}/recruitment.db"
         return v
     
+    def get_exit_advisor_model(self) -> str:
+        """Get Exit Advisor model with fallback logic."""
+        if self.EXIT_ADVISOR_FINE_TUNED_MODEL:
+            return self.EXIT_ADVISOR_FINE_TUNED_MODEL
+        return self.EXIT_ADVISOR_FALLBACK_MODEL
+    
+    def get_core_agent_model(self) -> str:
+        """Get Core Agent model."""
+        return self.CORE_AGENT_MODEL
+    
+    def get_scheduling_advisor_model(self) -> str:
+        """Get Scheduling Advisor model."""
+        return self.SCHEDULING_ADVISOR_MODEL
+    
+    def get_info_advisor_model(self) -> str:
+        """Get Info Advisor model."""
+        return self.INFO_ADVISOR_MODEL
+    
+    def is_using_fine_tuned_exit_advisor(self) -> bool:
+        """Check if using fine-tuned Exit Advisor model."""
+        return bool(self.EXIT_ADVISOR_FINE_TUNED_MODEL)
+    
     def get_openai_config(self) -> dict:
         """Get OpenAI configuration as dictionary."""
         return {
             "api_key": self.OPENAI_API_KEY,
-            "model": self.OPENAI_MODEL,
+            "model": self.OPENAI_MODEL,  # Legacy support
             "temperature": self.OPENAI_TEMPERATURE,
             "max_tokens": self.OPENAI_MAX_TOKENS
+        }
+    
+    def get_model_config(self, agent_type: str) -> dict:
+        """Get model configuration for specific agent type."""
+        model_map = {
+            "core_agent": self.get_core_agent_model(),
+            "exit_advisor": self.get_exit_advisor_model(),
+            "scheduling_advisor": self.get_scheduling_advisor_model(),
+            "info_advisor": self.get_info_advisor_model()
+        }
+        
+        model_name = model_map.get(agent_type, self.OPENAI_MODEL)
+        
+        return {
+            "api_key": self.OPENAI_API_KEY,
+            "model_name": model_name,
+            "temperature": self.OPENAI_TEMPERATURE,
+            "max_tokens": self.OPENAI_MAX_TOKENS,
+            "is_fine_tuned": model_name.startswith("ft:") if model_name else False
         }
     
     def get_database_config(self) -> dict:
@@ -118,16 +177,27 @@ def print_settings_summary():
     print("\n🔧 Phase 1 Configuration Summary:")
     print(f"   Environment: {settings.ENVIRONMENT}")
     print(f"   Debug Mode: {settings.DEBUG}")
-    print(f"   OpenAI Model: {settings.OPENAI_MODEL}")
+    
+    print(f"\n📝 Model Configuration:")
+    print(f"   Core Agent: {settings.get_core_agent_model()}")
+    print(f"   Exit Advisor: {settings.get_exit_advisor_model()}")
+    if settings.is_using_fine_tuned_exit_advisor():
+        print(f"   ✅ Using fine-tuned Exit Advisor model")
+    else:
+        print(f"   ⚠️  Using fallback Exit Advisor model (set EXIT_ADVISOR_FINE_TUNED_MODEL for fine-tuned)")
+    print(f"   Scheduling Advisor: {settings.get_scheduling_advisor_model()}")
+    print(f"   Info Advisor: {settings.get_info_advisor_model()}")
+    
+    print(f"\n🗄️ Infrastructure:")
     print(f"   Database: {settings.DATABASE_URL}")
     print(f"   Streamlit Port: {settings.STREAMLIT_SERVER_PORT}")
     print(f"   Max Conversation History: {settings.MAX_CONVERSATION_HISTORY}")
     print(f"   Scheduling Days Ahead: {settings.SCHEDULING_DAYS_AHEAD}")
     
     if not settings.OPENAI_API_KEY:
-        print("   ⚠️  WARNING: OPENAI_API_KEY not set!")
+        print("\n   ⚠️  WARNING: OPENAI_API_KEY not set!")
     else:
-        print(f"   ✅ OpenAI API Key: ...{settings.OPENAI_API_KEY[-4:]}")
+        print(f"\n   ✅ OpenAI API Key: ...{settings.OPENAI_API_KEY[-4:]}")
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ class ExitAdvisor:
     
     def __init__(
         self,
-        model_name: str = "ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF",
+        model_name: str = None,
         temperature: float = 0.1,
         memory: Optional[ConversationBufferMemory] = None
     ):
@@ -39,6 +39,16 @@ class ExitAdvisor:
             temperature: Model temperature (lower for more consistent decisions)
             memory: Optional conversation memory
         """
+        # Import settings here to avoid circular imports
+        from config.phase1_settings import settings
+        
+        # Use configuration-based model selection if not explicitly provided
+        if model_name is None:
+            model_name = settings.get_exit_advisor_model()
+            
+        self.model_name = model_name
+        self.is_fine_tuned = model_name.startswith("ft:") if model_name else False
+        
         self.llm = ChatOpenAI(
             model_name=model_name,
             temperature=temperature

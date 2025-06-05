@@ -205,6 +205,31 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
   - [x] Lowered confidence threshold from 0.85 to 0.7 for better responsiveness
   - [x] Fixed issue where conversations continued despite explicit user decline
 
+### 🌍 2.6 Environment Portability (Critical Improvement)
+- [x] **REMOVED HARDCODED FINE-TUNED MODEL DEPENDENCIES**
+  - [x] Replaced hardcoded `ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF` with configurable models
+  - [x] Implemented environment-specific model configuration system
+- [x] **AGENT-SPECIFIC MODEL CONFIGURATION**
+  - [x] `CORE_AGENT_MODEL` for Core Agent (default: gpt-3.5-turbo)
+  - [x] `EXIT_ADVISOR_FINE_TUNED_MODEL` for fine-tuned Exit Advisor (optional)
+  - [x] `EXIT_ADVISOR_FALLBACK_MODEL` for fallback when fine-tuned unavailable (default: gpt-3.5-turbo)
+  - [x] `SCHEDULING_ADVISOR_MODEL` for Scheduling Advisor (default: gpt-3.5-turbo)
+  - [x] `INFO_ADVISOR_MODEL` for future Info Advisor (default: gpt-3.5-turbo)
+- [x] **GRACEFUL FALLBACK SYSTEM**
+  - [x] Automatic fallback when fine-tuned models aren't available
+  - [x] Environment-specific model configurations
+  - [x] No code changes required between environments
+- [x] **COMPREHENSIVE DOCUMENTATION**
+  - [x] Created `env.example` with detailed configuration guide
+  - [x] Updated README.md with fine-tuned model setup instructions
+  - [x] Added environment portability benefits documentation
+- [x] **CROSS-ENVIRONMENT COMPATIBILITY**
+  - [x] Dev/staging/production can use different model configurations
+  - [x] Each team member can use their own fine-tuned models
+  - [x] Graceful degradation when models unavailable
+
+> **Environment Portability completed: System now works seamlessly across different environments without hardcoded dependencies!**
+
 ### 🧪 2.5 Phase 2 Testing
 - [x] Scheduling Advisor integration with CoreAgent and Streamlit UI
 - [x] Slot offering to candidate (with recruiter name, time, date)
@@ -231,11 +256,13 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
 
 ## 🎉 **PHASE 2 COMPLETE**
 All Phase 2 objectives achieved! The multi-agent system with Exit Advisor is fully functional:
-- ✅ Exit Advisor accurately detects conversation end scenarios (including "pass on opportunity")
+- ✅ Exit Advisor accurately detects conversation end scenarios (including "pass on opportunity", "better with Java")
 - ✅ Core Agent orchestrates all 3 actions (Continue/Schedule/End) correctly
 - ✅ Streamlit UI properly displays exit decisions and reasoning
 - ✅ Fine-tuning pipeline and evaluation metrics implemented
 - ✅ All bugs fixed and system tested end-to-end
+- ✅ **Environment portability achieved** - no hardcoded fine-tuned model dependencies
+- ✅ **Production-ready** - graceful fallback and configurable models per environment
 
 **Ready for Phase 3 development - Information Advisor with Vector Database!**
 

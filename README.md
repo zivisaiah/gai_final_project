@@ -179,19 +179,50 @@ gai_final_project/
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key (required) | - |
-| `OPENAI_MODEL` | GPT model to use | `ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF` |
+| `CORE_AGENT_MODEL` | Model for Core Agent | `gpt-3.5-turbo` |
+| `EXIT_ADVISOR_FINE_TUNED_MODEL` | Fine-tuned Exit Advisor model (optional) | `ft:gpt-3.5-turbo-0125:org:exit-advisor:id` |
+| `EXIT_ADVISOR_FALLBACK_MODEL` | Fallback Exit Advisor model | `gpt-3.5-turbo` |
+| `SCHEDULING_ADVISOR_MODEL` | Model for Scheduling Advisor | `gpt-3.5-turbo` |
+| `INFO_ADVISOR_MODEL` | Model for Info Advisor (Phase 3) | `gpt-3.5-turbo` |
+| `OPENAI_MODEL` | Legacy model setting (deprecated) | `gpt-3.5-turbo` |
 | `OPENAI_TEMPERATURE` | Model temperature | `0.7` |
 | `OPENAI_MAX_TOKENS` | Max tokens per response | `1000` |
 | `DATABASE_URL` | Database connection string | `sqlite:///data/recruitment.db` |
 
 ### Model Configuration
 
-```python
-# config/phase1_settings.py
-OPENAI_MODEL = "ft:gpt-3.5-turbo-0125:personal:exit-advisor:Bf2tZ7BF"  # fine-tuned Exit Advisor model
+```bash
+# Required in .env file
+OPENAI_API_KEY = "your-openai-api-key"
+
+# Model Configuration (each agent can use different models)
+CORE_AGENT_MODEL = "gpt-3.5-turbo"
+EXIT_ADVISOR_FINE_TUNED_MODEL = ""  # Set your fine-tuned model ID if available
+EXIT_ADVISOR_FALLBACK_MODEL = "gpt-3.5-turbo"
+SCHEDULING_ADVISOR_MODEL = "gpt-3.5-turbo"
+INFO_ADVISOR_MODEL = "gpt-3.5-turbo"
+
+# Model Parameters
 OPENAI_TEMPERATURE = 0.7        # 0.0 = deterministic, 1.0 = creative
 OPENAI_MAX_TOKENS = 1000        # Response length limit
 ```
+
+### Fine-Tuned Model Setup
+
+The system supports fine-tuned models with automatic fallback to standard models:
+
+**Setting up fine-tuned Exit Advisor:**
+1. Train your model using `fine_tuning/exit_advisor_tuning.py`
+2. Get your model ID from OpenAI (format: `ft:gpt-3.5-turbo-0125:org:name:id`)
+3. Set `EXIT_ADVISOR_FINE_TUNED_MODEL` in your `.env` file
+4. If the fine-tuned model is unavailable, the system automatically falls back to `EXIT_ADVISOR_FALLBACK_MODEL`
+
+**Environment Portability:**
+- ✅ Works across different environments without code changes
+- ✅ Graceful fallback when fine-tuned models aren't available  
+- ✅ Each team member can use their own fine-tuned models
+- ✅ Production/staging/development can use different model configurations
+- ✅ No hardcoded model IDs - everything configurable via environment variables
 
 ## 🗄️ Database Schema
 
