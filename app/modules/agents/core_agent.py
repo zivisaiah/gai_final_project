@@ -287,9 +287,12 @@ class CoreAgent:
                     return decision, final_reasoning, flexibility_response
                 
                 else:
-                    # Low scheduling intent - continue conversation normally
+                    # Low scheduling intent - OVERRIDE response to avoid scheduling promises
+                    # The original agent_response may contain scheduling promises, so we need to provide
+                    # a response that continues the conversation without making empty promises
+                    override_response = await self._generate_continue_response(conversation, user_message, schedule_reasoning)
                     final_reasoning = f"Low scheduling intent, continuing conversation. Advisor reason: {schedule_reasoning}"
-                    return decision, final_reasoning, agent_response
+                    return AgentDecision.CONTINUE, final_reasoning, override_response
 
             # For CONTINUE or END, return the original parsed response
             return decision, reasoning, agent_response
@@ -437,6 +440,54 @@ If none of these times work, we may need to explore other options or schedule fo
             self.logger.error(f"Error offering alternatives: {e}")
             return "I'm having trouble accessing our calendar. Let me check with our scheduling team and get back to you."
 
+    async def _generate_continue_response(
+        self,
+        conversation: ConversationState,
+        user_message: str,
+        schedule_reasoning: str
+    ) -> str:
+        """
+        Generate a continuation response that doesn't make scheduling promises.
+        Used when CoreAgent wants to SCHEDULE but SchedulingAdvisor says NOT_SCHEDULE.
+        """
+        candidate_info = conversation.candidate_info
+        
+        # Check if we have basic candidate info
+        has_name = candidate_info.get("name")
+        has_experience = candidate_info.get("experience") == "mentioned"
+        has_interest = candidate_info.get("interest_level") == "high"
+        
+        # If we have name and interest but lack scheduling intent, ask for availability
+        if has_name and has_interest:
+            return f"""That's great to hear, {has_name}! Your background sounds like it could be a good fit for our Python developer position.
+
+To move forward, I'd like to understand your availability better. Are you generally available during business hours (9 AM - 5 PM) on weekdays? Or do you have specific time preferences for a brief interview call?
+
+This will help me check what slots might work best for both of us."""
+        
+        # If we have interest but no name, gather basic info first
+        elif has_interest and not has_name:
+            return """That's wonderful to hear about your interest and experience! 
+
+Before we discuss next steps, could you share your name? And are you currently available for interviews, or do you have any specific timing preferences I should know about?"""
+        
+        # If we have name but need to gauge interest level
+        elif has_name and not has_interest:
+            return f"""Thanks for sharing that information, {has_name}! 
+
+I'd love to learn more about what you're looking for in your next role. What aspects of Python development are you most passionate about? And are you actively looking for new opportunities right now?"""
+        
+        # Default: gather basic information
+        else:
+            return """Thanks for sharing your background! Your Python experience sounds interesting.
+
+To better understand if this might be a good fit, could you tell me:
+1. Your name
+2. Whether you're currently looking for new opportunities
+3. What your general availability looks like for a brief discussion about the role
+
+This will help me determine the best next steps for us."""
+
     async def _trigger_scheduling_exit(self, conversation: ConversationState, schedule_reasoning: str) -> str:
         """Trigger exit conversation when scheduling repeatedly fails."""
         self.logger.info("Triggering exit conversation due to repeated scheduling failures")
@@ -490,8 +541,14 @@ Thank you for your time, and I wish you the best in your job search!"""
             
         except Exception as e:
             self.logger.error(f"Error in LLM candidate info extraction: {e}")
-            # Fallback to keyword method for resilience, though it's deprecated
-            return Phase1Prompts.extract_candidate_info(conversation.messages)
+            # Return default values instead of falling back to deprecated keyword method
+            return {
+                "name": None,
+                "experience": "unknown",
+                "current_status": None,
+                "interest_level": "unknown",
+                "availability_mentioned": False
+            }
 
     def start_conversation(self, conversation_id: str = None) -> Tuple[str, ConversationState]:
         """Start a new conversation with initial greeting."""

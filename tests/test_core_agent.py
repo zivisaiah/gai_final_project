@@ -222,8 +222,8 @@ class TestPrompts:
         assert "Tell me more!" in decision_prompt
         assert "Yes, I'm very interested!" in decision_prompt
     
-    def test_candidate_info_extraction(self):
-        """Test candidate information extraction."""
+    def test_candidate_info_extraction_prompt(self):
+        """Test candidate information extraction prompt generation."""
         prompts = Phase1Prompts()
         
         messages = [
@@ -231,12 +231,15 @@ class TestPrompts:
             {"role": "user", "content": "I'm very excited about this opportunity and available next week"}
         ]
         
-        info = prompts.extract_candidate_info(messages)
+        # Test that the extraction prompt is properly generated
+        extraction_prompt = prompts.get_candidate_info_extraction_prompt(messages)
         
-        assert info["name"] == "Alex"
-        assert info["experience"] == "mentioned"
-        assert info["interest_level"] == "high"
-        assert info["availability_mentioned"] == True
+        assert "Alex" in extraction_prompt
+        assert "5 years of Python" in extraction_prompt  
+        assert "excited" in extraction_prompt
+        assert "available next week" in extraction_prompt
+        assert "EXTRACTION TASK" in extraction_prompt
+        assert "RESPONSE FORMAT" in extraction_prompt
     
     def test_few_shot_examples(self):
         """Test few-shot example structure."""
@@ -366,8 +369,11 @@ if __name__ == "__main__":
         # Test ConversationState
         print("\n✅ Testing ConversationState...")
         conv_state = ConversationState("test")
-        conv_state.add_message("user", "I'm John, a Python developer with 5 years experience")
-        print(f"   Extracted info: {conv_state.candidate_info}")
+        # Note: add_message now requires an agent parameter for LLM extraction
+        # For basic testing, we'll just check the state structure
+        print(f"   Initial candidate info: {conv_state.candidate_info}")
+        print(f"   Conversation ID: {conv_state.conversation_id}")
+        print(f"   Message count: {len(conv_state.messages)}")
         
         # Test Prompts
         print("\n✅ Testing Prompts...")

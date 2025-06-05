@@ -166,8 +166,8 @@ class SchedulingAdvisor:
                 all_slots.append(slot_dict)
             
             if not preferred_datetimes:
-                # No specific preferences, return next few available slots
-                return all_slots[:5]  # Return up to 5 slots
+                # No specific preferences, return diversified available slots
+                return self._diversify_slot_selection(all_slots)
             
             # Match slots with candidate preferences
             matched_slots = []
@@ -191,15 +191,115 @@ class SchedulingAdvisor:
             # Sort matched slots by preference match and time difference
             matched_slots.sort(key=lambda x: x.get('time_difference', 999))
             
-            # If we have good matches, return them; otherwise return general available slots
+            # If we have good matches, return them; otherwise return diversified available slots
             if matched_slots:
-                return matched_slots[:3]  # Top 3 matches
+                return self._diversify_slot_selection(matched_slots, max_slots=3)
             else:
-                return all_slots[:3]  # Next 3 available slots
+                return self._diversify_slot_selection(all_slots, max_slots=3)
                 
         except Exception as e:
             self.logger.error(f"Error getting available slots: {e}")
             return []
+
+    def _diversify_slot_selection(self, available_slots: List[Dict], max_slots: int = 3) -> List[Dict]:
+        """
+        Select diversified slots across different days and times.
+        
+        Args:
+            available_slots: All available slots to choose from
+            max_slots: Maximum number of slots to return
+            
+        Returns:
+            List of diversified slots across different days and times
+        """
+        if not available_slots:
+            return []
+        
+        if len(available_slots) <= max_slots:
+            return available_slots
+        
+        try:
+            selected_slots = []
+            used_days = set()
+            used_time_blocks = set()  # Track morning/afternoon/evening blocks
+            
+            # Sort slots by datetime to start with earliest available
+            sorted_slots = sorted(available_slots, key=lambda x: x['datetime'])
+            
+            # PHASE 1: Prioritize different days first
+            for slot in sorted_slots:
+                if len(selected_slots) >= max_slots:
+                    break
+                
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                slot_date = slot_dt.date()
+                slot_hour = slot_dt.hour
+                
+                # Determine time block (morning: 6-12, afternoon: 12-17, evening: 17-22)
+                if 6 <= slot_hour < 12:
+                    time_block = 'morning'
+                elif 12 <= slot_hour < 17:
+                    time_block = 'afternoon'
+                else:
+                    time_block = 'evening'
+                
+                # ONLY select slots on new days in this phase
+                if slot_date not in used_days:
+                    selected_slots.append(slot)
+                    used_days.add(slot_date)
+                    used_time_blocks.add(f"{slot_date}_{time_block}")
+                    self.logger.debug(f"Selected slot for new day: {slot_date} at {slot_hour}:00 ({time_block})")
+            
+            # PHASE 2: If we still need slots, add different time blocks on same days
+            if len(selected_slots) < max_slots:
+                for slot in sorted_slots:
+                    if len(selected_slots) >= max_slots:
+                        break
+                    
+                    if slot in selected_slots:
+                        continue  # Skip already selected slots
+                    
+                    slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                    slot_date = slot_dt.date()
+                    slot_hour = slot_dt.hour
+                    
+                    # Determine time block
+                    if 6 <= slot_hour < 12:
+                        time_block = 'morning'
+                    elif 12 <= slot_hour < 17:
+                        time_block = 'afternoon'
+                    else:
+                        time_block = 'evening'
+                    
+                    day_time_key = f"{slot_date}_{time_block}"
+                    
+                    # Add if it's a new time block (even on existing days)
+                    if day_time_key not in used_time_blocks:
+                        selected_slots.append(slot)
+                        used_time_blocks.add(day_time_key)
+                        self.logger.debug(f"Selected slot for new time block: {slot_date} at {slot_hour}:00 ({time_block})")
+            
+            # PHASE 3: If we still need more slots, add any remaining ones
+            if len(selected_slots) < max_slots:
+                for slot in sorted_slots:
+                    if slot not in selected_slots and len(selected_slots) < max_slots:
+                        selected_slots.append(slot)
+            
+            self.logger.info(f"Diversified slot selection: {len(selected_slots)} slots across {len(used_days)} days")
+            
+            # Log the diversity for debugging
+            for i, slot in enumerate(selected_slots, 1):
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                day_name = slot_dt.strftime('%A')
+                time_str = slot_dt.strftime('%I:%M %p')
+                self.logger.debug(f"  Slot {i}: {day_name} {slot_dt.date()} at {time_str}")
+            
+            return selected_slots
+            
+        except Exception as e:
+            self.logger.error(f"Error in slot diversification: {e}")
+            # Fallback to simple selection
+            return available_slots[:max_slots]
     
     def _parse_scheduling_response(
         self,
@@ -224,8 +324,8 @@ class SchedulingAdvisor:
                 if decision == SchedulingDecision.SCHEDULE and slots_match:
                     slots_text = slots_match.group(1).strip()
                     if slots_text and slots_text != "[]" and "empty" not in slots_text.lower():
-                        # Use the top available slots if LLM suggested scheduling
-                        suggested_slots = available_slots[:3]
+                        # Use diversified available slots if LLM suggested scheduling
+                        suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
                 
                 return decision, reasoning, suggested_slots, response_message
             
@@ -233,7 +333,7 @@ class SchedulingAdvisor:
             if any(keyword in response_text.lower() for keyword in ['schedule', 'appointment', 'available slots']):
                 decision = SchedulingDecision.SCHEDULE
                 reasoning = "Response indicates scheduling intent"
-                suggested_slots = available_slots[:3]
+                suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
             else:
                 decision = SchedulingDecision.NOT_SCHEDULE
                 reasoning = "Continuing conversation to gather more information"
@@ -590,7 +690,8 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
                 }
                 validated.append(validated_slot)
         
-        return validated[:3]  # Limit to 3 suggestions
+        # Apply diversification to validated slots as well
+        return self._diversify_slot_selection(validated, max_slots=3)
     
     def _validate_unified_decision(
         self,
@@ -644,7 +745,7 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
         if 'SCHEDULE' in response_text.upper():
             decision = SchedulingDecision.SCHEDULE
             reasoning = "LLM indicated scheduling (fallback parsing)"
-            suggested_slots = available_slots[:3]  # First 3 available
+            suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
         else:
             decision = SchedulingDecision.NOT_SCHEDULE
             reasoning = "LLM indicated not to schedule (fallback parsing)"

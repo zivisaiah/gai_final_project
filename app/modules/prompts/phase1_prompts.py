@@ -39,7 +39,14 @@ Your goal is to transition the conversation to the scheduling phase.
 Choose when:
 - Candidate has expressed clear interest and you have their basic info (name, experience).
 - Candidate has indicated availability for an interview (e.g., "I'm free next week").
-- **CRITICAL**: When you decide to SCHEDULE, your `response` in the JSON should be a message that *proactively offers to find time slots*. For example: "That's great to hear, Ziv! Let me check our calendar for available interview slots for you." The system will then automatically provide the slots in the next turn.
+
+**CRITICAL SCHEDULING RESPONSE RULES:**
+- **NEVER make scheduling promises without delivery**: Do NOT use phrases like "Let me check our calendar", "I'll find some slots", "I'll get back to you with options", or "Let me see what's available"
+- **NEVER promise future actions**: Avoid "I will", "Let me", "I'll check", "I'll look for", "I'll find"
+- **DO acknowledge readiness**: Simply acknowledge their interest and readiness to schedule
+- **DO indicate system will help**: Say the system will help them find suitable times
+- **Example GOOD response**: "That's great to hear! Based on your background and interest, I'd like to help you schedule an interview."
+- **Example BAD responses**: "Let me check our calendar", "I'll find some slots for you", "I'll get back to you with options"
 
 ### END:
 Choose when the conversation should conclude.
@@ -51,6 +58,16 @@ Choose when the conversation should conclude.
 - Concise but informative
 - Encouraging and positive
 - CRITICAL: Your entire response must be a single, valid JSON object and nothing else.
+
+## CRITICAL: NEVER MAKE EMPTY PROMISES
+**ABSOLUTELY FORBIDDEN**: Never make scheduling promises that won't be immediately fulfilled. Examples of FORBIDDEN phrases:
+- "Let me check our calendar"
+- "I'll find some slots for you" 
+- "I'll get back to you with options"
+- "Let me see what's available"
+- "I'll look for available times"
+
+If you decide to SCHEDULE, simply acknowledge readiness without promising specific future actions. The system will handle slot provision automatically.
 
 ## Key Information to Gather:
 - Candidate's name
@@ -88,7 +105,7 @@ Choose when the conversation should conclude.
             ],
             "decision": "SCHEDULE",
             "reasoning": "Candidate has provided name, experience details, expressed strong interest, and confirmed availability. Perfect time to schedule.",
-            "response": "Excellent! Let me find some available time slots for you. I'll check our recruiters' calendars and get back to you with a few options for next week."
+            "response": "Excellent Sarah! Your Django and Flask experience is exactly what we're looking for, and I'm glad you're available next week. Let me find some time slots that work with your schedule."
         },
         {
             "conversation_history": [
@@ -106,7 +123,7 @@ Choose when the conversation should conclude.
             ],
             "decision": "SCHEDULE",
             "reasoning": "Candidate provided name, relevant experience, expressed enthusiasm, and directly asked to schedule. Clear scheduling moment.",
-            "response": "Fantastic Alex! Your 5 years of Python/Django experience is exactly what we're looking for. Let me find some interview slots that work for your schedule."
+            "response": "Fantastic Alex! Your 5 years of Python/Django experience is exactly what we're looking for. I'd be happy to help you schedule an interview."
         },
         {
             "conversation_history": [
@@ -115,7 +132,16 @@ Choose when the conversation should conclude.
             ],
             "decision": "SCHEDULE",
             "reasoning": "Candidate has confirmed their name, interest, and has given a strong, open-ended signal of availability. This is the perfect time to be proactive and move to scheduling.",
-            "response": "That's perfect, Ziv! I'll go ahead and check for some open slots for you during working hours and come back with a few options."
+            "response": "That's perfect, Ziv! Since you're available during working hours, I'd like to help you schedule an interview that fits your schedule."
+        },
+        {
+            "conversation_history": [
+                {"role": "assistant", "content": "Great to hear about your Python experience! What kind of projects have you been working on?"},
+                {"role": "user", "content": "I'm John, I've been building web apps with Django for 4 years and I'm really interested in this position. When can we schedule something?"}
+            ],
+            "decision": "SCHEDULE",
+            "reasoning": "Candidate provided name, experience, expressed strong interest, and directly asked to schedule. This is a clear scheduling moment.",
+            "response": "Excellent John! Your Django experience sounds perfect for this role. I'd be happy to help you schedule an interview."
         }
     ]
     
@@ -291,38 +317,7 @@ Respond with ONLY valid JSON:
 
 Analyze carefully and respond with accurate JSON only."""
 
-    @classmethod  
-    def extract_candidate_info(cls, conversation_history: List[Dict]) -> Dict:
-        """Extract candidate information using LLM analysis (deprecated keyword method)."""
-        # This method is now deprecated but kept for backward compatibility
-        # The new LLM-based extraction should be used instead
-        
-        info = {
-            "name": None,
-            "experience": "unknown",  # Changed from None for compatibility
-            "current_status": None,
-            "interest_level": "unknown",
-            "availability_mentioned": False
-        }
-        
-        # Simple fallback analysis for systems that still call this method
-        full_conversation = " ".join([msg['content'] for msg in conversation_history if msg['role'] == 'user'])
-        lower_conv = full_conversation.lower()
-        
-        # Basic interest detection
-        positive_terms = ["interested", "great", "perfect", "love", "excited", "yes", "definitely"]
-        negative_terms = ["not interested", "no thanks", "busy", "have a job", "pass"]
-        
-        if any(term in lower_conv for term in positive_terms):
-            info["interest_level"] = "medium"  # Conservative estimate
-        elif any(term in lower_conv for term in negative_terms):
-            info["interest_level"] = "low"
-        
-        # Basic availability detection
-        if any(term in lower_conv for term in ["available", "schedule", "interview", "time", "week", "when"]):
-            info["availability_mentioned"] = True
-        
-        return info
+
     
     @classmethod
     def get_candidate_info_extraction_prompt(cls, conversation_history: List[Dict]) -> str:

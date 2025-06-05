@@ -1,12 +1,22 @@
 from typing import Dict, List, Optional, Tuple, Any
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 try:
-    from langchain_community.chat_models import ChatOpenAI
+    from langchain_openai import ChatOpenAI
 except ImportError:
     # Fallback for older langchain versions
-    from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+    try:
+        from langchain_community.chat_models import ChatOpenAI
+    except ImportError:
+        from langchain.chat_models import ChatOpenAI
+
+try:
+    from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+except ImportError:
+    # Fallback for older langchain versions
+    from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+    from langchain.schema import SystemMessage, HumanMessage, AIMessage
+
 from langchain.memory import ConversationBufferMemory
 from langchain.tools import Tool
 from pydantic import BaseModel

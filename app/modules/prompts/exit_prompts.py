@@ -1,8 +1,13 @@
 """Exit Advisor prompts and examples for conversation end detection."""
 
 from typing import List, Dict
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+try:
+    from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+except ImportError:
+    # Fallback for older langchain versions
+    from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+    from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
 # System prompt for exit detection
 EXIT_SYSTEM_PROMPT = """You are an Exit Advisor agent specialized in detecting when a conversation should end.

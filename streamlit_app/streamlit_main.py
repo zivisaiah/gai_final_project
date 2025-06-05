@@ -341,53 +341,52 @@ class RecruitmentChatbot:
         # Render chat interface
         user_input = self.chat_interface.render()
         
-        # Process user input if provided
-        if user_input:
-            # Check if this is a slot selection
-            if (st.session_state.scheduling_context.get('selected_slot') and 
-                not st.session_state.scheduling_context.get('appointment_confirmed')):
-                
-                # Handle slot selection
-                selected_slot = st.session_state.scheduling_context['selected_slot']
-                booking_result = self.handle_slot_selection(selected_slot)
-                
-                # Add confirmation message
-                if booking_result.get('appointment_confirmed'):
-                    confirmation_msg = booking_result.get('confirmation_message', 
-                                                        'Your interview has been scheduled successfully!')
-                    self.chat_interface.add_assistant_message(
-                        confirmation_msg,
-                        booking_result
-                    )
-                else:
-                    error_msg = f"Sorry, there was an error booking your appointment: {booking_result.get('appointment_error', 'Unknown error')}"
-                    self.chat_interface.add_assistant_message(error_msg)
-                
-                # Clear the selected slot
-                st.session_state.scheduling_context['selected_slot'] = None
-                st.rerun()
+        # Check if this is a slot selection (PRIORITY: Handle slot selection regardless of user input)
+        if (st.session_state.scheduling_context.get('selected_slot') and 
+            not st.session_state.scheduling_context.get('appointment_confirmed')):
             
-            else:
-                # Process regular user message
-                with st.spinner("🤖 Thinking..."):
-                    result = self.process_user_message(user_input)
-                
-                # Add assistant response
+            # Handle slot selection
+            selected_slot = st.session_state.scheduling_context['selected_slot']
+            booking_result = self.handle_slot_selection(selected_slot)
+            
+            # Add confirmation message
+            if booking_result.get('appointment_confirmed'):
+                confirmation_msg = booking_result.get('confirmation_message', 
+                                                    'Your interview has been scheduled successfully!')
                 self.chat_interface.add_assistant_message(
-                    result['response'],
-                    result['metadata']
+                    confirmation_msg,
+                    booking_result
                 )
-                
-                # Update conversation stage based on decision
-                if result['metadata'].get('decision') == 'SCHEDULE':
-                    self.chat_interface.update_conversation_stage('scheduling')
-                elif result['metadata'].get('appointment_confirmed'):
-                    self.chat_interface.update_conversation_stage('completed')
-                elif result['metadata'].get('decision') == 'EXIT':
-                    self.chat_interface.update_conversation_stage('ended')
-                
-                # Rerun to display new message
-                st.rerun()
+            else:
+                error_msg = f"Sorry, there was an error booking your appointment: {booking_result.get('appointment_error', 'Unknown error')}"
+                self.chat_interface.add_assistant_message(error_msg)
+            
+            # Clear the selected slot
+            st.session_state.scheduling_context['selected_slot'] = None
+            st.rerun()
+        
+        # Process user input if provided
+        elif user_input:
+            # Process regular user message
+            with st.spinner("🤖 Thinking..."):
+                result = self.process_user_message(user_input)
+            
+            # Add assistant response
+            self.chat_interface.add_assistant_message(
+                result['response'],
+                result['metadata']
+            )
+            
+            # Update conversation stage based on decision
+            if result['metadata'].get('decision') == 'SCHEDULE':
+                self.chat_interface.update_conversation_stage('scheduling')
+            elif result['metadata'].get('appointment_confirmed'):
+                self.chat_interface.update_conversation_stage('completed')
+            elif result['metadata'].get('decision') == 'EXIT':
+                self.chat_interface.update_conversation_stage('ended')
+            
+            # Rerun to display new message
+            st.rerun()
 
 
 def main():
