@@ -16,7 +16,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from app.modules.prompts.scheduling_prompts import SchedulingPrompts
-from app.modules.utils.datetime_parser import DateTimeParser, parse_scheduling_intent
+from app.modules.utils.datetime_parser import DateTimeParser
 from app.modules.database.sql_manager import SQLManager
 from config.phase1_settings import get_settings
 
@@ -81,7 +81,7 @@ class SchedulingAdvisor:
         reference_datetime: datetime = None
     ) -> Tuple[SchedulingDecision, str, List[Dict], str]:
         """
-        Make a scheduling decision based on conversation context and available slots.
+        Make a unified scheduling decision with integrated intent detection and time parsing.
         
         Args:
             candidate_info: Information about the candidate
@@ -93,51 +93,40 @@ class SchedulingAdvisor:
             Tuple of (decision, reasoning, suggested_slots, response_message)
         """
         try:
-            # Parse scheduling intent from the latest message
-            scheduling_intent = parse_scheduling_intent(latest_message, reference_datetime)
+            reference_dt = reference_datetime or datetime.now()
             
-            # Get available time slots based on parsed intent
-            available_slots = self._get_available_slots(
-                scheduling_intent.get('parsed_datetimes', []),
-                reference_datetime or datetime.now()
-            )
+            # Get ALL available slots in the next 2 weeks (LLM will do the matching)
+            available_slots = self._get_all_available_slots(reference_dt, 14)
             
-            # Prepare context for the LLM
-            scheduling_context = {
-                "candidate_info": candidate_info,
-                "latest_message": latest_message,
-                "message_count": len(conversation_messages),
-                "availability_mentioned": scheduling_intent.get('has_scheduling_intent', False),
-                "available_slots": available_slots
-            }
-            
-            # Generate decision prompt
+            # Generate unified decision prompt
             decision_prompt = self.prompts.get_decision_prompt(
                 candidate_info=candidate_info,
                 latest_message=latest_message,
                 message_count=len(conversation_messages),
-                availability_mentioned=scheduling_intent.get('has_scheduling_intent', False),
-                available_slots=available_slots
+                available_slots=available_slots,
+                current_datetime=reference_dt
             )
             
-            # Get decision from LLM
+            # Get unified analysis from LLM
             response = self.scheduling_chain.invoke({"scheduling_input": decision_prompt})
             response_text = response.content
             
-            # Parse the LLM response
-            decision, reasoning, suggested_slots, response_message = self._parse_scheduling_response(
+            # Parse the unified LLM response
+            decision, reasoning, suggested_slots, response_message = self._parse_unified_response(
                 response_text, available_slots
             )
             
-            # Validate and enhance the decision
-            decision = self._validate_scheduling_decision(decision, candidate_info, scheduling_intent)
+            # Apply validation rules if needed
+            decision = self._validate_unified_decision(decision, candidate_info, latest_message)
             
-            self.logger.info(f"Scheduling decision: {decision.value}, Reasoning: {reasoning}")
+            self.logger.info(f"Unified scheduling decision: {decision.value}")
+            self.logger.info(f"Intent confidence: {getattr(self, '_last_intent_confidence', 'N/A')}")
+            self.logger.info(f"Reasoning: {reasoning}")
             
             return decision, reasoning, suggested_slots, response_message
             
         except Exception as e:
-            self.logger.error(f"Error in scheduling decision: {e}")
+            self.logger.error(f"Error in unified scheduling decision: {e}")
             return self._fallback_scheduling_decision(candidate_info, latest_message)
     
     def _get_available_slots(
@@ -420,13 +409,224 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
                 'recruiter_count': 0
             }
     
+    def _get_all_available_slots(
+        self,
+        reference_datetime: datetime,
+        days_ahead: int = 14
+    ) -> List[Dict]:
+        """
+        Get all available time slots for LLM to analyze and match.
+        
+        Args:
+            reference_datetime: Reference time for searching
+            days_ahead: How many days ahead to search
+            
+        Returns:
+            List of all available time slots
+        """
+        try:
+            # Define search window
+            start_date = reference_datetime.date()
+            end_date = start_date + timedelta(days=days_ahead)
+            
+            # Get available slots from database
+            all_slots_raw = self.sql_manager.get_available_slots(start_date, end_date)
+            
+            # Convert AvailableSlotResponse objects to dictionaries for LLM analysis
+            all_slots = []
+            for slot in all_slots_raw:
+                slot_dict = {
+                    'id': slot.id,
+                    'datetime': datetime.combine(slot.slot_date, slot.start_time).isoformat(),
+                    'recruiter': slot.recruiter.name if slot.recruiter else 'Our team',
+                    'recruiter_id': slot.recruiter_id,
+                    'is_available': slot.is_available,
+                    'timezone': slot.timezone,
+                    'duration': 45  # Default interview duration
+                }
+                all_slots.append(slot_dict)
+            
+            return all_slots
+            
+        except Exception as e:
+            self.logger.error(f"Error getting available slots: {e}")
+            return []
+
+    def _parse_unified_response(
+        self,
+        response_text: str,
+        available_slots: List[Dict]
+    ) -> Tuple[SchedulingDecision, str, List[Dict], str]:
+        """
+        Parse the unified LLM response containing intent analysis, preferences, and decision.
+        
+        Args:
+            response_text: Raw LLM response text
+            available_slots: Available slots for validation
+            
+        Returns:
+            Tuple of (decision, reasoning, suggested_slots, response_message)
+        """
+        try:
+            # Clean response text and extract JSON
+            response_text = response_text.strip()
+            
+            # Remove markdown code blocks if present
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0].strip()
+            elif '```' in response_text:
+                response_text = response_text.split('```')[1].split('```')[0].strip()
+            
+            # Look for JSON object in the response
+            import re
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            # Parse JSON response
+            response_data = json.loads(response_text)
+            
+            # Extract components
+            intent_analysis = response_data.get('intent_analysis', {})
+            time_preferences = response_data.get('time_preferences', {})
+            decision_str = response_data.get('decision', 'NOT_SCHEDULE')
+            reasoning = response_data.get('reasoning', 'No reasoning provided')
+            suggested_slots = response_data.get('suggested_slots', [])
+            response_message = response_data.get('response_message', 'Let me know how I can help you further.')
+            
+            # Store intent confidence for logging
+            self._last_intent_confidence = intent_analysis.get('confidence', 0.0)
+            
+            # Convert decision string to enum
+            if decision_str == 'SCHEDULE':
+                decision = SchedulingDecision.SCHEDULE
+            else:
+                decision = SchedulingDecision.NOT_SCHEDULE
+            
+            # Validate and enhance suggested slots
+            validated_slots = self._validate_suggested_slots(suggested_slots, available_slots)
+            
+            self.logger.info(f"Intent analysis: {intent_analysis}")
+            self.logger.info(f"Time preferences: {time_preferences}")
+            self.logger.info(f"Suggested {len(validated_slots)} slots")
+            
+            return decision, reasoning, validated_slots, response_message
+            
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            self.logger.error(f"Error parsing unified response: {e}")
+            self.logger.error(f"Raw response (first 500 chars): {response_text[:500]}")
+            
+            # Fallback to simple parsing
+            return self._fallback_response_parsing(response_text, available_slots)
+    
+    def _validate_suggested_slots(
+        self,
+        suggested_slots: List[Dict],
+        available_slots: List[Dict]
+    ) -> List[Dict]:
+        """
+        Validate that suggested slots exist in available slots and format them properly.
+        
+        Args:
+            suggested_slots: Slots suggested by LLM
+            available_slots: Actually available slots
+            
+        Returns:
+            List of validated and formatted slots
+        """
+        validated = []
+        
+        # Create lookup for available slots
+        available_lookup = {slot['datetime']: slot for slot in available_slots}
+        
+        for suggested in suggested_slots:
+            suggested_dt = suggested.get('datetime', '')
+            
+            # Check if suggested slot exists in available slots
+            if suggested_dt in available_lookup:
+                available_slot = available_lookup[suggested_dt]
+                validated_slot = {
+                    'id': available_slot['id'],
+                    'datetime': suggested_dt,
+                    'recruiter': suggested.get('recruiter', available_slot['recruiter']),
+                    'recruiter_id': available_slot['recruiter_id'],
+                    'duration': available_slot.get('duration', 45),
+                    'match_reason': suggested.get('match_reason', 'Selected for you'),
+                    'is_available': True
+                }
+                validated.append(validated_slot)
+        
+        return validated[:3]  # Limit to 3 suggestions
+    
+    def _validate_unified_decision(
+        self,
+        decision: SchedulingDecision,
+        candidate_info: Dict,
+        latest_message: str
+    ) -> SchedulingDecision:
+        """
+        Apply final validation rules to the unified decision.
+        
+        Args:
+            decision: LLM's decision
+            candidate_info: Candidate information
+            latest_message: Latest user message
+            
+        Returns:
+            Validated decision
+        """
+        # Override to NOT_SCHEDULE if essential info is missing
+        if (decision == SchedulingDecision.SCHEDULE and 
+            not candidate_info.get("name") and
+            candidate_info.get("interest_level") != "high"):
+            
+            self.logger.info("Overriding SCHEDULE to NOT_SCHEDULE - missing essential candidate info")
+            return SchedulingDecision.NOT_SCHEDULE
+        
+        # Check for clear rejection signals
+        rejection_signals = ['not interested', 'found another', 'pass on', 'not a good fit']
+        if any(signal in latest_message.lower() for signal in rejection_signals):
+            self.logger.info("Overriding to NOT_SCHEDULE - detected rejection signal")
+            return SchedulingDecision.NOT_SCHEDULE
+        
+        return decision
+    
+    def _fallback_response_parsing(
+        self,
+        response_text: str,
+        available_slots: List[Dict]
+    ) -> Tuple[SchedulingDecision, str, List[Dict], str]:
+        """
+        Fallback parsing when JSON parsing fails.
+        
+        Args:
+            response_text: Raw response text
+            available_slots: Available slots
+            
+        Returns:
+            Tuple of (decision, reasoning, suggested_slots, response_message)
+        """
+        # Simple keyword-based parsing as fallback
+        if 'SCHEDULE' in response_text.upper():
+            decision = SchedulingDecision.SCHEDULE
+            reasoning = "LLM indicated scheduling (fallback parsing)"
+            suggested_slots = available_slots[:3]  # First 3 available
+        else:
+            decision = SchedulingDecision.NOT_SCHEDULE
+            reasoning = "LLM indicated not to schedule (fallback parsing)"
+            suggested_slots = []
+        
+        response_message = "Let me help you with scheduling. Could you tell me your availability preferences?"
+        
+        return decision, reasoning, suggested_slots, response_message
+
     def parse_candidate_time_preference(
         self,
         user_message: str,
         reference_datetime: datetime = None
     ) -> Dict:
         """
-        Parse time preferences from candidate message.
+        Parse time preferences from candidate message using unified LLM analysis.
         
         Args:
             user_message: Candidate's message
@@ -435,7 +635,19 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
         Returns:
             Dictionary with parsed time preferences
         """
-        return parse_scheduling_intent(user_message, reference_datetime)
+        # For backward compatibility, provide a simple analysis
+        # This method is now deprecated as the unified approach handles everything
+        self.logger.warning("parse_candidate_time_preference is deprecated. Use make_scheduling_decision for unified analysis.")
+        
+        # Provide basic time preference analysis
+        return {
+            'has_scheduling_intent': any(keyword in user_message.lower() 
+                                       for keyword in ['schedule', 'available', 'free', 'can do', 'meet', 'interview']),
+            'parsed_datetimes': [],
+            'confidence': 0.6,
+            'user_message': user_message,
+            'note': 'Use unified scheduling decision for full analysis'
+        }
     
     def format_slots_for_candidate(self, slots: List[Dict]) -> str:
         """Format available slots for display to candidate."""

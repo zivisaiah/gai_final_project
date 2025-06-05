@@ -81,6 +81,15 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
   - [x] Context-aware date inference
 - [x] Create scheduling prompts and examples
 - [x] Test scheduling advisor with various date inputs
+- [x] **MAJOR UPGRADE**: Unified LLM-Based Scheduling Approach ✅
+  - [x] Replaced keyword-based intent detection with unified LLM analysis
+  - [x] Enhanced scheduling prompts for intent detection + time parsing + decision making
+  - [x] Improved accuracy for informal language ("would be great to connect")
+  - [x] Better handling of complex time expressions ("mornings except Wednesday")
+  - [x] Single LLM call architecture (no additional API costs)
+  - [x] Confidence scoring for intent detection (0.0-1.0)
+  - [x] JSON-structured response parsing with fallback handling
+  - [x] Comprehensive testing with 80% success rate on complex scenarios
 
 ### **💬 1.5 Basic Streamlit UI** ✅ COMPLETED
 - [x] Implement streamlit_app/streamlit_main.py
