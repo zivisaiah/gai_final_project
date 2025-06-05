@@ -161,7 +161,11 @@ class ChatInterface:
                             with col1:
                                 st.write(f"**{i}.** {formatted_time} with {recruiter_name}")
                             with col2:
-                                if st.button(f"Select", key=f"slot_{i}_{slot_dt.timestamp()}"):
+                                # Use unique slot ID and message timestamp for the key to avoid duplicates
+                                slot_id = slot_dict.get('id', f'unknown_{i}')
+                                message_hash = hash(str(message.timestamp)) % 10000  # Short hash of message timestamp
+                                unique_key = f"slot_{slot_id}_{message_hash}"
+                                if st.button(f"Select", key=unique_key):
                                     self.handle_slot_selection(slot_dict)
                     
                     # Show appointment confirmation if available
