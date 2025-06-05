@@ -158,8 +158,10 @@ class RecruitmentChatbot:
             
             # Get available slots based on preferences
             from datetime import datetime
+            # Use the parsed_datetimes directly (they're already in the right format)
+            preferred_datetimes = time_prefs.get('parsed_datetimes', [])
             available_slots = self.scheduling_advisor._get_available_slots(
-                time_prefs.get('preferred_datetimes', []),
+                preferred_datetimes,
                 datetime.now(),
                 14  # 14 days ahead
             )

@@ -27,10 +27,12 @@ class DateTimeParser:
         """Initialize with reference datetime (defaults to now)."""
         self.reference_dt = reference_datetime or datetime.now()
         
-        # Day name mappings
+        # Day name mappings (including plural forms)
         self.day_names = {
             'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3,
             'friday': 4, 'saturday': 5, 'sunday': 6,
+            'mondays': 0, 'tuesdays': 1, 'wednesdays': 2, 'thursdays': 3,
+            'fridays': 4, 'saturdays': 5, 'sundays': 6,
             'mon': 0, 'tue': 1, 'wed': 2, 'thu': 3,
             'fri': 4, 'sat': 5, 'sun': 6
         }
@@ -128,11 +130,14 @@ class DateTimeParser:
         return results
     
     def _parse_day_expressions(self, expression: str) -> List[Dict]:
-        """Parse day name expressions like 'Monday', 'next Friday'."""
+        """Parse day name expressions like 'Monday', 'next Friday', 'Mondays only'."""
         results = []
         
         for day_name, day_num in self.day_names.items():
             if day_name in expression:
+                # Check for recurring availability pattern (e.g., "Mondays only", "can do Mondays")
+                is_recurring = any(pattern in expression for pattern in ['only', 'can do', 'able to', 'prefer'])
+                
                 # Determine if it's "next" day or "this" day
                 is_next = 'next' in expression
                 
@@ -158,12 +163,30 @@ class DateTimeParser:
                     target_date = target_date.replace(hour=9, minute=0, second=0, microsecond=0)
                     time_desc = '9:00 AM'
                 
-                prefix = 'Next' if is_next or days_ahead > 7 else 'This'
+                # Adjust confidence based on pattern type
+                if is_recurring:
+                    confidence = 0.95  # High confidence for explicit preference
+                    prefix = 'Next available'
+                else:
+                    confidence = 0.9
+                    prefix = 'Next' if is_next or days_ahead > 7 else 'This'
+                
                 results.append({
                     'datetime': target_date,
-                    'confidence': 0.9,
-                    'interpretation': f'{prefix} {day_name.title()} at {time_desc}'
+                    'confidence': confidence,
+                    'interpretation': f'{prefix} {day_name.title()} at {time_desc}',
+                    'recurring': is_recurring
                 })
+                
+                # For recurring patterns, also add the following week
+                if is_recurring:
+                    next_week_date = target_date + timedelta(days=7)
+                    results.append({
+                        'datetime': next_week_date,
+                        'confidence': confidence * 0.9,
+                        'interpretation': f'Following {day_name.title()} at {time_desc}',
+                        'recurring': True
+                    })
         
         return results
     
@@ -417,7 +440,9 @@ def parse_scheduling_intent(user_message: str, reference_datetime: datetime = No
     # Look for scheduling keywords
     scheduling_keywords = [
         'schedule', 'appointment', 'interview', 'meeting',
-        'available', 'free', 'when', 'time', 'date'
+        'available', 'free', 'when', 'time', 'date',
+        'can do', 'able to', 'good for', 'work for',
+        'only', 'prefer', 'better for', 'best for'
     ]
     
     has_scheduling_intent = any(keyword in user_message.lower() for keyword in scheduling_keywords)

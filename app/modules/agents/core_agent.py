@@ -51,7 +51,16 @@ class ConversationState:
         
         # Update candidate info if this is a user message
         if role == "user":
-            self.candidate_info = Phase1Prompts.extract_candidate_info(self.messages)
+            # Extract new info and merge with existing info (don't overwrite)
+            extracted_info = Phase1Prompts.extract_candidate_info(self.messages)
+            for key, value in extracted_info.items():
+                # Only update if we have new information and current value is None/unknown/False
+                if value and (
+                    self.candidate_info.get(key) is None or 
+                    self.candidate_info.get(key) == "unknown" or 
+                    (key == "availability_mentioned" and not self.candidate_info.get(key))
+                ):
+                    self.candidate_info[key] = value
     
     def add_decision(self, decision: AgentDecision, reasoning: str, response: str):
         """Record a decision made by the agent."""
