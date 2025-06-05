@@ -153,18 +153,15 @@ class RecruitmentChatbot:
     def get_available_slots_for_scheduling(self, candidate_info: Dict, user_message: str) -> Dict:
         """Get available slots when Core Agent has decided to schedule."""
         try:
-            # Parse time preferences from user message
-            time_prefs = self.scheduling_advisor.parse_candidate_time_preference(user_message)
-            
-            # Get available slots based on preferences
+            # Use the SchedulingAdvisor's unified decision method instead of the non-existent parse method
             from datetime import datetime
-            # Use the parsed_datetimes directly (they're already in the right format)
-            preferred_datetimes = time_prefs.get('parsed_datetimes', [])
-            available_slots = self.scheduling_advisor._get_available_slots(
-                preferred_datetimes,
-                datetime.now(),
-                14  # 14 days ahead
-            )
+            scheduling_decision, reasoning, available_slots, _ = \
+                self.scheduling_advisor.make_scheduling_decision(
+                    candidate_info,
+                    [],  # Empty history for now, could be improved
+                    user_message,
+                    datetime.now()
+                )
             
             scheduling_metadata = {
                 'scheduling_decision': 'SCHEDULE',

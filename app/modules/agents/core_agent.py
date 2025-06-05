@@ -252,6 +252,22 @@ class CoreAgent:
             if decision == AgentDecision.SCHEDULE:
                 self.logger.info("Decision is SCHEDULE. Consulting SchedulingAdvisor for available slots.")
                 
+                # Check if the user is confirming a previously offered slot
+                recent_assistant_messages = [m for m in conversation.messages[-5:] if m["role"] == "assistant"]
+                has_offered_slots_recently = any("I found a few available time slots" in m.get("content", "") for m in recent_assistant_messages)
+                
+                # Check if the user message looks like a slot confirmation
+                slot_confirmation_indicators = [
+                    "would be great", "works for me", "that's perfect", "let's do", 
+                    "at ", "am", "pm", "o'clock", "sounds good", "yes", "that works"
+                ]
+                looks_like_confirmation = any(indicator.lower() in user_message.lower() for indicator in slot_confirmation_indicators)
+                
+                # If we recently offered slots and user seems to be confirming, don't offer more slots
+                if has_offered_slots_recently and looks_like_confirmation:
+                    self.logger.info("User appears to be confirming a previously offered slot. Not offering additional slots.")
+                    return decision, "User confirmed slot selection", agent_response
+                
                 # Use the entire conversation history for context
                 full_history = conversation.messages
                 # Corrected method call and arguments

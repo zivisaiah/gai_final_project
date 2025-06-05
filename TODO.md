@@ -400,6 +400,8 @@ pydantic>=2.0.0
 ## In Progress
 
 ## Planned
+- [ ] Test Clarity API integration (more metadata, retries)
+- [ ] Narrative Analysis
 - [ ] Fine-tuning `ExitAdvisor` for better intent detection
 - [ ] Add more comprehensive tests for all agent interactions
 
@@ -410,3 +412,6 @@ pydantic>=2.0.0
 - [x] Replaced keyword-based candidate info extraction with LLM-based approach
 - [x] Fixed proactive scheduling flow to correctly parse LLM decisions and offer time slots
 - [x] Resolved critical parsing, state management, and proactivity bugs in `CoreAgent`
+- [x] Fixed post-confirmation slot offering issue (agent no longer offers more slots after user confirms)
+- [x] Fixed Streamlit method error by replacing non-existent `parse_candidate_time_preference` call
+- [x] Enhanced chat interface with clickable time slot selection buttons for better UX
