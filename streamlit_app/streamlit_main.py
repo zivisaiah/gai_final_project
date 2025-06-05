@@ -22,7 +22,6 @@ sys.path.insert(0, str(project_root))
 from streamlit_app.components.chat_interface import ChatInterface, create_chat_interface
 from app.modules.agents.core_agent import CoreAgent, AgentDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
-from app.modules.agents.exit_advisor import ExitAdvisor, ExitDecision
 from app.modules.utils.conversation import ConversationContext
 from config.phase1_settings import get_settings
 
@@ -43,13 +42,11 @@ class RecruitmentChatbot:
             st.session_state.agents_initialized = True
             st.session_state.core_agent = self.core_agent
             st.session_state.scheduling_advisor = self.scheduling_advisor
-            st.session_state.exit_advisor = self.exit_advisor
             st.session_state.conversation_context = self.conversation_context
         else:
             # Reuse existing agents from session state
             self.core_agent = st.session_state.core_agent
             self.scheduling_advisor = st.session_state.scheduling_advisor
-            self.exit_advisor = st.session_state.exit_advisor
             self.conversation_context = st.session_state.conversation_context
             
         self.chat_interface = create_chat_interface()
@@ -82,11 +79,7 @@ class RecruitmentChatbot:
                 model_name=self.settings.OPENAI_MODEL
             )
             
-            # Initialize Exit Advisor
-            self.exit_advisor = ExitAdvisor(
-                model_name=self.settings.OPENAI_MODEL,
-                temperature=0.1
-            )
+            # Exit Advisor is now handled entirely within Core Agent (clean MVC architecture)
             
             # Initialize Conversation Context
             self.conversation_context = ConversationContext()
@@ -101,51 +94,19 @@ class RecruitmentChatbot:
     def process_user_message(self, user_message: str) -> Dict:
         """Process user message through the agent system."""
         try:
-            # Get current conversation state
-            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
+            # CLEAN MVC ARCHITECTURE: Only call Core Agent (Controller)
+            # Core Agent handles ALL business logic including exit decisions
+            self.logger.info(f"CALLING CORE AGENT with user_message='{user_message}'")
             
-            # First, check if we should exit the conversation
-            conversation_messages = [
-                {"role": msg["role"], "content": msg["content"]}
-                for msg in conversation_state.messages
-            ]
-            
-            # Debug logging for input
-            self.logger.info(f"CALLING EXIT ADVISOR with user_message='{user_message}' and {len(conversation_messages)} conversation messages")
-            
-            # Run exit advisor analysis
-            exit_decision = asyncio.run(self.exit_advisor.analyze_conversation(
-                user_message,
-                conversation_messages
-            ))
-            
-            # Debug logging
-            self.logger.info(f"Exit Advisor Decision: should_exit={exit_decision.should_exit}, confidence={exit_decision.confidence}, reason='{exit_decision.reason}'")
-            
-            # If exit advisor suggests ending the conversation
-            if exit_decision.should_exit and exit_decision.confidence >= 0.7:
-                self.logger.info(f"EXITING EARLY: Exit Advisor decided to end conversation with confidence {exit_decision.confidence}")
-                return {
-                    'response': exit_decision.farewell_message or "Thank you for your time! Have a great day!",
-                    'metadata': {
-                        'decision': 'EXIT',
-                        'reasoning': exit_decision.reason,
-                        'confidence': exit_decision.confidence,
-                        'agent_type': 'exit_advisor'
-                    },
-                    'success': True
-                }
-            
-            # Update candidate info from message
-            if conversation_state.candidate_info:
-                self.chat_interface.update_candidate_info(conversation_state.candidate_info)
-            
-            # Make decision with Core Agent
-            self.logger.info("CALLING CORE AGENT: Exit Advisor did not decide to exit, proceeding with Core Agent")
             agent_response, decision, reasoning = self.core_agent.process_message(
                 user_message,
                 conversation_id="streamlit_session"
             )
+            
+            # Update candidate info from conversation state
+            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
+            if conversation_state.candidate_info:
+                self.chat_interface.update_candidate_info(conversation_state.candidate_info)
             
             response_metadata = {
                 'decision': decision.value,

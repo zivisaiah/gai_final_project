@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You must follow MVC (Model View Controller) software architecutre and avoid any logic and code duplication.
