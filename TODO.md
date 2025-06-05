@@ -165,6 +165,11 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
         - [x] Rotates through time blocks (morning → afternoon → evening) across days
         - [x] Tracks global time block usage to prevent all morning/afternoon slots
         - [x] Tested: Now suggests optimal diversity like "Monday 9 AM, Tuesday 2 PM, Wednesday 6 PM"
+        - [x] **FIXED SLOT COUNT ISSUE**: Ensured SCHEDULE decisions always return 3 diversified slots
+          - [x] Modified _parse_unified_response to override LLM slot suggestions when decision is SCHEDULE
+          - [x] Fixed streamlit_main.py to use diversification instead of available_slots[:3]
+          - [x] Now guarantees 3 diverse slots regardless of LLM suggestion quality
+          - [x] Addresses root cause of "Suggested 1 slots" log messages
 
 ### **📚 1.8 Documentation** ✅ COMPLETED
 - [x] Update README.md for Phase 1

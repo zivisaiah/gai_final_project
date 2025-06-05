@@ -163,16 +163,19 @@ class RecruitmentChatbot:
                     datetime.now()
                 )
             
+            # Apply diversification to available slots
+            diversified_slots = self.scheduling_advisor._diversify_slot_selection(available_slots, max_slots=3)
+            
             scheduling_metadata = {
                 'scheduling_decision': 'SCHEDULE',
                 'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
-                'suggested_slots': available_slots[:3]  # Top 3 slots
+                'suggested_slots': diversified_slots
             }
             
             # Update scheduling context
-            if available_slots:
+            if diversified_slots:
                 self.chat_interface.update_scheduling_context({
-                    'slots_offered': available_slots[:3]
+                    'slots_offered': diversified_slots
                 })
             
             return scheduling_metadata

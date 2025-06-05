@@ -730,14 +730,21 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
             else:
                 decision = SchedulingDecision.NOT_SCHEDULE
             
-            # Validate and enhance suggested slots
-            validated_slots = self._validate_suggested_slots(suggested_slots, available_slots)
+            # Handle slot selection based on decision
+            if decision == SchedulingDecision.SCHEDULE:
+                # When scheduling, always provide diversified available slots regardless of LLM suggestions
+                final_slots = self._diversify_slot_selection(available_slots, max_slots=3)
+                self.logger.info(f"Decision: SCHEDULE - providing {len(final_slots)} diversified slots")
+            else:
+                # For non-scheduling decisions, validate LLM suggestions if any
+                final_slots = self._validate_suggested_slots(suggested_slots, available_slots)
+                self.logger.info(f"Decision: {decision_str} - validated {len(final_slots)} suggested slots")
             
             self.logger.info(f"Intent analysis: {intent_analysis}")
             self.logger.info(f"Time preferences: {time_preferences}")
-            self.logger.info(f"Suggested {len(validated_slots)} slots")
+            self.logger.info(f"Suggested {len(final_slots)} slots")
             
-            return decision, reasoning, validated_slots, response_message
+            return decision, reasoning, final_slots, response_message
             
         except (json.JSONDecodeError, KeyError, TypeError) as e:
             self.logger.error(f"Error parsing unified response: {e}")
