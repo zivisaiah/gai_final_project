@@ -80,6 +80,24 @@ EXIT_EXAMPLES = [
             "reason": "User is describing their background and is likely interested in continuing the conversation.",
             "farewell_message": None
         }
+    },
+    {
+        "input": "I have 3 years of experience in backend development and recently finished my degree in computer science.",
+        "output": {
+            "should_exit": False,
+            "confidence": 0.98,
+            "reason": "User is describing their experience and education, indicating engagement.",
+            "farewell_message": None
+        }
+    },
+    {
+        "input": "I recently completed a bootcamp in software engineering and am eager to apply my skills.",
+        "output": {
+            "should_exit": False,
+            "confidence": 0.98,
+            "reason": "User is sharing recent education and motivation, not an exit signal.",
+            "farewell_message": None
+        }
     }
 ]
 
