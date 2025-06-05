@@ -165,69 +165,38 @@ class RecruitmentChatbot:
                 response_metadata.update(info_metadata)
             
             # Handle scheduling if needed
-            elif decision == AgentDecision.SCHEDULE:
-                # Double-check registration before proceeding with scheduling
-                if not st.session_state.get('registration_completed', False):
-                    return {
-                        'response': "I see you'd like to schedule an interview! Please complete the registration form first so I know who I'm scheduling the interview for.",
-                        'metadata': {
-                            'decision': 'REGISTRATION_REQUIRED',
-                            'reasoning': 'Scheduling decision made but registration incomplete',
-                            'agent_type': 'core_agent',
-                            'response_time': response_time,
-                            'action_required': 'SHOW_REGISTRATION_FORM'
-                        },
-                        'success': True
+            if decision == AgentDecision.SCHEDULE:
+                # Core Agent already consulted SchedulingAdvisor, just get available slots for UI
+                # No need to call the advisor again - it was already called in Core Agent
+                try:
+                    # Get all available slots for the next 14 days
+                    from datetime import datetime, timedelta
+                    reference_datetime = datetime.now()
+                    all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
+                    
+                    # Apply diversification to get 3 varied slots
+                    diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
+                    
+                    scheduling_metadata = {
+                        'scheduling_decision': 'SCHEDULE',
+                        'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
+                        'suggested_slots': diversified_slots
                     }
-                
-                # Registration complete - proceed with scheduling
-                # Get conversation messages for scheduling
-                conversation_messages = [
-                    {"role": msg["role"], "content": msg["content"]}
-                    for msg in conversation_state.messages
-                ]
-                
-                # Get candidate info to pass to scheduling advisor
-                candidate_info = conversation_state.candidate_info
-                
-                # Validate candidate info for scheduling
-                validation_result = self.scheduling_advisor.validate_candidate_for_scheduling(candidate_info)
-                
-                if not validation_result['is_valid']:
-                    return {
-                        'response': validation_result['message'],
-                        'metadata': {
-                            'decision': 'COLLECT_INFO',
-                            'reasoning': f"Missing required information: {', '.join(validation_result['missing_fields'])}",
-                            'agent_type': 'scheduling_advisor',
-                            'response_time': response_time,
-                            'missing_fields': validation_result['missing_fields']
-                        },
-                        'success': True
-                    }
-                
-                # Since Core Agent decided to SCHEDULE, get available slots directly
-                scheduling_result = self.get_available_slots_for_scheduling(
-                    candidate_info,
-                    user_message
-                )
-                response_metadata.update(scheduling_result)
-            
-            # Log conversation event to admin panel
-            self.admin_panel.log_conversation_event('agent_decision', response_metadata)
-            
-            # Log agent performance metrics
-            self.admin_panel.log_agent_performance(
-                agent_name='core_agent',
-                decision=decision.value,
-                confidence=info_metadata.get('confidence', 1.0),
-                response_time=response_time
-            )
-            
-            # Log system metrics
-            self.admin_panel.log_system_metrics('response_time', response_time)
-            self.admin_panel.log_system_metrics('decision_count', 1.0, 
-                                              {'decision_type': decision.value})
+                    
+                    # Update scheduling context
+                    if diversified_slots:
+                        self.chat_interface.update_scheduling_context({
+                            'slots_offered': diversified_slots
+                        })
+                    
+                    response_metadata.update(scheduling_metadata)
+                    
+                except Exception as e:
+                    self.logger.error(f"Error getting slots for UI display: {e}")
+                    response_metadata.update({
+                        'scheduling_error': str(e),
+                        'suggested_slots': []
+                    })
             
             return {
                 'response': agent_response,
@@ -256,42 +225,7 @@ class RecruitmentChatbot:
                 'success': False
             }
     
-    def get_available_slots_for_scheduling(self, candidate_info: Dict, user_message: str) -> Dict:
-        """Get available slots when Core Agent has decided to schedule."""
-        try:
-            # Use the SchedulingAdvisor's unified decision method instead of the non-existent parse method
-            from datetime import datetime
-            scheduling_decision, reasoning, available_slots, _ = \
-                self.scheduling_advisor.make_scheduling_decision(
-                    candidate_info,
-                    [],  # Empty history for now, could be improved
-                    user_message,
-                    datetime.now()
-                )
-            
-            # Apply diversification to available slots
-            diversified_slots = self.scheduling_advisor._diversify_slot_selection(available_slots, max_slots=3)
-            
-            scheduling_metadata = {
-                'scheduling_decision': 'SCHEDULE',
-                'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
-                'suggested_slots': diversified_slots
-            }
-            
-            # Update scheduling context
-            if diversified_slots:
-                self.chat_interface.update_scheduling_context({
-                    'slots_offered': diversified_slots
-                })
-            
-            return scheduling_metadata
-            
-        except Exception as e:
-            self.logger.error(f"Error getting available slots: {e}")
-            return {
-                'scheduling_error': str(e),
-                'suggested_slots': []
-            }
+
     
     def handle_scheduling_decision(self, conversation_messages: List[Dict], user_message: str) -> Dict:
         """Handle scheduling through the Scheduling Advisor."""
