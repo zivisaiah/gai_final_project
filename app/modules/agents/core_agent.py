@@ -273,12 +273,10 @@ class CoreAgent:
                     return decision, f"Slot confirmation detected. Advisor reason: {schedule_reasoning}", agent_response
                 
                 elif schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
-                    # We have slots, so let's format them proactively.
-                    slot_text = "\n".join([f"- {datetime.fromisoformat(slot['datetime']).strftime('%A, %B %d at %I:%M %p')}" for slot in available_slots])
-                    # The 'agent_response' from the LLM is a pre-confirmation. We append the slots to it.
-                    proactive_response = f"{agent_response}\n\nI found a few available time slots for you:\n{slot_text}\n\nPlease let me know which one works best for you."
+                    # We have slots - let the UI handle displaying them as buttons
+                    # Don't include slot text in the response since they'll be shown as clickable buttons
                     final_reasoning = f"Proactively providing schedule options. Advisor reason: {schedule_reasoning}"
-                    return decision, final_reasoning, proactive_response
+                    return decision, final_reasoning, agent_response
                 else:
                     # Advisor decided not to schedule or found no slots.
                     # Use the original LLM response, which should be a commitment to find slots.

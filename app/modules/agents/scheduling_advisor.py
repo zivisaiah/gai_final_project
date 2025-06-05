@@ -307,7 +307,8 @@ class SchedulingAdvisor:
         candidate_info: Dict,
         slot_datetime: datetime,
         recruiter_id: int,
-        duration_minutes: int = 45
+        duration_minutes: int = 45,
+        slot_id: int = None
     ) -> Dict:
         """
         Book an interview appointment in the database.
@@ -317,39 +318,72 @@ class SchedulingAdvisor:
             slot_datetime: Chosen appointment datetime
             recruiter_id: ID of the recruiter
             duration_minutes: Duration of the interview
+            slot_id: ID of the specific slot to book
             
         Returns:
             Dictionary with booking confirmation details
         """
         try:
-            # Create appointment in database
-            appointment_data = {
-                'candidate_name': candidate_info.get('name', 'Unknown'),
-                'candidate_email': candidate_info.get('email', ''),
-                'candidate_phone': candidate_info.get('phone', ''),
-                'scheduled_datetime': slot_datetime,
-                'recruiter_id': recruiter_id,
-                'duration_minutes': duration_minutes,
-                'status': 'scheduled',
-                'notes': f"Scheduled via chatbot. Experience: {candidate_info.get('experience', 'Not specified')}"
-            }
-            
-            appointment_id = self.sql_manager.create_appointment(appointment_data)
-            
-            if appointment_id:
-                self.logger.info(f"Successfully booked appointment {appointment_id}")
+            # If no slot_id provided, try to find the matching slot
+            if not slot_id:
+                # Find matching slot by datetime and recruiter
+                available_slots = self.sql_manager.get_available_slots(
+                    start_date=slot_datetime.date(),
+                    end_date=slot_datetime.date(),
+                    recruiter_id=recruiter_id,
+                    available_only=True
+                )
                 
-                # Get recruiter details
-                recruiter = self.sql_manager.get_recruiter_by_id(recruiter_id)
+                # Find exact time match
+                matching_slot = None
+                for slot in available_slots:
+                    slot_dt = datetime.combine(slot.slot_date, slot.start_time)
+                    if slot_dt == slot_datetime:
+                        matching_slot = slot
+                        break
+                
+                if not matching_slot:
+                    return {
+                        'success': False,
+                        'error': f'No available slot found for {slot_datetime} with recruiter {recruiter_id}'
+                    }
+                
+                slot_id = matching_slot.id
+            
+            # Create appointment in database using AppointmentCreate model
+            from app.modules.database.models import AppointmentCreate
+            
+            appointment_data = AppointmentCreate(
+                slot_id=slot_id,
+                candidate_name=candidate_info.get('name', 'Unknown'),
+                candidate_email=candidate_info.get('email', ''),
+                candidate_phone=candidate_info.get('phone', ''),
+                interview_type='Technical Interview',
+                status='scheduled',
+                notes=f"Scheduled via chatbot. Experience: {candidate_info.get('experience', 'Not specified')}",
+                conversation_id=candidate_info.get('conversation_id', '')
+            )
+            
+            appointment = self.sql_manager.create_appointment(appointment_data)
+            
+            if appointment:
+                self.logger.info(f"Successfully booked appointment {appointment.id}")
+                
+                # Get recruiter details from the appointment slot
+                recruiter_dict = {
+                    'id': appointment.slot.recruiter.id,
+                    'name': appointment.slot.recruiter.name,
+                    'email': appointment.slot.recruiter.email
+                }
                 
                 return {
                     'success': True,
-                    'appointment_id': appointment_id,
+                    'appointment_id': appointment.id,
                     'datetime': slot_datetime,
-                    'recruiter': recruiter,
+                    'recruiter': recruiter_dict,
                     'duration': duration_minutes,
                     'confirmation_message': self._generate_confirmation_message(
-                        slot_datetime, recruiter, duration_minutes
+                        slot_datetime, recruiter_dict, duration_minutes
                     )
                 }
             else:

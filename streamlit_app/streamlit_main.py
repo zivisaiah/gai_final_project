@@ -228,12 +228,14 @@ class RecruitmentChatbot:
             # Book the appointment
             slot_datetime = datetime.fromisoformat(selected_slot['datetime'].replace('Z', '+00:00'))
             recruiter_id = selected_slot.get('recruiter_id', 1)
+            slot_id = selected_slot.get('id')  # Get the slot ID
             
             booking_result = self.scheduling_advisor.book_appointment(
                 candidate_info,
                 slot_datetime,
                 recruiter_id,
-                45  # 45 minutes duration
+                45,  # 45 minutes duration
+                slot_id  # Pass the slot ID
             )
             
             if booking_result['success']:
