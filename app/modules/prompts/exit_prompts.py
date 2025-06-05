@@ -116,6 +116,24 @@ EXIT_EXAMPLES = [
             "reason": "User explicitly declines the opportunity",
             "farewell_message": "Thank you for letting me know. If you change your mind or are interested in future opportunities, please feel free to reach out. We wish you all the best in your current endeavors. Have a great day!"
         }
+    },
+    {
+        "input": "I'm more interested in Java development role rather than python",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.95,
+            "reason": "User indicates preference for a different technology/role, not interested in Python position",
+            "farewell_message": "Thank you for letting me know! Unfortunately, my focus is on the Python developer position, but I wish you the best in finding a Java development role that suits your interests and skills. If you have any other questions, feel free to ask."
+        }
+    },
+    {
+        "input": "I'm not interested in this position",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.95,
+            "reason": "User explicitly states lack of interest in the position",
+            "farewell_message": "Thank you for letting me know. If you change your mind or are interested in future opportunities, please feel free to reach out. We wish you all the best in your current endeavors. Have a great day!"
+        }
     }
 ]
 
@@ -163,7 +181,8 @@ EXIT_SIGNALS = {
         "goodbye", "bye", "thank you", "thanks", "that's all",
         "that's it", "I'm done", "finished", "complete",
         "no more questions", "nothing else", "pass on this",
-        "not interested", "decline", "no thank you"
+        "not interested", "decline", "no thank you", "more interested in",
+        "prefer", "focused on", "looking for something else"
     ],
     "implicit": [
         "I'll think about it", "get back to you",

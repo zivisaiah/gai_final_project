@@ -165,7 +165,7 @@ class CoreAgent:
                 current_message=user_message,
                 conversation_history=[{"role": m["role"], "content": m["content"]} for m in conversation.messages]
             )
-            if exit_decision.should_exit:
+            if exit_decision.should_exit and exit_decision.confidence >= 0.7:
                 response = exit_decision.farewell_message or "Thank you for your time."
                 decision = AgentDecision.END
                 reasoning = exit_decision.reason

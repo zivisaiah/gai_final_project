@@ -121,6 +121,7 @@ class RecruitmentChatbot:
             
             # If exit advisor suggests ending the conversation
             if exit_decision.should_exit and exit_decision.confidence >= 0.7:
+                self.logger.info(f"EXITING EARLY: Exit Advisor decided to end conversation with confidence {exit_decision.confidence}")
                 return {
                     'response': exit_decision.farewell_message or "Thank you for your time! Have a great day!",
                     'metadata': {
@@ -137,6 +138,7 @@ class RecruitmentChatbot:
                 self.chat_interface.update_candidate_info(conversation_state.candidate_info)
             
             # Make decision with Core Agent
+            self.logger.info("CALLING CORE AGENT: Exit Advisor did not decide to exit, proceeding with Core Agent")
             agent_response, decision, reasoning = self.core_agent.process_message(
                 user_message,
                 conversation_id="streamlit_session"
