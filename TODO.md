@@ -156,9 +156,9 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
 - [x] Implement exit decision logic
 - [x] Test exit advisor independently
 - [x] Enhanced Exit Advisor:
-    - Strengthened prompt guidance: do not end conversation when user describes themselves/background/education
-    - Added explicit few-shot example for continuing conversation in such cases
-    - Raised confidence threshold for ending conversation to 0.85
+    - [x] Strengthened prompt guidance: do not end conversation when user describes themselves/background/education
+    - [x] Added explicit few-shot example for continuing conversation in such cases
+    - [x] Raised confidence threshold for ending conversation to 0.85
 
 ### 🎓 2.2 Fine-tuning Pipeline
 - [x] Create fine_tuning/ directory structure
