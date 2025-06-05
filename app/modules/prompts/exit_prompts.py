@@ -98,6 +98,24 @@ EXIT_EXAMPLES = [
             "reason": "User is sharing recent education and motivation, not an exit signal.",
             "farewell_message": None
         }
+    },
+    {
+        "input": "I'll pass on this opportunity",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.95,
+            "reason": "User explicitly declines the opportunity",
+            "farewell_message": "Thank you for letting me know. If you change your mind or are interested in future opportunities, please feel free to reach out. We wish you all the best in your current endeavors. Have a great day!"
+        }
+    },
+    {
+        "input": "I will pass on this opportunity",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.95,
+            "reason": "User explicitly declines the opportunity",
+            "farewell_message": "Thank you for letting me know. If you change your mind or are interested in future opportunities, please feel free to reach out. We wish you all the best in your current endeavors. Have a great day!"
+        }
     }
 ]
 
@@ -144,7 +162,8 @@ EXIT_SIGNALS = {
     "explicit": [
         "goodbye", "bye", "thank you", "thanks", "that's all",
         "that's it", "I'm done", "finished", "complete",
-        "no more questions", "nothing else"
+        "no more questions", "nothing else", "pass on this",
+        "not interested", "decline", "no thank you"
     ],
     "implicit": [
         "I'll think about it", "get back to you",

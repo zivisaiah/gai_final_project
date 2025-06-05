@@ -116,8 +116,11 @@ class RecruitmentChatbot:
                 conversation_messages
             ))
             
+            # Debug logging
+            self.logger.info(f"Exit Advisor Decision: should_exit={exit_decision.should_exit}, confidence={exit_decision.confidence}")
+            
             # If exit advisor suggests ending the conversation
-            if exit_decision.should_exit and exit_decision.confidence >= 0.85:
+            if exit_decision.should_exit and exit_decision.confidence >= 0.7:
                 return {
                     'response': exit_decision.farewell_message or "Thank you for your time! Have a great day!",
                     'metadata': {
