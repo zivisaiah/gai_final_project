@@ -277,10 +277,18 @@ class CoreAgent:
                     # Don't include slot text in the response since they'll be shown as clickable buttons
                     final_reasoning = f"Proactively providing schedule options. Advisor reason: {schedule_reasoning}"
                     return decision, final_reasoning, agent_response
+                
+                elif schedule_decision == SchedulingDecision.SCHEDULE and not available_slots:
+                    # High intent but no matching slots - ask for flexibility
+                    flexibility_response = await self._handle_no_slots_available(
+                        conversation, user_message, schedule_reasoning
+                    )
+                    final_reasoning = f"No slots match preferences, asking for flexibility. Advisor reason: {schedule_reasoning}"
+                    return decision, final_reasoning, flexibility_response
+                
                 else:
-                    # Advisor decided not to schedule or found no slots.
-                    # Use the original LLM response, which should be a commitment to find slots.
-                    final_reasoning = f"Scheduling decision made, but no slots available yet. Advisor reason: {schedule_reasoning}"
+                    # Low scheduling intent - continue conversation normally
+                    final_reasoning = f"Low scheduling intent, continuing conversation. Advisor reason: {schedule_reasoning}"
                     return decision, final_reasoning, agent_response
 
             # For CONTINUE or END, return the original parsed response
@@ -347,6 +355,100 @@ class CoreAgent:
             return AgentDecision.CONTINUE
         
         return decision
+    
+    async def _handle_no_slots_available(
+        self,
+        conversation: ConversationState,
+        user_message: str,
+        schedule_reasoning: str
+    ) -> str:
+        """
+        Handle the case when no slots match user preferences.
+        Try to offer alternatives or gracefully end conversation.
+        """
+        try:
+            # Check how many times we've asked for flexibility
+            flexibility_attempts = sum(
+                1 for msg in conversation.messages[-10:]  # Last 10 messages
+                if msg.get("role") == "assistant" and 
+                ("flexibility" in msg.get("content", "").lower() or 
+                 "alternative" in msg.get("content", "").lower())
+            )
+            
+            if flexibility_attempts == 0:
+                # First attempt - ask for flexibility
+                return await self._ask_for_flexibility(conversation, schedule_reasoning)
+            
+            elif flexibility_attempts == 1:
+                # Second attempt - offer specific alternatives
+                return await self._offer_alternatives(conversation, schedule_reasoning)
+            
+            else:
+                # Third attempt - trigger exit conversation
+                return await self._trigger_scheduling_exit(conversation, schedule_reasoning)
+                
+        except Exception as e:
+            self.logger.error(f"Error handling no slots available: {e}")
+            return "I apologize, but I'm having trouble finding suitable interview slots. Let me check with our team and get back to you."
+    
+    async def _ask_for_flexibility(self, conversation: ConversationState, schedule_reasoning: str) -> str:
+        """Ask user for flexibility in their time preferences."""
+        return f"""I understand you prefer meeting after 4 PM, but unfortunately we don't have any available slots that match that time preference.
+
+Would you be flexible with your timing? We have several slots available during business hours (9 AM - 4:30 PM) on weekdays. 
+
+Could any of these alternative times work for you:
+• **Morning slots**: 9:00 AM - 12:00 PM
+• **Afternoon slots**: 1:00 PM - 4:30 PM
+
+Please let me know if any of these times could work, or if you have other preferences!"""
+
+    async def _offer_alternatives(self, conversation: ConversationState, schedule_reasoning: str) -> str:
+        """Offer specific alternative times from available slots."""
+        try:
+            # Get next 3 available slots regardless of time preference
+            from datetime import date, timedelta
+            today = date.today()
+            end_date = today + timedelta(days=14)
+            
+            available_slots = self.scheduling_advisor.sql_manager.get_available_slots(
+                start_date=today,
+                end_date=end_date,
+                available_only=True
+            )[:3]  # Take first 3 available
+            
+            if available_slots:
+                slots_text = "\n".join([
+                    f"• **{slot.slot_date.strftime('%A, %B %d')}** at **{slot.start_time.strftime('%I:%M %p')}**"
+                    for slot in available_slots
+                ])
+                
+                return f"""I've checked our calendar again and here are the nearest available slots:
+
+{slots_text}
+
+These are the only times our interviewers have available in the next two weeks. Would any of these work for you, or would you prefer to wait for later availability?
+
+If none of these times work, we may need to explore other options or schedule for a later date."""
+            else:
+                return "Unfortunately, we don't have any available interview slots in the next two weeks. Would you like me to check for later dates or explore other scheduling options?"
+                
+        except Exception as e:
+            self.logger.error(f"Error offering alternatives: {e}")
+            return "I'm having trouble accessing our calendar. Let me check with our scheduling team and get back to you."
+
+    async def _trigger_scheduling_exit(self, conversation: ConversationState, schedule_reasoning: str) -> str:
+        """Trigger exit conversation when scheduling repeatedly fails."""
+        self.logger.info("Triggering exit conversation due to repeated scheduling failures")
+        
+        # Update conversation state to indicate scheduling failure
+        conversation.candidate_info["scheduling_failed"] = True
+        
+        return """I understand this timing isn't working out. Unfortunately, we haven't been able to find a mutually convenient time for the interview.
+
+I appreciate your interest in our Python developer position. If your schedule becomes more flexible in the future or if you'd like to explore other options, please feel free to reach out to us again.
+
+Thank you for your time, and I wish you the best in your job search!"""
     
     async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
         """

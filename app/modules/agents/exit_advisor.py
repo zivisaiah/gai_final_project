@@ -142,11 +142,85 @@ class ExitAdvisor:
             for phrase in satisfaction_phrases
         )
         
+        # Check for scheduling failure patterns
+        scheduling_failure_indicators = self._detect_scheduling_failure(conversation_history)
+        
+        # Calculate overall confidence
+        confidence = 0.0
+        if has_task_completion or has_satisfaction:
+            confidence = 0.8
+        elif scheduling_failure_indicators["has_failure"]:
+            confidence = scheduling_failure_indicators["confidence"]
+        
         return {
             "has_task_completion": has_task_completion,
             "has_satisfaction": has_satisfaction,
-            "confidence": 0.8 if (has_task_completion or has_satisfaction) else 0.0,
+            "has_scheduling_failure": scheduling_failure_indicators["has_failure"],
+            "scheduling_failure_reason": scheduling_failure_indicators["reason"],
+            "confidence": confidence,
             "context_length": len(conversation_history)
+        }
+    
+    def _detect_scheduling_failure(self, conversation_history: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Detect if scheduling has repeatedly failed"""
+        
+        # Look for patterns indicating scheduling difficulties
+        assistant_messages = [
+            msg["content"].lower() for msg in conversation_history[-10:]  # Last 10 messages
+            if msg.get("role") == "assistant"
+        ]
+        
+        # Count flexibility requests
+        flexibility_requests = sum(
+            1 for msg in assistant_messages
+            if any(phrase in msg for phrase in [
+                "flexibility", "alternative", "different time", 
+                "business hours", "available slots", "timing"
+            ])
+        )
+        
+        # Count promises without delivery
+        promises = sum(
+            1 for msg in assistant_messages
+            if any(phrase in msg for phrase in [
+                "i'll find", "let me check", "i'll look", 
+                "get back to you", "check our calendar"
+            ])
+        )
+        
+        # Check for repeated scheduling attempts
+        scheduling_attempts = sum(
+            1 for msg in assistant_messages
+            if any(phrase in msg for phrase in [
+                "schedule", "interview", "appointment", "slots", "available"
+            ])
+        )
+        
+        # Determine if there's a scheduling failure pattern
+        has_failure = False
+        reason = ""
+        confidence = 0.0
+        
+        if flexibility_requests >= 2:
+            has_failure = True
+            reason = "Multiple flexibility requests without successful scheduling"
+            confidence = 0.85
+        elif promises >= 3 and scheduling_attempts >= 3:
+            has_failure = True
+            reason = "Repeated promises without delivering concrete options"
+            confidence = 0.75
+        elif len(conversation_history) >= 8 and scheduling_attempts >= 4:
+            has_failure = True
+            reason = "Extended conversation without successful scheduling resolution"
+            confidence = 0.7
+        
+        return {
+            "has_failure": has_failure,
+            "reason": reason,
+            "confidence": confidence,
+            "flexibility_requests": flexibility_requests,
+            "promises": promises,
+            "scheduling_attempts": scheduling_attempts
         }
 
     def _initialize_agent(self):

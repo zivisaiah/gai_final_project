@@ -421,3 +421,11 @@ pydantic>=2.0.0
   - [x] Fixed SchedulingAdvisor.book_appointment() to properly handle slot_id requirement for database
   - [x] Updated Streamlit slot selection to pass correct slot_id to booking method
   - [x] Verified appointment booking works correctly with proper database constraints
+- [x] **CRITICAL**: Fixed "No Slots Available" Dead-End Conversation Issue
+  - [x] Implemented progressive scheduling failure handling in CoreAgent._handle_no_slots_available()
+  - [x] **Step 1**: Ask for flexibility when no slots match preferences (instead of endless promises)
+  - [x] **Step 2**: Offer specific alternative times from available slots
+  - [x] **Step 3**: Gracefully exit conversation if repeated scheduling fails
+  - [x] Enhanced ExitAdvisor to detect scheduling failure patterns (multiple flexibility requests, repeated promises)
+  - [x] Added 25+ evening slots to database for "after 4pm" requests
+  - [x] Prevents infinite "I'll find slots" loops - now provides concrete solutions or graceful exit
