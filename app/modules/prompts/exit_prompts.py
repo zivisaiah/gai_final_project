@@ -182,7 +182,8 @@ EXIT_SIGNALS = {
         "that's it", "I'm done", "finished", "complete",
         "no more questions", "nothing else", "pass on this",
         "not interested", "decline", "no thank you", "more interested in",
-        "prefer", "focused on", "looking for something else"
+        "prefer", "focused on", "looking for something else", "better with",
+        "stronger in", "specialized in", "work with", "experienced with"
     ],
     "implicit": [
         "I'll think about it", "get back to you",

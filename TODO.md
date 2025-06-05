@@ -198,6 +198,10 @@ All Phase 1 objectives achieved! Ready for Phase 2 development.
 - [x] **BUG FIX**: Fixed Exit Advisor decision logic
   - [x] Added explicit examples for "pass on opportunity" scenarios
   - [x] Enhanced EXIT_SIGNALS patterns to include common rejection phrases
+  - [x] **CRITICAL FIX**: Fixed technology preference detection
+    - [x] Added "better with", "stronger in", "specialized in", "work with", "experienced with" patterns
+    - [x] Verified "no, I'm better with Java" scenario correctly triggers END decision
+    - [x] Confirmed EXIT_SIGNALS fallback detection works properly
   - [x] Lowered confidence threshold from 0.85 to 0.7 for better responsiveness
   - [x] Fixed issue where conversations continued despite explicit user decline
 
