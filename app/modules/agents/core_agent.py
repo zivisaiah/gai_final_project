@@ -118,7 +118,8 @@ class CoreAgent:
         self._setup_decision_chain()
         
         # Initialize ExitAdvisor
-        self.exit_advisor = ExitAdvisor(model_name=model_name or self.settings.OPENAI_MODEL)
+        #self.exit_advisor = ExitAdvisor(model_name=model_name or self.settings.OPENAI_MODEL)
+        self.exit_advisor = ExitAdvisor()
     
     def _setup_decision_chain(self):
         """Set up the LangChain decision-making chain."""
