@@ -265,7 +265,7 @@ class ChatInterface:
         st.session_state.scheduling_context.update(context_updates)
     
     def clear_conversation(self):
-        """Clear the entire conversation."""
+        """Clear the entire conversation including agent memory."""
         st.session_state.messages = []
         st.session_state.conversation_id = f"conv_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         st.session_state.candidate_info = {
@@ -281,6 +281,19 @@ class ChatInterface:
             'selected_slot': None,
             'appointment_confirmed': False
         }
+        
+        # Clear Core Agent memory and conversation state
+        if 'core_agent' in st.session_state:
+            try:
+                # Clear the conversation memory
+                st.session_state.core_agent.memory.clear()
+                
+                # Clear conversation state for streamlit_session
+                if 'streamlit_session' in st.session_state.core_agent.conversations:
+                    del st.session_state.core_agent.conversations['streamlit_session']
+                    
+            except Exception as e:
+                print(f"Warning: Could not clear Core Agent memory: {e}")
     
     def export_conversation(self) -> Dict:
         """Export the conversation for analysis or storage."""
