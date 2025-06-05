@@ -400,8 +400,6 @@ pydantic>=2.0.0
 ## In Progress
 
 ## Planned
-- [ ] Test Clarity API integration (more metadata, retries)
-- [ ] Narrative Analysis
 - [ ] Fine-tuning `ExitAdvisor` for better intent detection
 - [ ] Add more comprehensive tests for all agent interactions
 
