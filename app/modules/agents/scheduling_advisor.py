@@ -603,14 +603,19 @@ class SchedulingAdvisor:
         formatted_datetime = slot_datetime.strftime("%A, %B %d, %Y at %I:%M %p")
         recruiter_name = recruiter.get('name', 'Our recruiter') if recruiter else 'Our recruiter'
         
-        return f"""🎉 **Interview Confirmed!**
+        return f"""🎉 **Interview Successfully Scheduled!**
 
 📅 **Date & Time:** {formatted_datetime}
 👤 **Interviewer:** {recruiter_name}
 ⏱️ **Duration:** {duration_minutes} minutes
 📧 **Format:** Video call (link will be sent via email)
 
-I'll send you a calendar invitation with all the details shortly. Please let me know if you need to reschedule or have any questions!"""
+You'll receive a calendar invitation with the meeting link and all details within the next few minutes.
+
+✅ **All set!** Thank you for your interest in our Python developer position. We look forward to speaking with you soon!
+
+---
+*This conversation is now complete. If you need to reschedule or have any questions, please contact our HR team directly.*"""
     
     def get_scheduling_statistics(self) -> Dict:
         """Get statistics about scheduling operations."""

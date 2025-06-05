@@ -75,6 +75,13 @@ class ChatInterface:
         """Display the chat header with title and info."""
         st.title("🤖 Python Developer Recruitment Assistant")
         
+        # Show conversation status prominently
+        stage = st.session_state.conversation_stage
+        if stage == 'completed':
+            st.success("✅ **Interview Scheduled Successfully!** - Conversation Complete")
+        elif stage == 'ended':
+            st.info("🔴 **Conversation Ended**")
+        
         # Display conversation info in sidebar
         with st.sidebar:
             st.header("📊 Conversation Info")
@@ -98,10 +105,15 @@ class ChatInterface:
                 if st.session_state.scheduling_context['appointment_confirmed']:
                     st.success("✅ Appointment Confirmed!")
             
-            # Clear conversation button
-            if st.button("🗑️ Clear Conversation", type="secondary"):
-                self.clear_conversation()
-                st.rerun()
+            # Different buttons based on conversation stage
+            if stage in ['completed', 'ended']:
+                if st.button("🆕 Start New Conversation", type="primary"):
+                    self.clear_conversation()
+                    st.rerun()
+            else:
+                if st.button("🗑️ Clear Conversation", type="secondary"):
+                    self.clear_conversation()
+                    st.rerun()
     
     def display_messages(self):
         """Display all chat messages."""
@@ -176,6 +188,7 @@ class ChatInterface:
                             st.write(f"📅 **Date & Time:** {details.get('datetime', 'TBD')}")
                             st.write(f"👤 **Interviewer:** {details.get('recruiter', 'TBD')}")
                             st.write(f"⏱️ **Duration:** {details.get('duration', 45)} minutes")
+                        st.info("✅ **Conversation Complete** - No further action needed.")
         
         elif message.role == 'system':
             with st.chat_message("assistant", avatar="ℹ️"):
@@ -184,8 +197,8 @@ class ChatInterface:
     def handle_user_input(self) -> Optional[str]:
         """Handle user input and return the message if submitted."""
         
-        # If conversation ended, do not show input
-        if st.session_state.conversation_stage == 'ended':
+        # If conversation ended or completed (appointment booked), do not show input
+        if st.session_state.conversation_stage in ['ended', 'completed']:
             return None
         
         # Chat input
@@ -311,10 +324,12 @@ class ChatInterface:
         """Display quick action buttons."""
         st.subheader("⚡ Quick Actions")
         
-        # If conversation ended, only show Start Over
-        if st.session_state.conversation_stage == 'ended':
-            if st.button("👋 Start Over"):
-                self.add_user_quick_message("Hi, I'd like to start over.")
+        # If conversation ended or completed, only show Start Over
+        if st.session_state.conversation_stage in ['ended', 'completed']:
+            if st.button("🆕 Start New Conversation", type="primary"):
+                self.clear_conversation()
+                st.rerun()
+            st.info("Conversation has concluded. Start a new one to continue.")
             return
         
         col1, col2, col3 = st.columns(3)
