@@ -191,31 +191,45 @@ pytest tests/
 ## 📁 Project Structure
 
 ```
-gai_final_project/
-├── app/                           # Main application code
-│   ├── modules/
-│   │   ├── agents/               # AI agents
-│   │   │   ├── core_agent.py     # Main conversation agent
-│   │   │   └── scheduling_advisor.py # Scheduling specialist
-│   │   ├── database/             # Database layer
-│   │   │   ├── models.py         # SQLAlchemy models
-│   │   │   └── sql_manager.py    # Database operations
-│   │   ├── prompts/              # LLM prompts
-│   │   │   ├── phase1_prompts.py # Core agent prompts
-│   │   │   └── scheduling_prompts.py # Scheduling prompts
-│   │   └── utils/                # Utilities
-│   │       ├── conversation.py   # Conversation management
-│   │       └── datetime_parser.py # Date/time parsing
-├── streamlit_app/                # Streamlit UI
-│   ├── components/
-│   │   └── chat_interface.py     # Chat UI components
-│   └── streamlit_main.py         # Main Streamlit app
-├── config/                       # Configuration
-│   └── phase1_settings.py        # Settings management
-├── data/                         # Data storage
-├── tests/                        # Test suite
-├── requirements.txt              # Dependencies
-└── README.md                     # This file
+gai_final_project-1/
+├── app/                          # Main application code
+│   └── modules/                  # Application modules
+│       ├── agents/               # AI agents (Core, Scheduling, Exit, Info)
+│       ├── database/             # Database layer (SQLAlchemy models, managers)
+│       ├── prompts/              # LLM prompts and templates
+│       └── utils/                # Utility functions and helpers
+├── streamlit_app/               # Streamlit UI application
+│   ├── components/              # Reusable UI components
+│   └── streamlit_main.py        # Main Streamlit application entry point
+├── config/                      # Configuration files and settings
+├── data/                        # Data storage and databases
+│   ├── conversations/           # Conversation logs and history
+│   ├── messages/                # Message data and templates
+│   └── vector_db/               # Vector database storage (ChromaDB)
+├── deployment/                  # Deployment configurations and scripts
+├── docs/                        # Project documentation
+├── fine_tuning/                 # Fine-tuning data and scripts
+│   └── data/                    # Training data for fine-tuning
+├── htmlcov/                     # Test coverage reports
+├── resources/                   # Project resources and documentation
+├── src/                         # Additional source code
+├── tests/                       # Complete test suite
+│   ├── evaluation_results/      # Test results and performance metrics
+│   └── tests/                   # Nested test structure
+│       └── evaluation_results/  # Additional evaluation data
+├── activate.sh                  # Virtual environment activation script
+├── env.example                  # Environment variables template
+├── LICENSE                      # MIT License
+├── monitor_logs.py              # Log monitoring utility
+├── mvc_monitor.py               # MVC architecture monitoring
+├── packages.txt                 # System packages for deployment
+├── pyproject.toml               # Modern Python project configuration
+├── README.md                    # Project documentation (this file)
+├── requirements-dev.txt         # Development dependencies
+├── requirements.txt             # Production dependencies
+├── setup.py                     # Package setup configuration
+├── test_complete_core_agent.py  # Core agent comprehensive tests
+└── TODO.md                      # Project tasks and progress tracking
 ```
 
 ## ⚙️ Configuration

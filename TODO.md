@@ -1,7 +1,7 @@
 # TODO - GAI Final Project Implementation
 
 ## 🎯 **PROJECT OVERVIEW**
-**SMS-based Recruitment Chatbot with Multi-Agent Architecture**
+**Multi-Agent Python Developer Recruitment Assistant**
 
 **Goal**: Build an incremental multi-agent system for Python developer recruitment:
 - Phase 1: Core Agent + Scheduling Advisor + Basic UI

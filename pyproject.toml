@@ -4,16 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gai_final_project"
-version = "0.1.0"
-description = "GAI Final Project"
+version = "1.0.0"
+description = "Multi-Agent Python Developer Recruitment Assistant - GAI Final Project"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "GAI Final Project Team", email = "team@gai-project.dev"},
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -25,9 +25,25 @@ classifiers = [
 ]
 dependencies = [
     "python-dotenv>=1.0.0",
+    "langchain-openai>=0.1.0",
+    "openai>=1.0.0",
+    "sqlalchemy>=2.0.23",
+    "streamlit>=1.28.0",
+    "python-dateutil>=2.8.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
     "requests>=2.31.0",
-    "numpy>=1.25.2",
-    "pandas>=2.1.3",
+    "numpy>=1.26.0",
+    "pandas>=2.1.0",
+    "scikit-learn>=1.3.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.17.0",
+    "langchain-community>=0.0.21",
+    "chromadb>=0.4.0",
+    "pypdf>=3.17.0",
+    "tiktoken>=0.5.0",
+    "sentence-transformers>=2.2.0",
 ]
 
 [project.optional-dependencies]

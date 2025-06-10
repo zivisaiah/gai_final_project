@@ -1,7 +1,7 @@
 # Core dependencies
 python-dotenv==1.0.0
 
-# Phase 1 Requirements: Core Agent + Scheduling Advisor + Streamlit UI
+# Multi-Agent System Requirements: Core Agent + Scheduling + Exit + Info Advisors + Streamlit UI
 langchain-openai>=0.1.0
 openai>=1.0.0
 sqlalchemy>=2.0.23

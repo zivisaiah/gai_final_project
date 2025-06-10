@@ -63,9 +63,9 @@ class Settings(BaseSettings):
     STREAMLIT_SERVER_ADDRESS: str = os.getenv("STREAMLIT_SERVER_ADDRESS", "localhost")
     
     # Application settings
-    APP_NAME: str = "GAI Final Project - Phase 1"
+    APP_NAME: str = "GAI Final Project - Multi-Agent Recruitment System"
     APP_VERSION: str = "1.0.0"
-    APP_DESCRIPTION: str = "SMS-based Recruitment Chatbot - Core Agent + Scheduling"
+    APP_DESCRIPTION: str = "Multi-Agent Python Developer Recruitment Assistant - Streamlit Web Application"
     
     # Conversation settings
     MAX_CONVERSATION_HISTORY: int = int(os.getenv("MAX_CONVERSATION_HISTORY", "10"))
