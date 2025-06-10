@@ -44,7 +44,7 @@ class ExitAdvisor:
     def __init__(
         self,
         model_name: str = None,
-        temperature: float = 0.1,
+        temperature: float = 1.0,
         memory: Optional[ConversationBufferMemory] = None
     ):
         """Initialize the Exit Advisor agent

@@ -8,7 +8,7 @@ from app.modules.prompts.exit_prompts import EXIT_SIGNALS
 @pytest.fixture
 def exit_advisor():
     """Create an Exit Advisor instance for testing."""
-    return ExitAdvisor(temperature=0.1)
+    return ExitAdvisor(temperature=1.0)
 
 @pytest.fixture
 def sample_conversation_history():
