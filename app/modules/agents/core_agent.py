@@ -1,6 +1,6 @@
 """
 Core Agent Implementation
-Phase 1: Conversation orchestration and decision making (Continue vs Schedule)
+Phase 3.3: Complete multi-agent orchestration with Info Advisor integration
 """
 
 import re
@@ -20,6 +20,7 @@ from app.modules.prompts.phase1_prompts import Phase1Prompts
 from config.phase1_settings import get_settings
 from app.modules.agents.exit_advisor import ExitAdvisor, ExitDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
+from app.modules.agents.info_advisor import InfoAdvisor, InfoResponse
 
 
 class AgentDecision(Enum):
@@ -27,6 +28,7 @@ class AgentDecision(Enum):
     CONTINUE = "CONTINUE"
     SCHEDULE = "SCHEDULE"
     END = "END"
+    INFO = "INFO"  # New: For job-related questions
 
 
 class ConversationState:
@@ -93,14 +95,16 @@ class ConversationState:
 
 class CoreAgent:
     """
-    Core Agent for Phase 1: Handles conversation flow and makes Continue vs Schedule decisions.
+    Core Agent for Phase 3.3: Complete multi-agent orchestration with Info Advisor.
     
-    This agent orchestrates recruitment conversations, gathering candidate information
-    and determining when to transition from conversation to interview scheduling.
+    This agent orchestrates recruitment conversations, intelligently routing between:
+    - Info Advisor: Job-related questions and information requests
+    - Scheduling Advisor: Interview scheduling and time management
+    - Exit Advisor: Conversation ending detection
     """
     
-    def __init__(self, openai_api_key: str = None, model_name: str = None):
-        """Initialize the Core Agent with LangChain components."""
+    def __init__(self, openai_api_key: str = None, model_name: str = None, vector_store_type: str = "local"):
+        """Initialize the Core Agent with all advisors."""
         self.settings = get_settings()
         
         # Initialize OpenAI client with Core Agent specific model
@@ -134,9 +138,12 @@ class CoreAgent:
         # Create candidate info extraction chain
         self._setup_candidate_info_chain()
         
-        # Initialize Advisors
+        # Initialize All Advisors
         self.exit_advisor = ExitAdvisor()
         self.scheduling_advisor = SchedulingAdvisor()
+        self.info_advisor = InfoAdvisor(vector_store_type=vector_store_type)
+        
+        self.logger.info(f"Core Agent initialized with {vector_store_type} vector store for Info Advisor")
     
     def _create_safe_llm(self, model_name: str, api_key: str, temperature: float, max_tokens: int) -> ChatOpenAI:
         """Create ChatOpenAI instance with safe temperature handling"""
@@ -164,21 +171,73 @@ class CoreAgent:
     
     def _setup_decision_chain(self):
         """Set up the LangChain decision-making chain."""
-        # Create prompt template
+        # Enhanced system prompt with INFO routing capability
+        enhanced_system_prompt = """You are a professional recruitment assistant for Python developer positions with multi-agent orchestration capabilities.
+
+## Your Capabilities:
+- Engage in professional, friendly conversation with candidates
+- Gather candidate information (name, experience, availability)
+- Route information requests to specialized advisors
+- Determine when to CONTINUE, SCHEDULE, END, or request INFO
+
+## Decision Framework & Response Format:
+You must analyze the conversation and respond with a single, valid JSON object. The JSON object must have this exact structure:
+{{
+  "decision": "CONTINUE|SCHEDULE|END|INFO",
+  "reasoning": "A brief explanation for your decision",
+  "response": "The natural, conversational message to send to the candidate"
+}}
+
+### CONTINUE:
+Choose when the conversation should proceed normally.
+- Building rapport or gathering basic information
+- Need more details from candidate
+- General conversation flow
+
+### SCHEDULE: 
+Choose when ready to schedule an interview.
+- Candidate has expressed clear interest and you have their basic info
+- Candidate has indicated availability
+- Natural scheduling moment reached
+
+### END:
+Choose when conversation should conclude.
+- Candidate clearly states not interested
+- Candidate found another job
+- Natural conversation ending
+
+### INFO:
+Choose when candidate asks specific questions about:
+- Job requirements, qualifications, technical skills needed
+- Role responsibilities, duties, day-to-day work
+- Company information, benefits, work environment
+- Technical details about the position
+- Any "what", "how", "why" questions about the job/role/company
+
+## CRITICAL: JSON FORMAT ONLY
+Your entire response must be only the JSON object. No additional text, explanations, or formatting outside the JSON structure.
+
+## Tone & Style:
+- Professional but warm and approachable
+- Concise but informative
+- Encouraging and positive"""
+        
+        # Create prompt template with proper context variables
         self.decision_prompt = ChatPromptTemplate.from_messages([
-            ("system", self.prompts.get_core_agent_prompt()),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{user_input}")
+            ("system", enhanced_system_prompt),
+            ("human", """Current User Message: {user_input}
+
+Conversation Context:
+{conversation_context}
+
+Candidate Information Gathered:
+{candidate_info}
+
+Analyze this context and respond with the JSON decision format only.""")
         ])
         
         # Create the chain
-        self.decision_chain = (
-            RunnablePassthrough.assign(
-                chat_history=lambda x: self.memory.chat_memory.messages
-            )
-            | self.decision_prompt
-            | self.llm
-        )
+        self.decision_chain = self.decision_prompt | self.llm
     
     def _setup_candidate_info_chain(self):
         """Set up the LangChain candidate information extraction chain."""
@@ -272,8 +331,32 @@ class CoreAgent:
             # Validate decision based on conversation context
             decision = self._validate_decision(decision, conversation)
             
+            # --- NEW: Info Advisor Logic ---
+            if decision == AgentDecision.INFO:
+                self.logger.info("Decision is INFO. Consulting Info Advisor for job-related answer.")
+                
+                try:
+                    # Get conversation history for context
+                    full_history = [{"role": m["role"], "content": m["content"]} for m in conversation.messages]
+                    
+                    # Ask Info Advisor for job-related information
+                    info_response: InfoResponse = await self.info_advisor.answer_question(
+                        question=user_message,
+                        conversation_history=full_history
+                    )
+                    
+                    # Return Info Advisor's response
+                    final_reasoning = f"Info request handled. Question type: {info_response.question_type}, Confidence: {info_response.confidence:.2f}, Has context: {info_response.has_context}"
+                    return decision, final_reasoning, info_response.answer
+                    
+                except Exception as e:
+                    self.logger.error(f"Error consulting Info Advisor: {e}")
+                    # Fallback to continue response
+                    fallback_response = "I'd be happy to help with information about this position. Could you please rephrase your question or be more specific about what you'd like to know?"
+                    return AgentDecision.CONTINUE, f"Info Advisor error, fallback response: {str(e)}", fallback_response
+            
             # --- Proactive Scheduling Logic ---
-            if decision == AgentDecision.SCHEDULE:
+            elif decision == AgentDecision.SCHEDULE:
                 self.logger.info("Decision is SCHEDULE. Consulting SchedulingAdvisor for available slots.")
                 
                 # Use the entire conversation history for context
