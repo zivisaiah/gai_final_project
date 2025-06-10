@@ -1,0 +1,80 @@
+[global]
+# Development mode - set to false for production
+developmentMode = false
+
+# Data directory for temporary files
+dataDir = ".streamlit"
+
+[server]
+# Network settings for deployment
+port = 8501
+baseUrlPath = ""
+enableCORS = false
+enableXsrfProtection = true
+
+# File watcher settings for deployment
+fileWatcherType = "none"
+runOnSave = false
+
+# Resource limits for cloud deployment
+maxUploadSize = 50
+maxMessageSize = 50
+
+# Session settings
+enableStaticServing = true
+
+[browser]
+# Disable auto-opening browser in cloud
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8501
+
+[logger]
+# Logging configuration for production
+level = "info"
+messageFormat = "%(asctime)s %(message)s"
+
+[client]
+# Client-side settings
+caching = true
+displayEnabled = true
+showErrorDetails = false
+
+[runner]
+# Performance optimizations
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+postScriptGC = true
+fastReruns = true
+
+[theme]
+# UI theme settings
+primaryColor = "#FF6B6B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[mapbox]
+# Disable mapbox for deployment
+token = ""
+
+[deprecation]
+# Handle deprecation warnings
+showfileUploaderEncoding = false
+showPyplotGlobalUse = false
+
+# Custom deployment settings
+[deployment]
+# Environment-specific settings
+environment = "production"
+debug = false
+testing = false
+
+# Security settings
+hideRunMenuButton = true
+hideDeployButton = true
+
+# Performance settings
+enableWebsocketCompression = true 

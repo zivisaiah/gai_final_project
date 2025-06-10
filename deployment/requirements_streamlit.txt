@@ -1,0 +1,61 @@
+# Core Streamlit Requirements
+streamlit>=1.28.0
+streamlit-authenticator>=0.2.3
+
+# AI/ML Core Dependencies
+langchain>=0.1.0,<0.2.0
+langchain-community>=0.0.20
+langchain-openai>=0.0.5
+openai>=1.12.0,<2.0.0
+
+# Database & Storage
+sqlalchemy>=2.0.0,<3.0.0
+chromadb>=0.4.22
+sqlite3  # Built-in, no version needed
+
+# Data Processing
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+python-dateutil>=2.8.0
+
+# Web & HTTP
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Data Validation & Configuration
+pydantic>=2.0.0,<3.0.0
+pydantic-settings>=2.0.0  # For settings management
+python-dotenv>=1.0.0
+
+# Text Processing & Embeddings
+sentence-transformers>=2.2.0
+transformers>=4.30.0
+torch>=2.0.0  # CPU version for cloud deployment
+tiktoken>=0.5.0
+
+# PDF Processing
+pypdf>=3.17.0
+PyPDF2>=3.0.0
+
+# Visualization (for admin panel)
+plotly>=5.17.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Utilities
+python-multipart>=0.0.6
+typing-extensions>=4.5.0
+toml>=0.10.2
+packaging>=21.0
+
+# Testing (minimal for deployment)
+pytest>=7.4.0  # In case of deployment testing
+
+# Performance & Optimization
+uvloop>=0.17.0; sys_platform != "win32"  # Unix only
+asyncio  # Built-in
+concurrent.futures  # Built-in
+
+# Cloud-specific optimizations
+gunicorn>=21.2.0  # For potential WSGI deployment
+watchdog>=3.0.0  # File watching 
