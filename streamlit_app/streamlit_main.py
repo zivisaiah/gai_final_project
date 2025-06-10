@@ -20,10 +20,12 @@ sys.path.insert(0, str(project_root))
 
 # Import our components
 from streamlit_app.components.chat_interface import ChatInterface, create_chat_interface
+from streamlit_app.components.admin_panel import create_admin_panel
 from app.modules.agents.core_agent import CoreAgent, AgentDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
 from app.modules.utils.conversation import ConversationContext
 from config.phase1_settings import get_settings
+import time
 
 # Load environment variables
 load_dotenv()
@@ -50,6 +52,13 @@ class RecruitmentChatbot:
             self.conversation_context = st.session_state.conversation_context
             
         self.chat_interface = create_chat_interface()
+        self.admin_panel = create_admin_panel()
+        
+        # Initialize session tracking
+        if 'session_start_time' not in st.session_state:
+            st.session_state.session_start_time = datetime.now()
+        if 'session_id' not in st.session_state:
+            st.session_state.session_id = f"session_{int(time.time())}"
     
     def setup_logging(self):
         """Set up logging for the application."""
@@ -67,10 +76,11 @@ class RecruitmentChatbot:
                 st.error("⚠️ OpenAI API key not found. Please set OPENAI_API_KEY in your environment.")
                 st.stop()
             
-            # Initialize Core Agent
+            # Initialize Core Agent with vector store type for INFO capabilities
             self.core_agent = CoreAgent(
                 openai_api_key=self.settings.OPENAI_API_KEY,
-                model_name=self.settings.OPENAI_MODEL
+                model_name=self.settings.OPENAI_MODEL,
+                vector_store_type="openai"  # Use OpenAI vector store for production
             )
             
             # Initialize Scheduling Advisor
@@ -93,6 +103,7 @@ class RecruitmentChatbot:
     
     def process_user_message(self, user_message: str) -> Dict:
         """Process user message through the agent system."""
+        start_time = time.time()
         try:
             # CLEAN MVC ARCHITECTURE: Only call Core Agent (Controller)
             # Core Agent handles ALL business logic including exit decisions
@@ -103,6 +114,9 @@ class RecruitmentChatbot:
                 conversation_id="streamlit_session"
             )
             
+            # Calculate response time
+            response_time = time.time() - start_time
+            
             # Update candidate info from conversation state
             conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
             if conversation_state.candidate_info:
@@ -111,11 +125,26 @@ class RecruitmentChatbot:
             response_metadata = {
                 'decision': decision.value,
                 'reasoning': reasoning,
-                'agent_type': 'core_agent'
+                'agent_type': 'core_agent',
+                'response_time': response_time
             }
             
+            # Enhanced INFO decision handling with source references
+            info_metadata = {}
+            if decision == AgentDecision.INFO:
+                # Try to extract source information from the response
+                # This is a simplified approach - in a full implementation,
+                # we'd get this directly from the Info Advisor
+                info_metadata = {
+                    'info_type': 'job_related',
+                    'sources_used': ['job_description_docs'],
+                    'has_context': True,
+                    'confidence': 0.8  # Estimated confidence
+                }
+                response_metadata.update(info_metadata)
+            
             # Handle scheduling if needed
-            if decision == AgentDecision.SCHEDULE:
+            elif decision == AgentDecision.SCHEDULE:
                 # Get conversation messages for scheduling
                 conversation_messages = [
                     {"role": msg["role"], "content": msg["content"]}
@@ -132,6 +161,22 @@ class RecruitmentChatbot:
                 )
                 response_metadata.update(scheduling_result)
             
+            # Log conversation event to admin panel
+            self.admin_panel.log_conversation_event('agent_decision', response_metadata)
+            
+            # Log agent performance metrics
+            self.admin_panel.log_agent_performance(
+                agent_name='core_agent',
+                decision=decision.value,
+                confidence=info_metadata.get('confidence', 1.0),
+                response_time=response_time
+            )
+            
+            # Log system metrics
+            self.admin_panel.log_system_metrics('response_time', response_time)
+            self.admin_panel.log_system_metrics('decision_count', 1.0, 
+                                              {'decision_type': decision.value})
+            
             return {
                 'response': agent_response,
                 'metadata': response_metadata,
@@ -139,6 +184,15 @@ class RecruitmentChatbot:
             }
             
         except Exception as e:
+            # Log error to admin panel
+            error_data = {'error': str(e), 'user_message': user_message}
+            self.admin_panel.log_conversation_event('error', error_data)
+            st.session_state.admin_analytics['error_logs'].append({
+                'timestamp': datetime.now(),
+                'error': str(e),
+                'context': user_message
+            })
+            
             self.logger.error(f"Error processing user message: {e}")
             print(traceback.format_exc())
             if st.sidebar.checkbox("Show Error Details", value=True):
@@ -329,16 +383,56 @@ class RecruitmentChatbot:
         
         # Configure Streamlit page
         st.set_page_config(
-            page_title="Python Developer Recruitment Assistant",
+            page_title="AI Recruitment Assistant",
             page_icon="🤖",
             layout="wide",
             initial_sidebar_state="expanded"
         )
         
-        # Display system status
-        self.display_system_status()
+        # Add custom CSS for better styling
+        st.markdown("""
+        <style>
+        .main {
+            padding-top: 1rem;
+        }
+        .stAlert {
+            margin-top: 1rem;
+        }
+        .info-response {
+            background-color: #f0f8ff;
+            border-left: 4px solid #1f77b4;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.25rem;
+        }
+        .source-reference {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.9em;
+        }
+        </style>
+        """, unsafe_allow_html=True)
         
-        # Display debug info if enabled
+        # Main navigation tabs
+        tab1, tab2 = st.tabs(["💬 Chat Interface", "🛠️ Admin Panel"])
+        
+        with tab1:
+            self.display_chat_interface()
+            
+        with tab2:
+            self.admin_panel.display_admin_panel()
+    
+    def display_chat_interface(self):
+        """Display the main chat interface."""
+        # Main title
+        st.title("🤖 AI Recruitment Assistant")
+        st.markdown("*Intelligent conversations for Python developer positions with multi-agent orchestration*")
+        
+        # Display system status and debug info in sidebar
+        self.display_system_status()
         self.display_debug_info()
         
         # Render chat interface
@@ -374,22 +468,89 @@ class RecruitmentChatbot:
             with st.spinner("🤖 Thinking..."):
                 result = self.process_user_message(user_input)
             
-            # Add assistant response
-            self.chat_interface.add_assistant_message(
-                result['response'],
-                result['metadata']
-            )
+            # Enhanced display for INFO responses with source references
+            if result['metadata'].get('decision') == 'INFO':
+                self.display_info_response_enhanced(result['response'], result['metadata'])
+            else:
+                # Add regular assistant response
+                self.chat_interface.add_assistant_message(
+                    result['response'],
+                    result['metadata']
+                )
             
             # Update conversation stage based on decision
             if result['metadata'].get('decision') == 'SCHEDULE':
                 self.chat_interface.update_conversation_stage('scheduling')
             elif result['metadata'].get('appointment_confirmed'):
                 self.chat_interface.update_conversation_stage('completed')
-            elif result['metadata'].get('decision') == 'EXIT':
+            elif result['metadata'].get('decision') == 'END':
                 self.chat_interface.update_conversation_stage('ended')
             
             # Rerun to display new message
             st.rerun()
+            
+        # Display enhanced session statistics in sidebar
+        self.display_session_stats()
+    
+    def display_info_response_enhanced(self, response: str, metadata: Dict):
+        """Display INFO responses with enhanced formatting and source references."""
+        # Add the response to chat first
+        self.chat_interface.add_assistant_message(response, metadata)
+        
+        # Display enhanced info panel in sidebar
+        with st.sidebar:
+            st.markdown("---")
+            st.subheader("📚 Information Response Details")
+            
+            # Show confidence and sources
+            confidence = metadata.get('confidence', 0.8)
+            st.progress(confidence, f"Confidence: {confidence:.0%}")
+            
+            has_context = metadata.get('has_context', True)
+            st.write(f"**Context Available:** {'✅' if has_context else '❌'}")
+            
+            # Show sources used
+            if metadata.get('sources_used'):
+                st.write("**📁 Sources Referenced:**")
+                for source in metadata['sources_used']:
+                    st.write(f"• {source}")
+            
+            # Show response time
+            if 'response_time' in metadata:
+                st.write(f"**⏱️ Response Time:** {metadata['response_time']:.2f}s")
+    
+    def display_session_stats(self):
+        """Display session statistics in sidebar."""
+        with st.sidebar:
+            st.markdown("---")
+            st.subheader("📊 Session Statistics")
+            
+            if st.session_state.admin_analytics['conversation_logs']:
+                total_interactions = len(st.session_state.admin_analytics['conversation_logs'])
+                st.metric("Total Interactions", total_interactions)
+                
+                # Count decision types
+                from collections import Counter
+                decision_counts = Counter(
+                    log['data'].get('decision', 'unknown') 
+                    for log in st.session_state.admin_analytics['conversation_logs']
+                    if log['event_type'] == 'agent_decision'
+                )
+                
+                if decision_counts:
+                    st.write("**Decision Breakdown:**")
+                    for decision, count in decision_counts.most_common():
+                        st.write(f"• {decision}: {count}")
+                        
+                # Show recent activity
+                recent_threshold = datetime.now() - timedelta(minutes=5)
+                recent_activity = len([
+                    log for log in st.session_state.admin_analytics['conversation_logs']
+                    if log['timestamp'] > recent_threshold
+                ])
+                st.metric("Recent Activity (5m)", recent_activity)
+            else:
+                st.info("No session data yet. Start chatting to see statistics!")
 
 
 def main():

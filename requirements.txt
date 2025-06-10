@@ -39,6 +39,9 @@ scikit-learn>=1.3.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
+# Added for Phase 3.4: Advanced Streamlit UI with admin panel
+plotly>=5.17.0
+
 # Added for compatibility with new LangChain imports
 langchain-community>=0.0.21
 
