@@ -494,7 +494,8 @@ class RecruitmentChatbot:
         if not st.session_state.get('registration_completed', False):
             # Check if the last message indicated registration is required
             if (st.session_state.messages and 
-                st.session_state.messages[-1].get('metadata', {}).get('action_required') == 'SHOW_REGISTRATION_FORM'):
+                hasattr(st.session_state.messages[-1], 'metadata') and
+                st.session_state.messages[-1].metadata.get('action_required') == 'SHOW_REGISTRATION_FORM'):
                 show_registration_form = True
             
             # Also show form if user is trying to schedule but hasn't registered
