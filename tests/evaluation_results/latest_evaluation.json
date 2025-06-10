@@ -1,0 +1,65 @@
+{
+  "timestamp": "20250610_110955",
+  "system_performance": {
+    "overall_score": 0.11999999999999998,
+    "target_met": "False",
+    "target_threshold": 0.85
+  },
+  "core_agent": {
+    "accuracy": 0.0,
+    "total_tests": 23,
+    "correct_predictions": 0,
+    "classification_report": {
+      "CONTINUE": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 5.0
+      },
+      "INFO": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 8.0
+      },
+      "SCHEDULE": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 5.0
+      },
+      "END": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 5.0
+      },
+      "micro avg": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 23.0
+      },
+      "macro avg": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 23.0
+      },
+      "weighted avg": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 23.0
+      }
+    }
+  },
+  "info_advisor": {
+    "average_quality_score": 0.29999999999999993,
+    "total_tests": 12
+  },
+  "evaluation_config": {
+    "model": "o4-mini",
+    "temperature": 1.0
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "timestamp": "20250610_111640",
+  "system_score": 0.5916666666666667,
+  "target_met": false,
+  "core_agent": {
+    "accuracy": 0.5833333333333334,
+    "total_tests": 12,
+    "correct_predictions": 7,
+    "results": [
+      {
+        "message": "Hi, I'm interested in this position",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true
+      },
+      {
+        "message": "Tell me about the company",
+        "expected": "CONTINUE",
+        "predicted": "INFO",
+        "correct": false
+      },
+      {
+        "message": "I have questions about the role",
+        "expected": "CONTINUE",
+        "predicted": "INFO",
+        "correct": false
+      },
+      {
+        "message": "What programming languages are required?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true
+      },
+      {
+        "message": "What are the main responsibilities?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true
+      },
+      {
+        "message": "What experience is needed?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true
+      },
+      {
+        "message": "I'd like to schedule an interview",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false
+      },
+      {
+        "message": "When can we meet?",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false
+      },
+      {
+        "message": "Let's set up a time",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false
+      },
+      {
+        "message": "I'm not interested",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true
+      },
+      {
+        "message": "I found another job",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true
+      },
+      {
+        "message": "This isn't a good fit",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true
+      }
+    ]
+  },
+  "info_advisor": {
+    "quality": 1.0,
+    "total_tests": 5,
+    "results": [
+      {
+        "question": "What programming languages are required?",
+        "answer_length": 130,
+        "confidence": 0.8,
+        "response_time": 0.5577094554901123,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What are the main responsibilities?",
+        "answer_length": 625,
+        "confidence": 0.8,
+        "response_time": 2.256103992462158,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What experience is needed?",
+        "answer_length": 813,
+        "confidence": 0.8,
+        "response_time": 2.766509771347046,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What is the salary range?",
+        "answer_length": 1217,
+        "confidence": 0.8,
+        "response_time": 3.3878352642059326,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What are the benefits?",
+        "answer_length": 598,
+        "confidence": 0.8,
+        "response_time": 2.505441665649414,
+        "quality_score": 1.0
+      }
+    ]
+  },
+  "vector_database": {
+    "success_rate": 0.0,
+    "total_queries": 3,
+    "successful_queries": 0
+  },
+  "evaluation_type": "simplified"
+}
