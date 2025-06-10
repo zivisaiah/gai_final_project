@@ -22,6 +22,7 @@ from langchain.tools import Tool
 from pydantic import BaseModel
 import json
 import re
+import logging
 
 from ..prompts.exit_prompts import (
     EXIT_DETECTION_TEMPLATE,
@@ -56,6 +57,9 @@ class ExitAdvisor:
         # Import settings here to avoid circular imports
         from config.phase1_settings import settings
         
+        # Initialize logger
+        self.logger = logging.getLogger(__name__)
+        
         # Use configuration-based model selection if not explicitly provided
         if model_name is None:
             model_name = settings.get_exit_advisor_model()
@@ -63,10 +67,8 @@ class ExitAdvisor:
         self.model_name = model_name
         self.is_fine_tuned = model_name.startswith("ft:") if model_name else False
         
-        self.llm = ChatOpenAI(
-            model_name=model_name,
-            temperature=temperature
-        )
+        # Initialize ChatOpenAI with safe temperature handling
+        self.llm = self._create_safe_llm(model_name, temperature)
         self.memory = memory or ConversationBufferMemory(
             memory_key="chat_history",
             input_key="input",
@@ -81,6 +83,26 @@ class ExitAdvisor:
         
         # Initialize the agent
         self._initialize_agent()
+
+    def _create_safe_llm(self, model_name: str, temperature: float) -> ChatOpenAI:
+        """Create ChatOpenAI instance with safe temperature handling"""
+        try:
+            # Try with the requested temperature first
+            return ChatOpenAI(
+                model_name=model_name,
+                temperature=temperature
+            )
+        except Exception as e:
+            # If temperature is not supported, try with default temperature (1.0)
+            if "temperature" in str(e).lower() and "unsupported" in str(e).lower():
+                self.logger.warning(f"Model {model_name} doesn't support temperature {temperature}, using default temperature (1.0)")
+                return ChatOpenAI(
+                    model_name=model_name,
+                    temperature=1.0
+                )
+            else:
+                # Re-raise if it's a different error
+                raise e
 
     def _create_tools(self) -> List[Tool]:
         """Create tools for exit detection"""

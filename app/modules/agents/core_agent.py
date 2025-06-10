@@ -105,9 +105,9 @@ class CoreAgent:
         
         # Initialize OpenAI client with Core Agent specific model
         core_model = model_name or self.settings.get_core_agent_model()
-        self.llm = ChatOpenAI(
+        self.llm = self._create_safe_llm(
+            model_name=core_model,
             api_key=openai_api_key or self.settings.OPENAI_API_KEY,
-            model=core_model,
             temperature=self.settings.OPENAI_TEMPERATURE,
             max_tokens=self.settings.OPENAI_MAX_TOKENS
         )
@@ -137,6 +137,30 @@ class CoreAgent:
         # Initialize Advisors
         self.exit_advisor = ExitAdvisor()
         self.scheduling_advisor = SchedulingAdvisor()
+    
+    def _create_safe_llm(self, model_name: str, api_key: str, temperature: float, max_tokens: int) -> ChatOpenAI:
+        """Create ChatOpenAI instance with safe temperature handling"""
+        try:
+            # Try with the requested temperature first
+            return ChatOpenAI(
+                api_key=api_key,
+                model=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+        except Exception as e:
+            # If temperature is not supported, try with default temperature (1.0)
+            if "temperature" in str(e).lower() and "unsupported" in str(e).lower():
+                self.logger.warning(f"Model {model_name} doesn't support temperature {temperature}, using default temperature (1.0)")
+                return ChatOpenAI(
+                    api_key=api_key,
+                    model=model_name,
+                    temperature=1.0,
+                    max_tokens=max_tokens
+                )
+            else:
+                # Re-raise if it's a different error
+                raise e
     
     def _setup_decision_chain(self):
         """Set up the LangChain decision-making chain."""
