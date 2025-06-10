@@ -1,32 +1,67 @@
-# 🤖 Python Developer Recruitment Assistant
+# 🤖 Multi-Agent Python Developer Recruitment Assistant
 
-**GAI Final Project - Phase 1: Core Foundation**
+**GAI Final Project - Complete Multi-Agent System**
 
-An intelligent SMS-based recruitment chatbot with multi-agent architecture for Python developer recruitment. Built with LangChain, OpenAI API, SQLite database, and Streamlit UI.
+An intelligent recruitment chatbot with advanced multi-agent architecture for Python developer recruitment. Features comprehensive information assistance, interview scheduling, conversation analytics, and cloud deployment capabilities. Built with LangChain, OpenAI API, vector databases, and advanced Streamlit UI.
 
 ## 🎯 Project Overview
 
-This project implements a sophisticated recruitment assistant that can:
-- 💬 Conduct natural conversations with job candidates
-- 🧠 Make intelligent decisions (Continue conversation vs Schedule interview)
-- 📅 Parse natural language date/time expressions ("next Friday", "tomorrow afternoon")
-- 🗄️ Manage interview scheduling with SQL database integration
-- 📱 Provide a beautiful Streamlit chat interface
-- 🔄 Track conversation state and candidate information
+This project implements a sophisticated multi-agent recruitment assistant that can:
+
+### 🎯 **Core Capabilities**
+- 💬 **Intelligent Conversations**: Multi-turn dialogue with context awareness and personality
+- 🧠 **Smart Decision Making**: 4-option routing (Continue, Schedule, Info, End) with confidence scoring
+- 📅 **Interview Scheduling**: Natural language parsing and intelligent slot management
+- 📚 **Information Assistant**: RAG-powered Q&A about job descriptions using vector databases
+- 📊 **Analytics Dashboard**: Real-time performance monitoring and conversation insights
+- 🚀 **Cloud Deployment**: Production-ready Streamlit Cloud integration
+
+### 🤖 **Multi-Agent Architecture**
+- **Core Agent**: Main orchestrator with intelligent routing to specialized advisors
+- **Info Advisor**: RAG-enabled Q&A agent with OpenAI Vector Store integration
+- **Scheduling Advisor**: Interview booking with SQL database and time preference understanding
+- **Exit Advisor**: Conversation termination detection with fine-tuning capabilities
+- **Admin Panel**: Real-time analytics, performance monitoring, and data export
 
 ## 🏗️ Architecture
 
-### Multi-Agent System
-- **Core Agent**: Main conversation orchestrator with Continue/Schedule decision making
-- **Scheduling Advisor**: Specialized agent for interview scheduling and time slot management
-- **Database Manager**: SQL operations for recruiters, time slots, and appointments
-- **DateTime Parser**: Natural language date/time parsing and business hours validation
+### 🏗️ **Multi-Agent System Architecture**
 
-### Technology Stack
-- **AI/ML**: LangChain + OpenAI GPT models
-- **Database**: SQLite with SQLAlchemy ORM
-- **UI**: Streamlit with custom chat components
-- **Backend**: Python with comprehensive error handling and logging
+#### **Core Agent (Main Orchestrator)**
+- **Decision Framework**: Intelligent routing among 4 options (CONTINUE, SCHEDULE, INFO, END)
+- **Context Management**: Maintains conversation state and candidate information
+- **Advisor Coordination**: Consults specialized agents for complex decisions
+- **Response Generation**: Combines advisor insights for optimal candidate experience
+
+#### **Specialized Advisors**
+- **Info Advisor**: RAG-powered Q&A using OpenAI Vector Store with job description embeddings
+- **Scheduling Advisor**: Time slot management with SQL database and calendar integration
+- **Exit Advisor**: Conversation termination detection with confidence scoring and fine-tuning
+
+#### **Data & Storage Layer**
+- **Vector Database**: ChromaDB + OpenAI Vector Store for document embeddings
+- **SQL Database**: SQLite/PostgreSQL for scheduling and conversation data
+- **Document Processing**: PDF parsing and intelligent text chunking
+
+### 🛠️ **Technology Stack**
+
+#### **AI/ML Framework**
+- **LangChain**: Agent orchestration and tool integration
+- **OpenAI API**: GPT models for conversation and embeddings
+- **Vector Databases**: ChromaDB (local) + OpenAI Vector Store (cloud)
+- **RAG Pipeline**: Retrieval-Augmented Generation for accurate information
+
+#### **Backend Infrastructure**
+- **Python 3.11+**: Core application logic
+- **SQLAlchemy**: Database ORM with migration support
+- **Pydantic**: Data validation and settings management
+- **AsyncIO**: Concurrent processing for performance
+
+#### **Frontend & Deployment**
+- **Streamlit**: Advanced UI with real-time analytics
+- **Plotly**: Interactive data visualization
+- **Streamlit Cloud**: Production deployment platform
+- **GitHub Actions**: CI/CD pipeline integration
 
 ## 🚀 Quick Start
 
