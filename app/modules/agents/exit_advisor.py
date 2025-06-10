@@ -73,6 +73,9 @@ class ExitAdvisor:
             return_messages=True
         )
         
+        # Store conversation history for tool access
+        self.current_conversation_history = []
+        
         # Initialize tools for exit detection
         self.tools = self._create_tools()
         
@@ -94,7 +97,7 @@ class ExitAdvisor:
             ),
             Tool(
                 name="analyze_conversation_context",
-                func=self._analyze_conversation_context,
+                func=self._analyze_conversation_context_wrapper,
                 description="Analyze the conversation context for exit signals"
             )
         ]
@@ -237,6 +240,10 @@ class ExitAdvisor:
             "scheduling_attempts": scheduling_attempts
         }
 
+    def _analyze_conversation_context_wrapper(self, current_message: str) -> Dict[str, Any]:
+        """Wrapper function for the _analyze_conversation_context method to work with LangChain tools"""
+        return self._analyze_conversation_context(current_message, self.current_conversation_history)
+
     def _initialize_agent(self):
         """Initialize the LangChain agent with prompts and tools"""
         self.agent = create_openai_functions_agent(
@@ -267,6 +274,9 @@ class ExitAdvisor:
         Returns:
             ExitDecision object containing the decision and reasoning
         """
+        # Store conversation history for tool access
+        self.current_conversation_history = conversation_history
+        
         # Prepare conversation context
         context = {
             "current_message": current_message,
