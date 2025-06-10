@@ -51,7 +51,8 @@ class InfoAdvisor:
         model_name: str = None,
         temperature: float = 0.3,
         memory: Optional[ConversationBufferMemory] = None,
-        vector_store: Optional[VectorStore] = None
+        vector_store: Optional[any] = None,
+        vector_store_type: str = "local"  # "local" or "openai"
     ):
         """Initialize the Info Advisor agent
         
@@ -59,7 +60,8 @@ class InfoAdvisor:
             model_name: The OpenAI model to use
             temperature: Model temperature (lower for more consistent answers)
             memory: Optional conversation memory
-            vector_store: Vector database for document retrieval
+            vector_store: Pre-initialized vector store (local VectorStore or OpenAIVectorStore)
+            vector_store_type: Type of vector store to use ("local" or "openai")
         """
         # Import settings here to avoid circular imports
         from config.phase1_settings import settings
@@ -72,6 +74,7 @@ class InfoAdvisor:
             model_name = settings.get_core_agent_model()
             
         self.model_name = model_name
+        self.vector_store_type = vector_store_type
         
         # Initialize ChatOpenAI with conservative temperature for factual responses
         self.llm = ChatOpenAI(
@@ -97,15 +100,26 @@ class InfoAdvisor:
         # Initialize the agent
         self._initialize_agent()
 
-    def _initialize_vector_store(self) -> VectorStore:
-        """Initialize vector store with default settings"""
+    def _initialize_vector_store(self):
+        """Initialize vector store based on type"""
         try:
-            return VectorStore(
-                collection_name="job_description_docs",
-                embedding_function="sentence_transformers"  # Use local embeddings for reliability
-            )
+            if self.vector_store_type == "openai":
+                # Import OpenAI Vector Store
+                from ..database.openai_vector_store import OpenAIVectorStore
+                
+                self.logger.info("Initializing OpenAI Vector Store...")
+                return OpenAIVectorStore(
+                    vector_store_name="job_description_docs"
+                )
+            else:
+                # Default to local ChromaDB
+                self.logger.info("Initializing local ChromaDB Vector Store...")
+                return VectorStore(
+                    collection_name="job_description_docs",
+                    embedding_function="sentence_transformers"  # Use local embeddings for reliability
+                )
         except Exception as e:
-            self.logger.error(f"Failed to initialize vector store: {e}")
+            self.logger.error(f"Failed to initialize {self.vector_store_type} vector store: {e}")
             # Return None if vector store initialization fails
             return None
 
@@ -314,20 +328,37 @@ class InfoAdvisor:
         if not self.vector_store:
             return {
                 "available": False,
-                "error": "Vector store not initialized"
+                "error": "Vector store not initialized",
+                "type": self.vector_store_type
             }
         
         try:
-            info = self.vector_store.get_collection_info()
-            return {
-                "available": True,
-                "collection_name": self.vector_store.collection_name,
-                "document_count": info.get("count", 0),
-                "status": "operational"
-            }
+            if self.vector_store_type == "openai":
+                # OpenAI Vector Store status
+                info = self.vector_store.get_vector_store_info()
+                return {
+                    "available": True,
+                    "type": "openai",
+                    "vector_store_name": info.get("name", "Unknown"),
+                    "vector_store_id": info.get("id", "Unknown"),
+                    "file_count": info.get("file_count", 0),
+                    "status": info.get("status", "Unknown"),
+                    "usage_bytes": info.get("usage_bytes", 0)
+                }
+            else:
+                # Local ChromaDB status
+                info = self.vector_store.get_collection_info()
+                return {
+                    "available": True,
+                    "type": "local",
+                    "collection_name": self.vector_store.collection_name,
+                    "document_count": info.get("count", 0),
+                    "status": "operational"
+                }
         except Exception as e:
             return {
                 "available": False,
+                "type": self.vector_store_type,
                 "error": str(e)
             }
 
