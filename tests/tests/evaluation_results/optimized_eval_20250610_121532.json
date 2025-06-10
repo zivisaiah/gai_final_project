@@ -1,0 +1,143 @@
+{
+  "timestamp": "20250610_121532",
+  "system_score": 0.4066666666666666,
+  "target_met": false,
+  "core_agent": {
+    "accuracy": 0.3333333333333333,
+    "total_tests": 12,
+    "correct_predictions": 4,
+    "results": [
+      {
+        "message": "Hi, I'm interested in this position",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "Tell me about the company",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "I have questions about the role",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "What programming languages are required?",
+        "expected": "INFO",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "What are the main responsibilities?",
+        "expected": "INFO",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "What experience is needed?",
+        "expected": "INFO",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "I'd like to schedule an interview",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "When can we meet?",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "Let's set up a time",
+        "expected": "SCHEDULE",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "I'm not interested",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true,
+        "reasoning": "Fallback detection based on explicit/implicit signals"
+      },
+      {
+        "message": "I found another job",
+        "expected": "END",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      },
+      {
+        "message": "This isn't a good fit",
+        "expected": "END",
+        "predicted": "CONTINUE",
+        "correct": false,
+        "reasoning": "Error occurred: 'Input to ChatPromptTemplate is missing variables {\\'\\\\n  \"decision\"\\'}.  Expected: [\\'\\\\n  \"decision\"\\', \\'candidate_info\\', \\'conversation_context\\', \\'user_input\\'] Received: [\\'user_input\\', \\'candidate_info\\', \\'conversation_context\\']\\nNote: if you intended {\\n  \"decision\"} to be part of the string and not a variable, please escape it with double curly braces like: \\'{{\\n  \"decision\"}}\\'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT '"
+      }
+    ]
+  },
+  "info_advisor": {
+    "quality": 0.8,
+    "total_tests": 5,
+    "results": [
+      {
+        "question": "What programming languages are required?",
+        "answer_length": 178,
+        "confidence": 0.8,
+        "response_time": 15.814895,
+        "quality_score": 0.8
+      },
+      {
+        "question": "What are the main responsibilities?",
+        "answer_length": 271,
+        "confidence": 0.8,
+        "response_time": 22.641842,
+        "quality_score": 0.8
+      },
+      {
+        "question": "What experience is needed?",
+        "answer_length": 666,
+        "confidence": 0.8,
+        "response_time": 15.351656,
+        "quality_score": 0.8
+      },
+      {
+        "question": "What is the salary range?",
+        "answer_length": 662,
+        "confidence": 0.8,
+        "response_time": 14.277222,
+        "quality_score": 0.8
+      },
+      {
+        "question": "What are the benefits?",
+        "answer_length": 416,
+        "confidence": 0.8,
+        "response_time": 10.820144,
+        "quality_score": 0.8
+      }
+    ]
+  },
+  "vector_database": {
+    "success_rate": 0.0,
+    "total_queries": 3,
+    "successful_queries": 0
+  },
+  "evaluation_type": "optimized"
+}

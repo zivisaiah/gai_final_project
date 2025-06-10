@@ -1,0 +1,143 @@
+{
+  "timestamp": "20250610_122017",
+  "system_score": 0.9600000000000001,
+  "target_met": true,
+  "core_agent": {
+    "accuracy": 1.0,
+    "total_tests": 12,
+    "correct_predictions": 12,
+    "results": [
+      {
+        "message": "Hi, I'm interested in this position",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "Tell me about the company",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "I have questions about the role",
+        "expected": "CONTINUE",
+        "predicted": "CONTINUE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "What programming languages are required?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "What are the main responsibilities?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "What experience is needed?",
+        "expected": "INFO",
+        "predicted": "INFO",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "I'd like to schedule an interview",
+        "expected": "SCHEDULE",
+        "predicted": "SCHEDULE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "When can we meet?",
+        "expected": "SCHEDULE",
+        "predicted": "SCHEDULE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "Let's set up a time",
+        "expected": "SCHEDULE",
+        "predicted": "SCHEDULE",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "I'm not interested",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "I found another job",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true,
+        "method": "keyword_routing"
+      },
+      {
+        "message": "This isn't a good fit",
+        "expected": "END",
+        "predicted": "END",
+        "correct": true,
+        "method": "keyword_routing"
+      }
+    ]
+  },
+  "info_advisor": {
+    "quality": 1.0,
+    "total_tests": 5,
+    "results": [
+      {
+        "question": "What programming languages are required?",
+        "answer_length": 180,
+        "confidence": 0.8,
+        "response_time": 23.582272,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What are the main responsibilities?",
+        "answer_length": 289,
+        "confidence": 0.8,
+        "response_time": 31.569148,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What experience is needed?",
+        "answer_length": 479,
+        "confidence": 0.8,
+        "response_time": 15.740718,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What is the salary range?",
+        "answer_length": 354,
+        "confidence": 0.8,
+        "response_time": 11.323419,
+        "quality_score": 1.0
+      },
+      {
+        "question": "What are the benefits?",
+        "answer_length": 469,
+        "confidence": 0.8,
+        "response_time": 21.224392,
+        "quality_score": 1.0
+      }
+    ]
+  },
+  "vector_database": {
+    "success_rate": 0.8,
+    "total_queries": 3,
+    "successful_queries": 2
+  },
+  "evaluation_type": "enhanced_keyword_routing"
+}

@@ -21,6 +21,7 @@ sys.path.insert(0, str(project_root))
 # Import our components
 from streamlit_app.components.chat_interface import ChatInterface, create_chat_interface
 from streamlit_app.components.admin_panel import create_admin_panel
+from streamlit_app.components.registration_form import create_registration_form
 from app.modules.agents.core_agent import CoreAgent, AgentDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
 from app.modules.utils.conversation import ConversationContext
@@ -53,6 +54,7 @@ class RecruitmentChatbot:
             
         self.chat_interface = create_chat_interface()
         self.admin_panel = create_admin_panel()
+        self.registration_form = create_registration_form()
         
         # Initialize session tracking
         if 'session_start_time' not in st.session_state:
@@ -105,6 +107,25 @@ class RecruitmentChatbot:
         """Process user message through the agent system."""
         start_time = time.time()
         try:
+            # Check if this is a scheduling request but registration is not complete
+            scheduling_keywords = ['schedule', 'interview', 'meet', 'appointment', 'when can we']
+            is_scheduling_request = any(keyword in user_message.lower() for keyword in scheduling_keywords)
+            
+            if is_scheduling_request and not st.session_state.get('registration_completed', False):
+                # Return a registration requirement message instead of processing
+                response_time = time.time() - start_time
+                return {
+                    'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that should appear below to proceed with scheduling.",
+                    'metadata': {
+                        'decision': 'REGISTRATION_REQUIRED',
+                        'reasoning': 'Scheduling requested but registration not completed',
+                        'agent_type': 'core_agent',
+                        'response_time': response_time,
+                        'action_required': 'SHOW_REGISTRATION_FORM'
+                    },
+                    'success': True
+                }
+            
             # CLEAN MVC ARCHITECTURE: Only call Core Agent (Controller)
             # Core Agent handles ALL business logic including exit decisions
             self.logger.info(f"CALLING CORE AGENT with user_message='{user_message}'")
@@ -145,6 +166,21 @@ class RecruitmentChatbot:
             
             # Handle scheduling if needed
             elif decision == AgentDecision.SCHEDULE:
+                # Double-check registration before proceeding with scheduling
+                if not st.session_state.get('registration_completed', False):
+                    return {
+                        'response': "I see you'd like to schedule an interview! Please complete the registration form first so I know who I'm scheduling the interview for.",
+                        'metadata': {
+                            'decision': 'REGISTRATION_REQUIRED',
+                            'reasoning': 'Scheduling decision made but registration incomplete',
+                            'agent_type': 'core_agent',
+                            'response_time': response_time,
+                            'action_required': 'SHOW_REGISTRATION_FORM'
+                        },
+                        'success': True
+                    }
+                
+                # Registration complete - proceed with scheduling
                 # Get conversation messages for scheduling
                 conversation_messages = [
                     {"role": msg["role"], "content": msg["content"]}
@@ -153,6 +189,22 @@ class RecruitmentChatbot:
                 
                 # Get candidate info to pass to scheduling advisor
                 candidate_info = conversation_state.candidate_info
+                
+                # Validate candidate info for scheduling
+                validation_result = self.scheduling_advisor.validate_candidate_for_scheduling(candidate_info)
+                
+                if not validation_result['is_valid']:
+                    return {
+                        'response': validation_result['message'],
+                        'metadata': {
+                            'decision': 'COLLECT_INFO',
+                            'reasoning': f"Missing required information: {', '.join(validation_result['missing_fields'])}",
+                            'agent_type': 'scheduling_advisor',
+                            'response_time': response_time,
+                            'missing_fields': validation_result['missing_fields']
+                        },
+                        'success': True
+                    }
                 
                 # Since Core Agent decided to SCHEDULE, get available slots directly
                 scheduling_result = self.get_available_slots_for_scheduling(
@@ -435,12 +487,54 @@ class RecruitmentChatbot:
         self.display_system_status()
         self.display_debug_info()
         
+        # Check if registration form should be displayed
+        show_registration_form = False
+        
+        # Show registration form if explicitly required or if scheduling was attempted without registration
+        if not st.session_state.get('registration_completed', False):
+            # Check if the last message indicated registration is required
+            if (st.session_state.messages and 
+                st.session_state.messages[-1].get('metadata', {}).get('action_required') == 'SHOW_REGISTRATION_FORM'):
+                show_registration_form = True
+            
+            # Also show form if user is trying to schedule but hasn't registered
+            if st.session_state.get('show_registration_prompt', False):
+                show_registration_form = True
+        
+        # Display registration form if needed
+        if show_registration_form:
+            st.markdown("---")
+            st.subheader("📋 Registration Required")
+            st.info("🔒 **Registration is required before scheduling interviews.** Please complete the form below:")
+            
+            # Display the registration form
+            registration_complete = self.registration_form.display_registration_form()
+            
+            if registration_complete:
+                st.success("✅ Registration completed! You can now schedule interviews.")
+                st.session_state.show_registration_prompt = False
+                st.rerun()
+            
+            st.markdown("---")
+        
+        # If registration is complete, show a summary
+        elif st.session_state.get('registration_completed', False):
+            with st.expander("👤 Registration Summary", expanded=False):
+                self.registration_form.display_registration_summary()
+        
         # Render chat interface
         user_input = self.chat_interface.render()
         
         # Check if this is a slot selection (PRIORITY: Handle slot selection regardless of user input)
         if (st.session_state.scheduling_context.get('selected_slot') and 
             not st.session_state.scheduling_context.get('appointment_confirmed')):
+            
+            # Ensure registration is complete before booking
+            if not st.session_state.get('registration_completed', False):
+                st.error("⚠️ Registration must be completed before booking appointments.")
+                st.session_state.show_registration_prompt = True
+                st.rerun()
+                return
             
             # Handle slot selection
             selected_slot = st.session_state.scheduling_context['selected_slot']
@@ -467,6 +561,10 @@ class RecruitmentChatbot:
             # Process regular user message
             with st.spinner("🤖 Thinking..."):
                 result = self.process_user_message(user_input)
+            
+            # Check if registration form should be shown after processing
+            if result['metadata'].get('action_required') == 'SHOW_REGISTRATION_FORM':
+                st.session_state.show_registration_prompt = True
             
             # Enhanced display for INFO responses with source references
             if result['metadata'].get('decision') == 'INFO':

@@ -902,4 +902,62 @@ I'll send you a calendar invitation with all the details shortly. Please let me 
             
         except Exception as e:
             self.logger.error(f"Error checking slot availability: {e}")
-            return False 
+            return False
+
+    def validate_candidate_for_scheduling(self, candidate_info: Dict) -> Dict:
+        """
+        Validate if candidate has sufficient information for scheduling.
+        
+        Args:
+            candidate_info: Dictionary containing candidate information
+            
+        Returns:
+            Dict with validation results and required actions
+        """
+        missing_fields = []
+        validation_result = {
+            'is_valid': False,
+            'missing_fields': [],
+            'action_required': None,
+            'message': ''
+        }
+        
+        # Check required fields for scheduling
+        required_fields = {
+            'name': 'Full name',
+            'email': 'Email address', 
+            'phone': 'Phone number',
+            'position': 'Position of interest'
+        }
+        
+        for field, display_name in required_fields.items():
+            if not candidate_info.get(field):
+                missing_fields.append(display_name)
+        
+        # Check for session-level registration completion
+        import streamlit as st
+        if hasattr(st, 'session_state') and not st.session_state.get('registration_completed', False):
+            validation_result.update({
+                'is_valid': False,
+                'missing_fields': ['Registration not completed'],
+                'action_required': 'REGISTRATION_REQUIRED',
+                'message': 'Please complete the registration form before scheduling an interview.'
+            })
+            return validation_result
+        
+        if missing_fields:
+            validation_result.update({
+                'is_valid': False,
+                'missing_fields': missing_fields,
+                'action_required': 'COLLECT_INFO',
+                'message': f'I need to collect some information before scheduling: {", ".join(missing_fields)}'
+            })
+        else:
+            validation_result.update({
+                'is_valid': True,
+                'missing_fields': [],
+                'action_required': None,
+                'message': 'Candidate information is complete for scheduling.'
+            })
+        
+        return validation_result 
