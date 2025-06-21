@@ -13,6 +13,8 @@ except ImportError:
 EXIT_SYSTEM_PROMPT = """You are an Exit Advisor agent specialized in detecting when a conversation should end.
 Your role is to analyze conversation context and determine if the user wants to end the conversation or if it has naturally concluded.
 
+**IMPORTANT: You must always respond in English only. Never use any other language in your responses.**
+
 Key Responsibilities:
 1. Detect explicit exit requests (e.g., "goodbye", "thank you", "that's all")
 2. Identify implicit exit signals (e.g., user satisfaction, task completion)

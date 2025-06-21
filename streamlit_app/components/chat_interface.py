@@ -410,7 +410,7 @@ Feel free to ask me anything or let me know if you're interested in scheduling a
         
         # If conversation ended, show farewell and do not accept input
         if st.session_state.conversation_stage == 'ended':
-            st.info("\n\n**השיחה הסתיימה. תודה ובהצלחה!**\n\nניתן להתחיל שיחה חדשה בלחיצה על 'Start Over'.")
+            st.info("\n\n**The conversation has ended. Thank you and good luck!**\n\nYou can start a new conversation by clicking 'Start Over'.")
             return None
         
         # Handle user input

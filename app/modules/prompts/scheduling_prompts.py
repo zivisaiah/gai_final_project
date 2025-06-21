@@ -14,6 +14,8 @@ class SchedulingPrompts:
     # Enhanced Unified Scheduling Advisor System Prompt
     SCHEDULING_ADVISOR_SYSTEM_PROMPT = """You are a specialized scheduling advisor for recruitment interviews. Your role is to analyze scheduling intent, parse time preferences, and determine when to schedule interviews.
 
+**IMPORTANT: You must always respond in English only. Never use any other language in your responses.**
+
 ## UNIFIED ANALYSIS PROCESS:
 For each candidate message, you must perform THREE tasks in a single analysis:
 
