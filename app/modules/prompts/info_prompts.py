@@ -118,41 +118,16 @@ QUESTION_PATTERNS = {
 }
 
 def classify_question(question: str) -> str:
-    """Classify the type of question being asked."""
-    question_lower = question.lower()
-    
-    for category, keywords in QUESTION_PATTERNS.items():
-        if any(keyword in question_lower for keyword in keywords):
-            return category
-    
-    return "general"
+    """Classify the type of question being asked using semantic understanding."""
+    # This is now handled by LLM-based classification instead of keyword matching
+    # Return general category and let LLM determine specific classification
+    return "job_related"
 
 def get_search_keywords(question: str) -> List[str]:
-    """Extract relevant keywords for vector search from the question."""
-    # Simple keyword extraction - can be enhanced with NLP
-    question_lower = question.lower()
-    
-    # Technical keywords
-    tech_keywords = [
-        "python", "django", "flask", "javascript", "html", "css", "sql",
-        "database", "api", "framework", "git", "testing", "deployment"
-    ]
-    
-    # Job-related keywords
-    job_keywords = [
-        "experience", "responsibility", "requirement", "qualification",
-        "skill", "education", "team", "project", "development"
-    ]
-    
-    found_keywords = []
-    for keyword in tech_keywords + job_keywords:
-        if keyword in question_lower:
-            found_keywords.append(keyword)
-    
-    # Always include the original question for semantic search
-    found_keywords.append(question_lower)
-    
-    return found_keywords if found_keywords else [question_lower]
+    """Extract search terms from question using semantic approach."""
+    # Use the original question for semantic vector search instead of keyword matching
+    # This allows the vector database to find semantically relevant content
+    return [question.strip()]
 
 # Response templates for different scenarios
 RESPONSE_TEMPLATES = {

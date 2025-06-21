@@ -107,22 +107,41 @@ class RecruitmentChatbot:
         """Process user message through the agent system."""
         start_time = time.time()
         try:
-            # Check if this is a scheduling request but registration is not complete
-            scheduling_keywords = ['schedule', 'interview', 'meet', 'appointment', 'when can we']
-            is_scheduling_request = any(keyword in user_message.lower() for keyword in scheduling_keywords)
-            
-            if is_scheduling_request and not st.session_state.get('registration_completed', False):
-                # Return a registration requirement message instead of processing
+            # Check if registration is not complete - let LLM handle intent detection
+            if not st.session_state.get('registration_completed', False):
+                # Process message through Core Agent to detect intent via LLM
+                agent_response, decision, reasoning = self.core_agent.process_message(
+                    user_message,
+                    conversation_id="streamlit_session"
+                )
+                
+                # If LLM detected scheduling intent, require registration
+                if decision == AgentDecision.SCHEDULE:
+                    response_time = time.time() - start_time
+                    return {
+                        'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that appears at the top of the page to proceed with scheduling.",
+                        'metadata': {
+                            'decision': 'REGISTRATION_REQUIRED',
+                            'reasoning': 'Scheduling requested but registration not completed',
+                            'agent_type': 'core_agent',
+                            'response_time': response_time,
+                            'action_required': 'SHOW_REGISTRATION_FORM'
+                        },
+                        'success': True
+                    }
+                
+                # Otherwise, continue with the normal response
                 response_time = time.time() - start_time
+                response_metadata = {
+                    'decision': decision.value,
+                    'reasoning': reasoning,
+                    'agent_type': 'core_agent',
+                    'response_time': response_time
+                }
+                
                 return {
-                    'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that appears at the top of the page to proceed with scheduling.",
-                    'metadata': {
-                        'decision': 'REGISTRATION_REQUIRED',
-                        'reasoning': 'Scheduling requested but registration not completed',
-                        'agent_type': 'core_agent',
-                        'response_time': response_time,
-                        'action_required': 'SHOW_REGISTRATION_FORM'
-                    },
+                    'response': agent_response,
+                    'metadata': response_metadata,
                     'success': True
                 }
             

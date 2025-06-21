@@ -446,15 +446,11 @@ class SchedulingAdvisor:
                 
                 return decision, reasoning, suggested_slots, response_message
             
-            # If structured format not found, try to infer from content
-            if any(keyword in response_text.lower() for keyword in ['schedule', 'appointment', 'available slots']):
-                decision = SchedulingDecision.SCHEDULE
-                reasoning = "Response indicates scheduling intent"
-                suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
-            else:
-                decision = SchedulingDecision.NOT_SCHEDULE
-                reasoning = "Continuing conversation to gather more information"
-                suggested_slots = []
+            # If structured format not found, default to not scheduling
+            # Let LLM-based structured responses drive decisions instead of keywords
+            decision = SchedulingDecision.NOT_SCHEDULE
+            reasoning = "Response format not recognized - continuing conversation to gather more information"
+            suggested_slots = []
             
             response_message = response_text.strip()
             
@@ -497,27 +493,56 @@ class SchedulingAdvisor:
         candidate_info: Dict,
         latest_message: str
     ) -> Tuple[SchedulingDecision, str, List[Dict], str]:
-        """Fallback rule-based scheduling decision when LLM fails."""
+        """Enhanced LLM-based fallback scheduling decision."""
         
-        message_lower = latest_message.lower()
-        
-        # Clear scheduling intent
-        if any(word in message_lower for word in ['schedule', 'interview', 'appointment', 'when can', 'available']):
-            if candidate_info.get("name") and candidate_info.get("interest_level") == "high":
+        try:
+            # Use a simple LLM call to determine scheduling intent instead of keywords
+            fallback_prompt = f"""
+            Analyze this message and determine if the user wants to schedule an interview.
+            
+            User message: "{latest_message}"
+            Candidate info: Name: {candidate_info.get('name', 'Unknown')}, Interest: {candidate_info.get('interest_level', 'unknown')}
+            
+            Respond with only: SCHEDULE or NOT_SCHEDULE
+            
+            SCHEDULE if: user clearly wants to schedule, book, set up an interview/meeting
+            NOT_SCHEDULE if: user is asking questions, needs more info, or unclear intent
+            """
+            
+            # Use the existing LLM chain for consistency
+            response = self.scheduling_chain.invoke({
+                "candidate_info": str(candidate_info),
+                "conversation_messages": [{"role": "user", "content": latest_message}],
+                "latest_message": latest_message,
+                "prompt": fallback_prompt
+            })
+            
+            response_text = response.content.strip().upper()
+            
+            if "SCHEDULE" in response_text and candidate_info.get("name"):
                 return (
                     SchedulingDecision.SCHEDULE,
-                    "User expressed scheduling intent with sufficient information",
+                    "LLM detected scheduling intent with sufficient candidate information",
                     [],
                     "Great! Let me check our available interview slots for you."
                 )
-        
-        # Default to not scheduling
-        return (
-            SchedulingDecision.NOT_SCHEDULE,
-            "Need more information before scheduling",
-            [],
-            "Could you tell me a bit more about your availability and when you'd prefer to have the interview?"
-        )
+            else:
+                return (
+                    SchedulingDecision.NOT_SCHEDULE,
+                    "LLM analysis suggests continuing conversation to gather more information",
+                    [],
+                    "Could you tell me a bit more about your availability and when you'd prefer to have the interview?"
+                )
+                
+        except Exception as e:
+            self.logger.error(f"Error in LLM fallback decision: {e}")
+            # Final fallback - conservative approach
+            return (
+                SchedulingDecision.NOT_SCHEDULE,
+                "Error in analysis - continuing conversation",
+                [],
+                "Could you tell me a bit more about what you're looking for?"
+            )
     
     def book_appointment(
         self,

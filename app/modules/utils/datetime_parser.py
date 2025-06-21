@@ -437,24 +437,7 @@ def parse_scheduling_intent(user_message: str, reference_datetime: datetime = No
     """
     parser = DateTimeParser(reference_datetime)
     
-    # Look for scheduling keywords
-    scheduling_keywords = [
-        'schedule', 'appointment', 'interview', 'meeting',
-        'available', 'free', 'when', 'time', 'date',
-        'can do', 'able to', 'good for', 'work for',
-        'only', 'prefer', 'better for', 'best for'
-    ]
-    
-    has_scheduling_intent = any(keyword in user_message.lower() for keyword in scheduling_keywords)
-    
-    if not has_scheduling_intent:
-        return {
-            'has_scheduling_intent': False,
-            'parsed_datetimes': [],
-            'confidence': 0.0
-        }
-    
-    # Parse datetime expressions
+    # Always parse datetime expressions - let the LLM determine intent
     parsed_results = parser.parse_datetime_expression(user_message)
     
     # Filter to business hours and days
@@ -477,9 +460,10 @@ def parse_scheduling_intent(user_message: str, reference_datetime: datetime = No
             'original_datetime': result['datetime']
         })
     
+    # Return datetime parsing results - let LLM determine scheduling intent
     return {
-        'has_scheduling_intent': True,
+        'has_scheduling_intent': len(business_results) > 0,  # Based on datetime presence, not keywords
         'parsed_datetimes': business_results,
-        'confidence': max([r['confidence'] for r in business_results]) if business_results else 0.5,
+        'confidence': max([r['confidence'] for r in business_results]) if business_results else 0.0,
         'user_message': user_message
     } 
