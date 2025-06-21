@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When working with LLM you must not use keywords or phrases to test condition or sentiment or any other condition, instead you should improce the prompting and use of LLM to exctract whatever neeed direcly from the LLM.

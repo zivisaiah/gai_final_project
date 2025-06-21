@@ -82,7 +82,7 @@ class RecruitmentChatbot:
             self.core_agent = CoreAgent(
                 openai_api_key=self.settings.OPENAI_API_KEY,
                 model_name=self.settings.OPENAI_MODEL,
-                vector_store_type="openai"  # Use OpenAI vector store for production
+                vector_store_type="local"  # Use local ChromaDB vector store
             )
             
             # Initialize Scheduling Advisor

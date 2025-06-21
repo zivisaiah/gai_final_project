@@ -116,7 +116,7 @@ class InfoAdvisor:
                 self.logger.info("Initializing local ChromaDB Vector Store...")
                 return VectorStore(
                     collection_name="job_description_docs",
-                    embedding_function="sentence_transformers"  # Use local embeddings for reliability
+                    embedding_function="openai"  # Use OpenAI embeddings for better quality
                 )
         except Exception as e:
             self.logger.error(f"Failed to initialize {self.vector_store_type} vector store: {e}")
@@ -261,30 +261,42 @@ class InfoAdvisor:
             
             # Choose appropriate template based on context availability
             if has_context and context.strip():
-                # Use RAG template with context
-                prompt_input = {
-                    "context": context,
-                    "question": question,
-                    "input": question,
-                    "chat_history": self._format_chat_history(conversation_history)
-                }
-                response = await self.agent_executor.ainvoke(prompt_input)
+                # Use direct RAG approach instead of agent executor
+                self.logger.info(f"Using RAG with context length: {len(context)}")
+                
+                # Create a simple prompt with context
+                rag_prompt = f"""You are an Information Advisor agent specialized in answering job-related questions using company information.
+
+**IMPORTANT: You must always respond in English only. Never use any other language in your responses.**
+
+Context from job documents:
+{context}
+
+Question: {question}
+
+Please provide a helpful, detailed answer based on the context above. Use the information from the job description to directly answer the candidate's question about the Python Developer position. Be specific and reference the requirements, responsibilities, or qualifications mentioned in the context."""
+
+                # Get response directly from LLM
+                response = await self.llm.ainvoke([HumanMessage(content=rag_prompt)])
+                answer = response.content if hasattr(response, 'content') else str(response)
                 confidence = 0.8  # High confidence when we have context
                 
             else:
                 # Use no-context template
-                no_context_prompt = INFO_NO_CONTEXT_TEMPLATE.format(question=question)
+                no_context_prompt = f"""You are an Information Advisor for a Python Developer position. 
+A user has asked a question, but no relevant context was found in the job documents.
+
+Question: {question}
+
+Provide a helpful response that:
+1. Acknowledges you don't have specific information about their question
+2. Suggests they ask during the interview process
+3. Maintains a helpful and professional tone
+4. Encourages them to continue asking other questions you might be able to help with"""
+
                 response = await self.llm.ainvoke([HumanMessage(content=no_context_prompt)])
+                answer = response.content if hasattr(response, 'content') else str(response)
                 confidence = 0.3  # Lower confidence without context
-                
-                # Extract text from response
-                if hasattr(response, 'content'):
-                    response = {"output": response.content}
-                else:
-                    response = {"output": str(response)}
-            
-            # Extract the answer from response
-            answer = response.get("output", str(response))
             
             return InfoResponse(
                 answer=answer,

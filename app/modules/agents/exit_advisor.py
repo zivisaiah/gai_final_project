@@ -1,5 +1,4 @@
 from typing import Dict, List, Optional, Tuple, Any
-from langchain.agents import AgentExecutor, create_openai_functions_agent
 try:
     from langchain_openai import ChatOpenAI
 except ImportError:
@@ -10,26 +9,14 @@ except ImportError:
         from langchain.chat_models import ChatOpenAI
 
 try:
-    from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
     from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 except ImportError:
     # Fallback for older langchain versions
-    from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
     from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
-from langchain.memory import ConversationBufferMemory
-from langchain.tools import Tool
 from pydantic import BaseModel
 import json
-import re
 import logging
-
-from ..prompts.exit_prompts import (
-    EXIT_DETECTION_TEMPLATE,
-    get_farewell_template,
-    CONFIDENCE_THRESHOLDS,
-    EXIT_SIGNALS
-)
 
 class ExitDecision(BaseModel):
     """Model for exit advisor's decision"""
@@ -39,20 +26,20 @@ class ExitDecision(BaseModel):
     farewell_message: Optional[str] = None
 
 class ExitAdvisor:
-    """Agent responsible for detecting conversation end scenarios"""
+    """Agent responsible for detecting conversation end scenarios using pure LLM analysis"""
     
     def __init__(
         self,
         model_name: str = None,
-        temperature: float = 1.0,
-        memory: Optional[ConversationBufferMemory] = None
+        temperature: float = 0.3,
+        memory: Optional[any] = None  # Keep for compatibility but not used
     ):
         """Initialize the Exit Advisor agent
         
         Args:
             model_name: The OpenAI model to use
             temperature: Model temperature (lower for more consistent decisions)
-            memory: Optional conversation memory
+            memory: Optional conversation memory (kept for compatibility)
         """
         # Import settings here to avoid circular imports
         from config.phase1_settings import settings
@@ -69,20 +56,8 @@ class ExitAdvisor:
         
         # Initialize ChatOpenAI with safe temperature handling
         self.llm = self._create_safe_llm(model_name, temperature)
-        self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            input_key="input",
-            return_messages=True
-        )
         
-        # Store conversation history for tool access
-        self.current_conversation_history = []
-        
-        # Initialize tools for exit detection
-        self.tools = self._create_tools()
-        
-        # Initialize the agent
-        self._initialize_agent()
+        self.logger.info(f"Exit Advisor initialized with model: {model_name}")
 
     def _create_safe_llm(self, model_name: str, temperature: float) -> ChatOpenAI:
         """Create ChatOpenAI instance with safe temperature handling"""
@@ -104,190 +79,80 @@ class ExitAdvisor:
                 # Re-raise if it's a different error
                 raise e
 
-    def _create_tools(self) -> List[Tool]:
-        """Create tools for exit detection"""
-        return [
-            Tool(
-                name="check_explicit_exit",
-                func=self._check_explicit_exit,
-                description="Check if the message contains explicit exit signals"
-            ),
-            Tool(
-                name="check_implicit_exit",
-                func=self._check_implicit_exit,
-                description="Check if the message contains implicit exit signals"
-            ),
-            Tool(
-                name="analyze_conversation_context",
-                func=self._analyze_conversation_context_wrapper,
-                description="Analyze the conversation context for exit signals"
-            )
-        ]
-
-    def _check_explicit_exit(self, message: str) -> Dict[str, Any]:
-        """Check for explicit exit signals in the message"""
-        message_lower = message.lower()
-        found_signals = [
-            signal for signal in EXIT_SIGNALS["explicit"]
-            if signal in message_lower
-        ]
-        return {
-            "has_explicit_exit": len(found_signals) > 0,
-            "found_signals": found_signals,
-            "confidence": 0.9 if found_signals else 0.0
-        }
-
-    def _check_implicit_exit(self, message: str) -> Dict[str, Any]:
-        """Check for implicit exit signals in the message"""
-        message_lower = message.lower()
-        found_signals = [
-            signal for signal in EXIT_SIGNALS["implicit"]
-            if signal in message_lower
-        ]
-        return {
-            "has_implicit_exit": len(found_signals) > 0,
-            "found_signals": found_signals,
-            "confidence": 0.7 if found_signals else 0.0
-        }
-
-    def _analyze_conversation_context(
-        self,
-        current_message: str,
-        conversation_history: List[Dict[str, str]]
-    ) -> Dict[str, Any]:
-        """Analyze the conversation context for exit signals"""
-        # Check if the conversation has reached a natural conclusion
-        last_messages = conversation_history[-3:] if len(conversation_history) >= 3 else conversation_history
+    def _create_exit_analysis_prompt(self, current_message: str, conversation_history: List[Dict[str, str]]) -> str:
+        """Create a comprehensive prompt for LLM-based exit analysis"""
         
-        # Check for task completion signals
-        task_completion_phrases = [
-            "scheduled", "booked", "confirmed", "completed",
-            "finished", "done", "got what I needed"
-        ]
-        
-        has_task_completion = any(
-            phrase in current_message.lower()
-            for phrase in task_completion_phrases
-        )
-        
-        # Check for satisfaction signals
-        satisfaction_phrases = [
-            "thank you", "thanks", "great", "perfect",
-            "excellent", "that's what I needed"
-        ]
-        
-        has_satisfaction = any(
-            phrase in current_message.lower()
-            for phrase in satisfaction_phrases
-        )
-        
-        # Check for scheduling failure patterns
-        scheduling_failure_indicators = self._detect_scheduling_failure(conversation_history)
-        
-        # Calculate overall confidence
-        confidence = 0.0
-        if has_task_completion or has_satisfaction:
-            confidence = 0.8
-        elif scheduling_failure_indicators["has_failure"]:
-            confidence = scheduling_failure_indicators["confidence"]
-        
-        return {
-            "has_task_completion": has_task_completion,
-            "has_satisfaction": has_satisfaction,
-            "has_scheduling_failure": scheduling_failure_indicators["has_failure"],
-            "scheduling_failure_reason": scheduling_failure_indicators["reason"],
-            "confidence": confidence,
-            "context_length": len(conversation_history)
-        }
-    
-    def _detect_scheduling_failure(self, conversation_history: List[Dict[str, str]]) -> Dict[str, Any]:
-        """Detect if scheduling has repeatedly failed"""
-        
-        # Look for patterns indicating scheduling difficulties
-        assistant_messages = [
-            msg["content"].lower() for msg in conversation_history[-10:]  # Last 10 messages
-            if msg.get("role") == "assistant"
-        ]
-        
-        # Count flexibility requests
-        flexibility_requests = sum(
-            1 for msg in assistant_messages
-            if any(phrase in msg for phrase in [
-                "flexibility", "alternative", "different time", 
-                "business hours", "available slots", "timing"
+        # Format conversation history
+        history_text = ""
+        if conversation_history:
+            history_text = "\n".join([
+                f"{'Assistant' if msg.get('role') == 'assistant' else 'User'}: {msg.get('content', '')}"
+                for msg in conversation_history[-8:]  # Last 8 messages for context
             ])
-        )
         
-        # Count promises without delivery
-        promises = sum(
-            1 for msg in assistant_messages
-            if any(phrase in msg for phrase in [
-                "i'll find", "let me check", "i'll look", 
-                "get back to you", "check our calendar"
-            ])
-        )
-        
-        # Check for repeated scheduling attempts
-        scheduling_attempts = sum(
-            1 for msg in assistant_messages
-            if any(phrase in msg for phrase in [
-                "schedule", "interview", "appointment", "slots", "available"
-            ])
-        )
-        
-        # Determine if there's a scheduling failure pattern
-        has_failure = False
-        reason = ""
-        confidence = 0.0
-        
-        if flexibility_requests >= 2:
-            has_failure = True
-            reason = "Multiple flexibility requests without successful scheduling"
-            confidence = 0.85
-        elif promises >= 3 and scheduling_attempts >= 3:
-            has_failure = True
-            reason = "Repeated promises without delivering concrete options"
-            confidence = 0.75
-        elif len(conversation_history) >= 8 and scheduling_attempts >= 4:
-            has_failure = True
-            reason = "Extended conversation without successful scheduling resolution"
-            confidence = 0.7
-        
-        return {
-            "has_failure": has_failure,
-            "reason": reason,
-            "confidence": confidence,
-            "flexibility_requests": flexibility_requests,
-            "promises": promises,
-            "scheduling_attempts": scheduling_attempts
-        }
+        prompt = f"""You are an Expert Exit Detection Agent for a recruitment conversation system.
 
-    def _analyze_conversation_context_wrapper(self, current_message: str) -> Dict[str, Any]:
-        """Wrapper function for the _analyze_conversation_context method to work with LangChain tools"""
-        return self._analyze_conversation_context(current_message, self.current_conversation_history)
+**CRITICAL INSTRUCTION: You must always respond in English only. Never use any other language.**
 
-    def _initialize_agent(self):
-        """Initialize the LangChain agent with prompts and tools"""
-        self.agent = create_openai_functions_agent(
-            llm=self.llm,
-            prompt=EXIT_DETECTION_TEMPLATE,
-            tools=self.tools
-        )
-        
-        self.agent_executor = AgentExecutor.from_agent_and_tools(
-            agent=self.agent,
-            tools=self.tools,
-            memory=self.memory,
-            verbose=True,
-            output_key="output"
-        )
+Your task is to analyze whether a recruitment conversation should END or CONTINUE based on the user's latest message and conversation context.
+
+**CONVERSATION CONTEXT:**
+{history_text}
+
+**LATEST USER MESSAGE:**
+{current_message}
+
+**ANALYSIS GUIDELINES:**
+
+DO **END** the conversation when you detect:
+1. **Clear Disinterest**: User explicitly states they're not interested, have found another job, or want to pass
+2. **Polite Decline**: User politely declines or says "no thank you"
+3. **Task Completion**: User confirms their needs are fully met and they're ready to conclude
+4. **Explicit Goodbye**: User says goodbye, thanks for time, or indicates they need to leave
+5. **Topic Change**: User shifts to completely unrelated topics unrelated to job/career
+
+DO **CONTINUE** the conversation when you detect:
+1. **Interest Signals**: User expresses interest, curiosity, or engagement ("interested", "sounds good", "tell me more")
+2. **Information Sharing**: User shares background, experience, skills, or qualifications
+3. **Questions**: User asks about the role, company, process, or next steps
+4. **Availability**: User mentions their schedule, availability, or readiness to proceed
+5. **Engagement**: User is actively participating in job-related discussion
+6. **Scheduling Intent**: User shows willingness to schedule or move forward
+7. **Neutral Responses**: Simple acknowledgments or unclear intent
+
+**IMPORTANT CONTEXT UNDERSTANDING:**
+- "Thanks" + Interest Signal = CONTINUE (e.g., "Thanks, I'm very interested")
+- "Thanks" + Goodbye Signal = END (e.g., "Thanks, that's all I need")
+- Questions about role/process = CONTINUE
+- Expressing qualifications/experience = CONTINUE
+- Simple greetings or acknowledgments = CONTINUE
+
+**RESPONSE FORMAT:**
+You must respond with a valid JSON object:
+{{
+    "should_exit": boolean,
+    "confidence": float (0.0-1.0),
+    "reason": "Detailed explanation of your decision",
+    "farewell_message": "Appropriate goodbye message if should_exit is true, null otherwise"
+}}
+
+**EXAMPLES:**
+- "Thanks, I'm very interested!" → should_exit: false (interest expressed)
+- "Thanks, but I'm not looking right now" → should_exit: true (clear decline)
+- "What are the requirements?" → should_exit: false (seeking information)
+- "I have 5 years Python experience" → should_exit: false (sharing qualifications)
+- "I need to think about it and get back to you" → should_exit: true (postponing decision)
+
+Analyze the conversation carefully and make your decision based on the overall context and user intent."""
+
+        return prompt
 
     async def analyze_conversation(
         self,
         current_message: str,
         conversation_history: List[Dict[str, str]]
     ) -> ExitDecision:
-        """Analyze the conversation and determine if it should end
+        """Analyze the conversation and determine if it should end using pure LLM analysis
         
         Args:
             current_message: The latest message from the user
@@ -296,64 +161,69 @@ class ExitAdvisor:
         Returns:
             ExitDecision object containing the decision and reasoning
         """
-        # Store conversation history for tool access
-        self.current_conversation_history = conversation_history
-        
-        # Prepare conversation context
-        context = {
-            "current_message": current_message,
-            "conversation_history": conversation_history
-        }
-        
-        # Run the agent to analyze the conversation
-        result = await self.agent_executor.ainvoke({
-            "input": current_message,
-            "chat_history": conversation_history,
-            "agent_scratchpad": []
-        })
-        
         try:
-            # Parse the agent's response
-            decision_data = json.loads(result["output"])
+            # Create comprehensive analysis prompt
+            analysis_prompt = self._create_exit_analysis_prompt(current_message, conversation_history)
             
-            # Create the exit decision
-            decision = ExitDecision(
-                should_exit=decision_data["should_exit"],
-                confidence=decision_data["confidence"],
-                reason=decision_data["reason"],
-                farewell_message=decision_data.get("farewell_message")
-            )
+            # Get LLM analysis
+            response = await self.llm.ainvoke([HumanMessage(content=analysis_prompt)])
+            response_text = response.content if hasattr(response, 'content') else str(response)
             
-            # If we should exit but no farewell message was provided,
-            # generate one based on context
-            if decision.should_exit and not decision.farewell_message:
-                decision.farewell_message = get_farewell_template({
-                    "scheduling_completed": "scheduled" in current_message.lower(),
-                    "information_provided": "information" in current_message.lower(),
-                    "needs_consideration": any(phrase in current_message.lower() 
-                                            for phrase in ["think", "consider", "review"]),
-                    "technical_issue": any(phrase in current_message.lower() 
-                                         for phrase in ["error", "issue", "problem"])
-                })
+            # Parse the JSON response
+            try:
+                # Clean up the response (remove markdown formatting if present)
+                response_text = response_text.strip()
+                if response_text.startswith("```json"):
+                    response_text = response_text[7:]
+                if response_text.endswith("```"):
+                    response_text = response_text[:-3]
+                response_text = response_text.strip()
+                
+                decision_data = json.loads(response_text)
+                
+                # Create the exit decision
+                decision = ExitDecision(
+                    should_exit=decision_data["should_exit"],
+                    confidence=decision_data["confidence"],
+                    reason=decision_data["reason"],
+                    farewell_message=decision_data.get("farewell_message")
+                )
+                
+                self.logger.info(f"Exit analysis: should_exit={decision.should_exit}, confidence={decision.confidence:.2f}, reason={decision.reason}")
+                return decision
+                
+            except (json.JSONDecodeError, KeyError) as e:
+                self.logger.warning(f"Failed to parse LLM response as JSON: {e}. Response: {response_text}")
+                
+                # Fallback: analyze the response text for decision
+                response_lower = response_text.lower()
+                
+                # Look for explicit decision indicators in the response
+                if "should_exit\": true" in response_lower or "should end" in response_lower:
+                    should_exit = True
+                    confidence = 0.6
+                    reason = "LLM indicated conversation should end (fallback parsing)"
+                else:
+                    should_exit = False
+                    confidence = 0.4
+                    reason = "LLM response unclear, defaulting to continue (fallback parsing)"
+                
+                return ExitDecision(
+                    should_exit=should_exit,
+                    confidence=confidence,
+                    reason=reason,
+                    farewell_message="Thank you for your time! Feel free to reach out if you have any questions." if should_exit else None
+                )
             
-            return decision
+        except Exception as e:
+            self.logger.error(f"Error in exit analysis: {e}")
             
-        except (json.JSONDecodeError, KeyError) as e:
-            # Fallback to basic exit detection if parsing fails
-            explicit_check = self._check_explicit_exit(current_message)
-            implicit_check = self._check_implicit_exit(current_message)
-            
-            should_exit = explicit_check["has_explicit_exit"] or implicit_check["has_implicit_exit"]
-            confidence = max(
-                explicit_check["confidence"],
-                implicit_check["confidence"]
-            )
-            
+            # Safe fallback: default to continue conversation
             return ExitDecision(
-                should_exit=should_exit,
-                confidence=confidence,
-                reason="Fallback detection based on explicit/implicit signals",
-                farewell_message=get_farewell_template({}) if should_exit else None
+                should_exit=False,
+                confidence=0.2,
+                reason=f"Error in analysis, defaulting to continue: {str(e)}",
+                farewell_message=None
             )
 
     def get_farewell_message(self, context: Dict[str, Any]) -> str:
@@ -365,4 +235,12 @@ class ExitAdvisor:
         Returns:
             A personalized farewell message
         """
-        return get_farewell_template(context) 
+        # Simple fallback farewell messages
+        if context.get("scheduling_completed"):
+            return "Great! Your interview has been scheduled. We look forward to meeting you. If you need to make any changes, please let us know. Have a wonderful day!"
+        elif context.get("information_provided"):
+            return "I'm glad I could provide the information you needed. If you have any more questions, don't hesitate to ask. Have a great day!"
+        elif context.get("needs_consideration"):
+            return "Thank you for your interest. Take your time to consider the opportunity. When you're ready to proceed, we'll be here. Have a great day!"
+        else:
+            return "Thank you for your time! If you need anything else, feel free to reach out. Have a great day!" 

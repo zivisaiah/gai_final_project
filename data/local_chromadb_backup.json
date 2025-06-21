@@ -15,5 +15,6 @@
     }
   ],
   "source": "local_chromadb",
-  "migration_version": "1.0"
+  "migration_version": "1.0",
+  "embedding_function": "openai"
 }
