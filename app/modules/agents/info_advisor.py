@@ -124,22 +124,12 @@ class InfoAdvisor:
             return None
 
     def _create_tools(self) -> List[Tool]:
-        """Create tools for information retrieval and processing"""
+        """Create tools for information retrieval (simplified - no keyword matching)"""
         return [
             Tool(
                 name="search_job_documents",
                 func=self._search_documents,
-                description="Search job description documents for relevant information"
-            ),
-            Tool(
-                name="classify_question_type",
-                func=self._classify_question_wrapper,
-                description="Classify the type of question being asked"
-            ),
-            Tool(
-                name="extract_search_keywords",
-                func=self._extract_keywords_wrapper,
-                description="Extract relevant keywords for document search"
+                description="Search job description documents for relevant information using semantic similarity"
             )
         ]
 

@@ -854,7 +854,7 @@ You'll receive a calendar invitation with the meeting link and all details withi
         latest_message: str
     ) -> SchedulingDecision:
         """
-        Apply final validation rules to the unified decision.
+        Apply final validation rules to the unified decision using LLM analysis.
         
         Args:
             decision: LLM's decision
@@ -872,11 +872,33 @@ You'll receive a calendar invitation with the meeting link and all details withi
             self.logger.info("Overriding SCHEDULE to NOT_SCHEDULE - missing essential candidate info")
             return SchedulingDecision.NOT_SCHEDULE
         
-        # Check for clear rejection signals
-        rejection_signals = ['not interested', 'found another', 'pass on', 'not a good fit']
-        if any(signal in latest_message.lower() for signal in rejection_signals):
-            self.logger.info("Overriding to NOT_SCHEDULE - detected rejection signal")
-            return SchedulingDecision.NOT_SCHEDULE
+        # Use LLM to detect rejection signals instead of keyword matching
+        if decision == SchedulingDecision.SCHEDULE:
+            rejection_analysis_prompt = f"""Analyze this user message for rejection or disinterest signals.
+
+User message: "{latest_message}"
+
+Determine if the user is:
+1. REJECTING the opportunity (not interested, found another job, etc.)
+2. ACCEPTING/INTERESTED in proceeding
+
+Respond with only: REJECTION or INTERESTED"""
+
+            try:
+                response = self.scheduling_chain.invoke({
+                    "candidate_info": str(candidate_info),
+                    "conversation_messages": [{"role": "user", "content": latest_message}],
+                    "latest_message": latest_message,
+                    "prompt": rejection_analysis_prompt
+                })
+                
+                if "REJECTION" in response.content.upper():
+                    self.logger.info("Overriding to NOT_SCHEDULE - LLM detected rejection signal")
+                    return SchedulingDecision.NOT_SCHEDULE
+                    
+            except Exception as e:
+                self.logger.warning(f"Error in LLM rejection analysis: {e}")
+                # Continue with original decision if LLM analysis fails
         
         return decision
     
@@ -886,7 +908,7 @@ You'll receive a calendar invitation with the meeting link and all details withi
         available_slots: List[Dict]
     ) -> Tuple[SchedulingDecision, str, List[Dict], str]:
         """
-        Fallback parsing when JSON parsing fails.
+        Fallback parsing when JSON parsing fails - use LLM analysis instead of keywords.
         
         Args:
             response_text: Raw response text
@@ -895,14 +917,40 @@ You'll receive a calendar invitation with the meeting link and all details withi
         Returns:
             Tuple of (decision, reasoning, suggested_slots, response_message)
         """
-        # Simple keyword-based parsing as fallback
-        if 'SCHEDULE' in response_text.upper():
-            decision = SchedulingDecision.SCHEDULE
-            reasoning = "LLM indicated scheduling (fallback parsing)"
-            suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
-        else:
+        # Use LLM to analyze the response instead of simple keyword matching
+        try:
+            fallback_analysis_prompt = f"""Analyze this LLM response and determine the scheduling decision.
+
+Response text: "{response_text}"
+
+Based on the response content, determine if the LLM intended:
+1. SCHEDULE - to schedule an interview or meeting
+2. NOT_SCHEDULE - to not schedule or continue conversation
+
+Respond with only: SCHEDULE or NOT_SCHEDULE"""
+
+            # Use the existing LLM chain for consistency
+            analysis_response = self.scheduling_chain.invoke({
+                "candidate_info": "",
+                "conversation_messages": [],
+                "latest_message": response_text,
+                "prompt": fallback_analysis_prompt
+            })
+            
+            if "SCHEDULE" in analysis_response.content.upper():
+                decision = SchedulingDecision.SCHEDULE
+                reasoning = "LLM indicated scheduling (enhanced fallback parsing)"
+                suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
+            else:
+                decision = SchedulingDecision.NOT_SCHEDULE
+                reasoning = "LLM indicated not to schedule (enhanced fallback parsing)"
+                suggested_slots = []
+                
+        except Exception as e:
+            self.logger.error(f"Error in LLM fallback analysis: {e}")
+            # Safe fallback - default to not scheduling
             decision = SchedulingDecision.NOT_SCHEDULE
-            reasoning = "LLM indicated not to schedule (fallback parsing)"
+            reasoning = f"Fallback parsing failed, defaulting to not schedule: {str(e)}"
             suggested_slots = []
         
         response_message = "Let me help you with scheduling. Could you tell me your availability preferences?"

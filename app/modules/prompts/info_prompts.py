@@ -89,43 +89,18 @@ INFO_NO_CONTEXT_TEMPLATE = ChatPromptTemplate.from_messages([
     HumanMessage(content="Please provide a helpful response explaining that you don't have specific information about this topic.")
 ])
 
-# Question classification patterns
-QUESTION_PATTERNS = {
-    "technical_requirements": [
-        "programming language", "technology", "framework", "tool", "stack",
-        "python", "django", "flask", "database", "sql", "api", "git"
-    ],
-    "job_responsibilities": [
-        "responsibilities", "duties", "tasks", "day to day", "work on",
-        "projects", "role", "position", "job", "do in this role"
-    ],
-    "qualifications": [
-        "experience", "qualification", "requirement", "skill", "background",
-        "education", "degree", "certification", "years", "level"
-    ],
-    "company_culture": [
-        "culture", "environment", "team", "workplace", "company", "benefits",
-        "remote", "office", "flexible", "work life balance"
-    ],
-    "career_growth": [
-        "growth", "advancement", "career", "promotion", "development",
-        "learning", "training", "mentorship", "future"
-    ],
-    "compensation": [
-        "salary", "compensation", "benefits", "vacation", "insurance",
-        "equity", "bonus", "pay", "package"
-    ]
-}
+# Question classification patterns - REMOVED
+# These hardcoded keyword lists violated the LLM-first architecture principle
+# Classification is now handled by LLM analysis instead of keyword matching
 
 def classify_question(question: str) -> str:
-    """Classify the type of question being asked using semantic understanding."""
-    # This is now handled by LLM-based classification instead of keyword matching
-    # Return general category and let LLM determine specific classification
+    """Classify the type of question using LLM-based semantic understanding."""
+    # Return general category - specific classification handled by LLM in context
     return "job_related"
 
 def get_search_keywords(question: str) -> List[str]:
-    """Extract search terms from question using semantic approach."""
-    # Use the original question for semantic vector search instead of keyword matching
+    """Extract search terms using semantic approach instead of keyword matching."""
+    # Use the full question for semantic vector search
     # This allows the vector database to find semantically relevant content
     return [question.strip()]
 
