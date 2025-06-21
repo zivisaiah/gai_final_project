@@ -186,7 +186,7 @@ class CandidateRegistrationForm:
                         'current_status': registration_data['current_status']
                     })
                     
-                    st.success("✅ Registration completed successfully!")
+                    st.success("✅ Registration completed successfully! I'll now show you available interview slots below.")
                     st.balloons()
                     st.rerun()
                     

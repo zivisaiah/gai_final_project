@@ -115,7 +115,7 @@ class RecruitmentChatbot:
                 # Return a registration requirement message instead of processing
                 response_time = time.time() - start_time
                 return {
-                    'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that should appear below to proceed with scheduling.",
+                    'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that appears at the top of the page to proceed with scheduling.",
                     'metadata': {
                         'decision': 'REGISTRATION_REQUIRED',
                         'reasoning': 'Scheduling requested but registration not completed',
@@ -440,7 +440,7 @@ class RecruitmentChatbot:
         if show_registration_form:
             st.markdown("---")
             st.subheader("📋 Registration Required")
-            st.info("🔒 **Registration is required before scheduling interviews.** Please complete the form below:")
+            st.info("🔒 **Registration is required before scheduling interviews.** Please complete the form below, then I'll show you available interview slots:")
             
             # Display the registration form
             registration_complete = self.registration_form.display_registration_form()
@@ -448,6 +448,35 @@ class RecruitmentChatbot:
             if registration_complete:
                 st.success("✅ Registration completed! You can now schedule interviews.")
                 st.session_state.show_registration_prompt = False
+                
+                # Auto-continue the conversation after registration
+                self.chat_interface.add_assistant_message(
+                    "Great! Your registration is complete. Based on your availability (Sunday to Thursday, 9am-6pm), here are some available interview slots:",
+                    {
+                        'decision': 'SCHEDULE',
+                        'reasoning': 'Registration completed, proceeding with scheduling',
+                        'agent_type': 'core_agent',
+                        'auto_triggered': True
+                    }
+                )
+                
+                # Trigger scheduling flow
+                try:
+                    from datetime import datetime, timedelta
+                    reference_datetime = datetime.now()
+                    all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
+                    
+                    # Apply diversification to get 3 varied slots
+                    diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
+                    
+                    if diversified_slots:
+                        self.chat_interface.update_scheduling_context({
+                            'slots_offered': diversified_slots
+                        })
+                    
+                except Exception as e:
+                    self.logger.error(f"Error getting slots after registration: {e}")
+                
                 st.rerun()
             
             st.markdown("---")
