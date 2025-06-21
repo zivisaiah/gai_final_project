@@ -70,6 +70,13 @@ class ChatInterface:
                 'selected_slot': None,
                 'appointment_confirmed': False
             }
+        
+        # Initialize slot selection state management
+        if 'slot_selection_in_progress' not in st.session_state:
+            st.session_state.slot_selection_in_progress = False
+        
+        if 'slot_booking_completed' not in st.session_state:
+            st.session_state.slot_booking_completed = False
     
     def display_chat_header(self):
         """Display the chat header with title and info."""
@@ -249,8 +256,10 @@ class ChatInterface:
         )
         st.session_state.messages.append(selection_message)
         
-        # Trigger rerun to process the selection
-        st.rerun()
+        # Mark that slot selection is in progress to prevent rerun loops
+        st.session_state.slot_selection_in_progress = True
+        
+        # Don't call st.rerun() here - let the main handler process it
     
     def update_candidate_info(self, info_updates: Dict):
         """Update candidate information in session state."""
@@ -281,6 +290,10 @@ class ChatInterface:
             'selected_slot': None,
             'appointment_confirmed': False
         }
+        
+        # Reset slot selection state
+        st.session_state.slot_selection_in_progress = False
+        st.session_state.slot_booking_completed = False
         
         # Clear Core Agent memory and conversation state
         if 'core_agent' in st.session_state:

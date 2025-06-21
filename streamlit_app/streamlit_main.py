@@ -491,7 +491,8 @@ class RecruitmentChatbot:
         
         # Check if this is a slot selection (PRIORITY: Handle slot selection regardless of user input)
         if (st.session_state.scheduling_context.get('selected_slot') and 
-            not st.session_state.scheduling_context.get('appointment_confirmed')):
+            not st.session_state.scheduling_context.get('appointment_confirmed') and
+            not st.session_state.get('slot_booking_completed', False)):
             
             # Ensure registration is complete before booking
             if not st.session_state.get('registration_completed', False):
@@ -512,13 +513,20 @@ class RecruitmentChatbot:
                     confirmation_msg,
                     booking_result
                 )
+                # Mark booking as completed to prevent rerun loops
+                st.session_state.slot_booking_completed = True
             else:
                 error_msg = f"Sorry, there was an error booking your appointment: {booking_result.get('appointment_error', 'Unknown error')}"
                 self.chat_interface.add_assistant_message(error_msg)
             
-            # Clear the selected slot
+            # Clear the selected slot and prevent further processing
             st.session_state.scheduling_context['selected_slot'] = None
-            st.rerun()
+            st.session_state.slot_selection_in_progress = False
+            
+            # Only rerun if booking was successful to show confirmation
+            if booking_result.get('appointment_confirmed'):
+                st.rerun()
+            return
         
         # Process user input if provided
         elif user_input:
