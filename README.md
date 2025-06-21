@@ -77,7 +77,7 @@ This project implements a sophisticated multi-agent recruitment assistant that c
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.12+
 - OpenAI API key
 - Git
 
@@ -88,13 +88,31 @@ This project implements a sophisticated multi-agent recruitment assistant that c
 git clone https://github.com/zivisaiah/gai_final_project.git
 cd gai_final_project
 
-# Activate virtual environment
-source venv/bin/activate
-# or use the convenience script
-./activate.sh
+# Set up virtual environment (REQUIRED)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install dependencies IN THE VIRTUAL ENVIRONMENT
 pip install -r requirements.txt
+```
+
+### ⚠️ **CRITICAL: Virtual Environment Usage**
+
+**All operations must be performed within the activated virtual environment:**
+
+```bash
+# CORRECT: Activate venv first
+source venv/bin/activate
+python -m streamlit run streamlit_app/streamlit_main.py
+
+# OR use the provided script (recommended)
+./run_app.sh
+```
+
+**❌ Common Error - Running without venv activation:**
+```bash
+# This will fail with: ModuleNotFoundError: No module named 'chromadb'
+streamlit run streamlit_app/streamlit_main.py
 ```
 
 ### 2. Environment Configuration
@@ -117,8 +135,12 @@ python -c "from app.modules.database.sql_manager import SQLManager; SQLManager()
 ### 4. Launch the Application
 
 ```bash
-# Start Streamlit application
-streamlit run streamlit_app/streamlit_main.py
+# RECOMMENDED: Use the provided script (handles venv automatically)
+./run_app.sh
+
+# OR manually with venv activation
+source venv/bin/activate
+python -m streamlit run streamlit_app/streamlit_main.py --server.port 8501
 ```
 
 The application will open in your browser at `http://localhost:8501`
