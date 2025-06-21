@@ -115,20 +115,8 @@ class RecruitmentChatbot:
                     conversation_id="streamlit_session"
                 )
                 
-                # If LLM detected scheduling intent, require registration
-                if decision == AgentDecision.SCHEDULE:
-                    response_time = time.time() - start_time
-                    return {
-                        'response': "I'd be happy to schedule an interview! However, I need to collect some basic information first. Please complete the registration form that appears at the top of the page to proceed with scheduling.",
-                        'metadata': {
-                            'decision': 'REGISTRATION_REQUIRED',
-                            'reasoning': 'Scheduling requested but registration not completed',
-                            'agent_type': 'core_agent',
-                            'response_time': response_time,
-                            'action_required': 'SHOW_REGISTRATION_FORM'
-                        },
-                        'success': True
-                    }
+                # Agent continues conversation naturally - no registration form enforcement
+                # Registration form is USER-initiated, not agent-enforced
                 
                 # Otherwise, continue with the normal response
                 response_time = time.time() - start_time

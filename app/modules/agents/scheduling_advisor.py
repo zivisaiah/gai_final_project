@@ -1012,16 +1012,8 @@ Respond with only: SCHEDULE or NOT_SCHEDULE"""
             if not candidate_info.get(field):
                 missing_fields.append(display_name)
         
-        # Check for session-level registration completion
-        import streamlit as st
-        if hasattr(st, 'session_state') and not st.session_state.get('registration_completed', False):
-            validation_result.update({
-                'is_valid': False,
-                'missing_fields': ['Registration not completed'],
-                'action_required': 'REGISTRATION_REQUIRED',
-                'message': 'Please complete the registration form before scheduling an interview.'
-            })
-            return validation_result
+        # Agent should continue conversation and collect missing info naturally
+        # Registration form is USER-initiated, not agent-enforced
         
         if missing_fields:
             validation_result.update({
