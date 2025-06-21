@@ -218,7 +218,7 @@ gai_final_project-1/
 │   └── tests/                   # Nested test structure
 │       └── evaluation_results/  # Additional evaluation data
 ├── activate.sh                  # Virtual environment activation script
-├── env.example                  # Environment variables template
+├── .env.example                 # Environment variables template
 ├── LICENSE                      # MIT License
 ├── monitor_logs.py              # Log monitoring utility
 ├── mvc_monitor.py               # MVC architecture monitoring

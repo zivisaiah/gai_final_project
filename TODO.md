@@ -334,7 +334,7 @@ All Phase 2 objectives achieved! Exit capability fully integrated. Ready for Pha
   - [x] Environment-specific model configurations
   - [x] No code changes required between environments
 - [x] **COMPREHENSIVE DOCUMENTATION**
-  - [x] Created `env.example` with detailed configuration guide
+  - [x] Created `.env.example` with comprehensive configuration guide
   - [x] Updated README.md with fine-tuned model setup instructions
   - [x] Added environment portability benefits documentation
 - [x] **CROSS-ENVIRONMENT COMPATIBILITY**
@@ -676,8 +676,6 @@ pydantic>=2.0.0
 ## In Progress
 
 ## Planned
-- [ ] Test Clarity API integration (more metadata, retries)
-- [ ] Narrative Analysis
 - [ ] Fine-tuning `ExitAdvisor` for better intent detection
 - [ ] Add more comprehensive tests for all agent interactions
 
