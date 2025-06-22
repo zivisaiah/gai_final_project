@@ -233,9 +233,16 @@ class InfoAdvisor:
     async def answer_question(
         self,
         question: str,
-        conversation_history: List[Dict[str, str]] = None
+        conversation_history: List[Dict[str, str]] = None,
+        candidate_info: Dict[str, Any] = None
     ) -> InfoResponse:
-        """Answer a job-related question using RAG"""
+        """Answer a job-related question using RAG
+        
+        Args:
+            question: The user's question
+            conversation_history: Previous conversation messages
+            candidate_info: Information about the candidate (name, experience, etc.)
+        """
         try:
             # Store conversation history for tool access
             self.current_conversation_history = conversation_history or []

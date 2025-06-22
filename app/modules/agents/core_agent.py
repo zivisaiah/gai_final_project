@@ -339,10 +339,11 @@ Analyze this context and respond with the JSON decision format only.""")
                     # Get conversation history for context
                     full_history = [{"role": m["role"], "content": m["content"]} for m in conversation.messages]
                     
-                    # Ask Info Advisor for job-related information
+                    # Ask Info Advisor for job-related information (with candidate info for qualification assessment)
                     info_response: InfoResponse = await self.info_advisor.answer_question(
                         question=user_message,
-                        conversation_history=full_history
+                        conversation_history=full_history,
+                        candidate_info=conversation.candidate_info
                     )
                     
                     # Return Info Advisor's response
