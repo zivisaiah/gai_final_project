@@ -379,6 +379,33 @@ Analyze this context and respond with the JSON decision format only.""")
         Make a decision, and if scheduling, proactively fetch and format time slots.
         """
         try:
+            # Check for significant qualification mismatch early in conversation
+            qualification_assessment = conversation.candidate_info.get("qualification_assessment", {})
+            qualification_status = qualification_assessment.get("qualification_status")
+            experience_gap = qualification_assessment.get("experience_gap", 0)
+            
+            # If candidate is significantly underqualified and conversation is still early, be proactive
+            if (qualification_status == "underqualified" and 
+                experience_gap >= 2 and  # 2+ year gap is significant
+                len(conversation.messages) <= 4 and  # Early in conversation
+                not any("qualification" in msg.get("content", "").lower() or 
+                       "experience" in msg.get("content", "").lower() or
+                       "requirement" in msg.get("content", "").lower() 
+                       for msg in conversation.messages[-3:] if msg.get("role") == "assistant")):  # Haven't discussed qualifications yet
+                
+                self.logger.info(f"Proactively addressing qualification mismatch: {experience_gap} year gap")
+                
+                # Provide honest but encouraging qualification feedback
+                proactive_response = f"""Hi {conversation.candidate_info.get('name', '')}! I appreciate your interest in our Python Developer position. 
+
+I want to be upfront with you - this role requires at least 3 years of Python development experience, and I see you have 1 year of experience. While there is an experience gap, I'd love to understand more about your background.
+
+Do you have any additional experience through personal projects, bootcamps, or other programming languages that might be relevant? Sometimes candidates have stronger skills than their formal work experience might suggest.
+
+What specific Python projects or technologies have you worked with in your 1 year of experience?"""
+                
+                return AgentDecision.CONTINUE, "Proactively addressing qualification gap while remaining encouraging", proactive_response
+            
             # Prepare input for the LangChain chain
             chain_input = {
                 "user_input": user_message,

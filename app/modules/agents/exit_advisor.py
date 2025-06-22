@@ -148,6 +148,8 @@ DO **CONTINUE** the conversation when you detect:
 - If candidate clearly doesn't meet minimum requirements (e.g., 1 year experience for 3+ year position), lean toward END
 - If candidate shows additional relevant experience, projects, or skills that might compensate, CONTINUE
 - Consider the overall conversation flow - has qualification mismatch been addressed?
+- **CRITICAL**: After honest qualification feedback is provided, if candidate doesn't demonstrate additional relevant experience, lean toward END
+- **DECISIVE APPROACH**: Don't prolong conversations with significantly underqualified candidates unless they show strong compensating factors
 
 **RESPONSE FORMAT:**
 You must respond with a valid JSON object:

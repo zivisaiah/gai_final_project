@@ -175,6 +175,17 @@ EXIT_EXAMPLES = [
             "reason": "Despite qualification gap, candidate shows high interest and seeks improvement advice - continue conversation",
             "farewell_message": None
         }
+    },
+    {
+        "input": "I mostly worked on small scripts and basic web development",
+        "candidate_info": {"experience": "1 years Python", "interest_level": "medium", "qualification_assessment": {"experience_gap": 2, "qualification_status": "underqualified"}},
+        "context": "Position requires 3+ years Python experience with complex applications. Honest qualification feedback already provided.",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.85,
+            "reason": "After qualification mismatch was addressed, candidate's additional experience (basic scripts) doesn't bridge the 2-year gap for complex development role",
+            "farewell_message": "Thank you for sharing more about your experience. While your Python foundation is good, this particular role requires more advanced experience with complex applications. I encourage you to continue building your skills with larger projects. Feel free to apply again when you have more experience. Best of luck with your development journey!"
+        }
     }
 ]
 
