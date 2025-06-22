@@ -204,19 +204,19 @@ Analyze the conversation carefully and make your decision based on the overall c
                 response_text = response_text.strip()
                 
                 decision_data = json.loads(response_text)
-                
-                # Create the exit decision
-                decision = ExitDecision(
-                    should_exit=decision_data["should_exit"],
-                    confidence=decision_data["confidence"],
-                    reason=decision_data["reason"],
-                    farewell_message=decision_data.get("farewell_message")
-                )
-                
+            
+            # Create the exit decision
+            decision = ExitDecision(
+                should_exit=decision_data["should_exit"],
+                confidence=decision_data["confidence"],
+                reason=decision_data["reason"],
+                farewell_message=decision_data.get("farewell_message")
+            )
+            
                 self.logger.info(f"Exit analysis: should_exit={decision.should_exit}, confidence={decision.confidence:.2f}, reason={decision.reason}")
-                return decision
-                
-            except (json.JSONDecodeError, KeyError) as e:
+            return decision
+            
+        except (json.JSONDecodeError, KeyError) as e:
                 self.logger.warning(f"Failed to parse LLM response as JSON: {e}. Response: {response_text}")
                 
                 # Fallback: analyze the response text for decision

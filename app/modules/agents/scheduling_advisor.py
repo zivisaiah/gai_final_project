@@ -448,9 +448,9 @@ class SchedulingAdvisor:
             
             # If structured format not found, default to not scheduling
             # Let LLM-based structured responses drive decisions instead of keywords
-            decision = SchedulingDecision.NOT_SCHEDULE
+                decision = SchedulingDecision.NOT_SCHEDULE
             reasoning = "Response format not recognized - continuing conversation to gather more information"
-            suggested_slots = []
+                suggested_slots = []
             
             response_message = response_text.strip()
             
@@ -527,11 +527,11 @@ class SchedulingAdvisor:
                     "Great! Let me check our available interview slots for you."
                 )
             else:
-                return (
-                    SchedulingDecision.NOT_SCHEDULE,
+        return (
+            SchedulingDecision.NOT_SCHEDULE,
                     "LLM analysis suggests continuing conversation to gather more information",
-                    [],
-                    "Could you tell me a bit more about your availability and when you'd prefer to have the interview?"
+            [],
+            "Could you tell me a bit more about your availability and when you'd prefer to have the interview?"
                 )
                 
         except Exception as e:
@@ -542,7 +542,7 @@ class SchedulingAdvisor:
                 "Error in analysis - continuing conversation",
                 [],
                 "Could you tell me a bit more about what you're looking for?"
-            )
+        )
     
     def book_appointment(
         self,
@@ -894,7 +894,7 @@ Respond with only: REJECTION or INTERESTED"""
                 
                 if "REJECTION" in response.content.upper():
                     self.logger.info("Overriding to NOT_SCHEDULE - LLM detected rejection signal")
-                    return SchedulingDecision.NOT_SCHEDULE
+            return SchedulingDecision.NOT_SCHEDULE
                     
             except Exception as e:
                 self.logger.warning(f"Error in LLM rejection analysis: {e}")
@@ -938,11 +938,11 @@ Respond with only: SCHEDULE or NOT_SCHEDULE"""
             })
             
             if "SCHEDULE" in analysis_response.content.upper():
-                decision = SchedulingDecision.SCHEDULE
+            decision = SchedulingDecision.SCHEDULE
                 reasoning = "LLM indicated scheduling (enhanced fallback parsing)"
-                suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
-            else:
-                decision = SchedulingDecision.NOT_SCHEDULE
+            suggested_slots = self._diversify_slot_selection(available_slots, max_slots=3)
+        else:
+            decision = SchedulingDecision.NOT_SCHEDULE
                 reasoning = "LLM indicated not to schedule (enhanced fallback parsing)"
                 suggested_slots = []
                 

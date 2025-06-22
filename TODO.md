@@ -109,6 +109,14 @@
 - [x] **ENSURED COMPLETE STATE RESET**: Registration form now properly resets to initial state when starting new conversations
 - [x] **TESTED CONVERSATION RESET FLOW**: Verified that users can start completely fresh conversations with empty registration forms
 
+### 🐛 **CRITICAL BUG FIX - EXPERIENCE DATA OVERWRITING**
+- [x] **IDENTIFIED EXPERIENCE DATA CORRUPTION**: LLM extraction was overwriting correct registration experience data ("2 years Python") with generic values ("mentioned")
+- [x] **ANALYZED ROOT CAUSE**: add_message method in ConversationState was calling extract_candidate_info_llm on every user message, overwriting detailed registration data
+- [x] **IMPLEMENTED PRESERVATION LOGIC**: Enhanced candidate info update logic to preserve detailed existing information over generic LLM extractions
+- [x] **ADDED EXPERIENCE-SPECIFIC PROTECTION**: Prevents overwriting specific experience data (e.g., "2 years Python") with generic "mentioned" values
+- [x] **FIXED QUALIFICATION ASSESSMENT**: Qualification assessment now correctly processes preserved experience data instead of corrupted values
+- [x] **ENSURED DATA INTEGRITY**: Registration form data now maintains integrity throughout conversation flow without LLM interference
+
 ### 🎉 **PHASE 1 COMPLETE**
 All Phase 1 objectives achieved! Ready for Phase 2 development.
 

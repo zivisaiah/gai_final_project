@@ -58,10 +58,20 @@ class ConversationState:
                 # Use the agent's LLM extraction method
                 extracted_info = await agent.extract_candidate_info_llm(self)
                 
-                # Update candidate_info with new, non-empty values
+                # CRITICAL FIX: Only update with LLM data if it's more specific than existing data
                 for key, value in extracted_info.items():
                     if value not in [None, "unknown", ""]:
-                        self.candidate_info[key] = value
+                        existing_value = self.candidate_info.get(key)
+                        
+                        # Preserve detailed existing information over generic LLM extractions
+                        if key == "experience":
+                            # Don't overwrite specific experience (e.g., "2 years Python") with generic "mentioned"
+                            if existing_value and existing_value not in ["unknown", "mentioned"] and value == "mentioned":
+                                continue  # Keep existing detailed experience
+                        
+                        # For other fields, only update if we don't have existing data or new data is more specific
+                        if not existing_value or existing_value in [None, "unknown", ""]:
+                            self.candidate_info[key] = value
                 
                 agent.logger.info(f"Updated candidate info via LLM: {self.candidate_info}")
 
