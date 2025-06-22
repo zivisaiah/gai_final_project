@@ -107,6 +107,15 @@ class RecruitmentChatbot:
         """Process user message through the agent system."""
         start_time = time.time()
         try:
+            # CRITICAL FIX: Sync candidate info from session state to Core Agent
+            # This ensures registration form data is available to the Core Agent
+            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
+            
+            # Update Core Agent's candidate info with session state data
+            if st.session_state.candidate_info:
+                conversation_state.candidate_info.update(st.session_state.candidate_info)
+                self.logger.info(f"Synced candidate info to Core Agent: {conversation_state.candidate_info}")
+            
             # Check if registration is not complete - let LLM handle intent detection
             if not st.session_state.get('registration_completed', False):
                 # Process message through Core Agent to detect intent via LLM
@@ -145,8 +154,7 @@ class RecruitmentChatbot:
             # Calculate response time
             response_time = time.time() - start_time
             
-            # Update candidate info from conversation state
-            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
+            # Update candidate info from conversation state (bidirectional sync)
             if conversation_state.candidate_info:
                 self.chat_interface.update_candidate_info(conversation_state.candidate_info)
             

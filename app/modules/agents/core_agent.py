@@ -446,23 +446,26 @@ Analyze this context and respond with the JSON decision format only.""")
         """Validate and potentially override the decision based on conversation state."""
         candidate_info = conversation.candidate_info
         
-        # Override to SCHEDULE if all conditions are met
+        # Check if we have enough information for scheduling
+        has_name = bool(candidate_info.get("name"))
+        has_experience = bool(candidate_info.get("experience") and 
+                            candidate_info.get("experience") not in ["unknown", ""])
+        has_availability = bool(candidate_info.get("availability_mentioned"))
+        has_interest = candidate_info.get("interest_level") in ["high", "medium"]
+        
+        self.logger.info(f"Validation check - Name: {has_name}, Experience: {has_experience}, "
+                        f"Availability: {has_availability}, Interest: {has_interest}")
+        self.logger.info(f"Candidate info: {candidate_info}")
+        
+        # Override to SCHEDULE if we have enough information and availability
         if (decision == AgentDecision.CONTINUE and 
-            candidate_info.get("name") and 
-            candidate_info.get("experience") == "mentioned" and
-            candidate_info.get("interest_level") == "high" and
-            candidate_info.get("availability_mentioned")):
+            has_name and has_experience and has_availability and has_interest):
             
-            self.logger.info("Overriding CONTINUE to SCHEDULE based on conversation state")
+            self.logger.info("Overriding CONTINUE to SCHEDULE based on sufficient candidate information")
             return AgentDecision.SCHEDULE
         
-        # Override to CONTINUE if we don't have enough information yet
-        if (decision == AgentDecision.SCHEDULE and 
-            not candidate_info.get("name") and
-            candidate_info.get("interest_level") != "high"):
-            
-            self.logger.info("Overriding SCHEDULE to CONTINUE - need more information")
-            return AgentDecision.CONTINUE
+        # Don't override SCHEDULE decisions - let them proceed
+        # The SchedulingAdvisor will make the final determination
         
         return decision
     
