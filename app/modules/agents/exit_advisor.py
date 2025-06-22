@@ -81,15 +81,19 @@ class ExitAdvisor:
                 for msg in conversation_history[-8:]  # Last 8 messages for context
             ])
         
-        # Format candidate information
+        # Format candidate information with qualification assessment
         candidate_text = ""
         if candidate_info:
+            qualification_assessment = candidate_info.get('qualification_assessment', {})
             candidate_text = f"""
 **CANDIDATE PROFILE:**
 - Name: {candidate_info.get('name', 'Not provided')}
 - Experience: {candidate_info.get('experience', 'Not provided')}
 - Interest Level: {candidate_info.get('interest_level', 'Not provided')}
 - Current Status: {candidate_info.get('current_status', 'Not provided')}
+- **QUALIFICATION STATUS**: {qualification_assessment.get('qualification_status', 'unknown')}
+- **EXPERIENCE GAP**: {qualification_assessment.get('experience_gap', 0)} years
+- **MEETS REQUIREMENTS**: {qualification_assessment.get('meets_requirements', False)}
 """
 
         prompt = f"""You are an Expert Exit Detection Agent for a recruitment conversation system.
@@ -114,10 +118,11 @@ DO **END** the conversation when you detect:
 - Explicit goodbye or indicates they need to leave
 
 **2. QUALIFICATION MISMATCH (CRITICAL):**
-- Candidate has significantly less experience than required (e.g., 1 year vs 3+ years required)
+- Candidate has less experience than required (e.g., 1-2 years vs 3+ years required) 
 - Candidate lacks fundamental skills for the position
 - Candidate's background doesn't align with job requirements
 - After providing honest feedback about qualification gaps, candidate doesn't show additional relevant experience
+- **DECISIVE RULE**: If candidate has 1+ year gap in required experience AND no compensating factors mentioned, END conversation
 
 **3. CONVERSATION COMPLETION:**
 - User confirms their needs are fully met and they're ready to conclude
@@ -136,11 +141,13 @@ DO **CONTINUE** the conversation when you detect:
 7. **Qualification Clarification**: User provides additional experience that might bridge qualification gaps
 
 **QUALIFICATION ASSESSMENT PRIORITY:**
-- If candidate clearly doesn't meet minimum requirements (e.g., 1 year experience for 3+ year position), lean toward END
+- **CRITICAL DECISION RULE**: If candidate has 1+ year experience gap AND no compensating factors → END immediately
+- If candidate clearly doesn't meet minimum requirements (e.g., 2 years experience for 3+ year position), strongly lean toward END
 - If candidate shows additional relevant experience, projects, or skills that might compensate, CONTINUE
 - Consider the overall conversation flow - has qualification mismatch been addressed?
-- **CRITICAL**: After honest qualification feedback is provided, if candidate doesn't demonstrate additional relevant experience, lean toward END
-- **DECISIVE APPROACH**: Don't prolong conversations with significantly underqualified candidates unless they show strong compensating factors
+- **CRITICAL**: After honest qualification feedback is provided, if candidate doesn't demonstrate additional relevant experience, END conversation
+- **DECISIVE APPROACH**: Don't prolong conversations with underqualified candidates unless they show strong compensating factors
+- **NEW RULE**: For candidates with 2 years experience vs 3+ required, END unless they mention specific projects, bootcamps, or additional skills
 
 **RESPONSE FORMAT:**
 You must respond with a valid JSON object:
@@ -153,8 +160,10 @@ You must respond with a valid JSON object:
 
 **QUALIFICATION-BASED EXIT EXAMPLES:**
 - Candidate has 1 year experience, job requires 3+ years, no additional compensating skills → should_exit: true
-- Candidate has 1 year experience but mentions relevant projects/bootcamp/certifications → should_exit: false
+- Candidate has 2 years experience, job requires 3+ years, no additional compensating skills → should_exit: true  
+- Candidate has 1-2 years experience but mentions relevant projects/bootcamp/certifications → should_exit: false
 - Candidate asks about requirements after learning they don't meet them → should_exit: false (still engaged)
+- Candidate says "I'm available" but has qualification gap and no compensating factors → should_exit: true
 
 Analyze the conversation carefully and make your decision based on the overall context, user intent, AND qualification fit."""
 

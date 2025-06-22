@@ -394,9 +394,9 @@ Analyze this context and respond with the JSON decision format only.""")
             qualification_status = qualification_assessment.get("qualification_status")
             experience_gap = qualification_assessment.get("experience_gap", 0)
             
-            # If candidate is significantly underqualified and conversation is still early, be proactive
+            # If candidate is underqualified and conversation is still early, be proactive
             if (qualification_status == "underqualified" and 
-                experience_gap >= 2 and  # 2+ year gap is significant
+                experience_gap >= 1 and  # 1+ year gap is significant for junior-mid level positions
                 len(conversation.messages) <= 4 and  # Early in conversation
                 not any("qualification" in msg.get("content", "").lower() or 
                        "experience" in msg.get("content", "").lower() or
@@ -406,13 +406,17 @@ Analyze this context and respond with the JSON decision format only.""")
                 self.logger.info(f"Proactively addressing qualification mismatch: {experience_gap} year gap")
                 
                 # Provide honest but encouraging qualification feedback
+                candidate_years = qualification_assessment.get("experience_gap", 0) + 3 - qualification_assessment.get("experience_gap", 0)
+                # Calculate actual years from the gap
+                actual_years = 3 - experience_gap
+                
                 proactive_response = f"""Hi {conversation.candidate_info.get('name', '')}! I appreciate your interest in our Python Developer position. 
 
-I want to be upfront with you - this role requires at least 3 years of Python development experience, and I see you have 1 year of experience. While there is an experience gap, I'd love to understand more about your background.
+I want to be upfront with you - this role requires at least 3 years of Python development experience, and I see you have {actual_years} years of experience. While there is an experience gap, I'd love to understand more about your background.
 
 Do you have any additional experience through personal projects, bootcamps, or other programming languages that might be relevant? Sometimes candidates have stronger skills than their formal work experience might suggest.
 
-What specific Python projects or technologies have you worked with in your 1 year of experience?"""
+What specific Python projects or technologies have you worked with in your {actual_years} years of experience?"""
                 
                 return AgentDecision.CONTINUE, "Proactively addressing qualification gap while remaining encouraging", proactive_response
             
