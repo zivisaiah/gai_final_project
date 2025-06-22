@@ -141,6 +141,40 @@ EXIT_EXAMPLES = [
             "reason": "User explicitly states lack of interest in the position",
             "farewell_message": "Thank you for letting me know. If you change your mind or are interested in future opportunities, please feel free to reach out. We wish you all the best in your current endeavors. Have a great day!"
         }
+    },
+    # NEW: Qualification-based exit examples
+    {
+        "input": "I understand I don't have enough experience for this role",
+        "candidate_info": {"experience": "1 years Python", "interest_level": "medium"},
+        "context": "Position requires 3+ years Python experience",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.85,
+            "reason": "Candidate acknowledges qualification mismatch (1 year vs 3+ years required) and shows understanding of the gap",
+            "farewell_message": "Thank you for your understanding. While you may not meet the current requirements, I encourage you to continue building your Python experience. Feel free to apply again in the future when you have more experience. Best of luck in your career development!"
+        }
+    },
+    {
+        "input": "I guess I'm not qualified enough for this position",
+        "candidate_info": {"experience": "1 years Python", "interest_level": "low"},
+        "context": "Position requires 3+ years Python experience",
+        "output": {
+            "should_exit": True,
+            "confidence": 0.9,
+            "reason": "Candidate recognizes qualification gap and shows low confidence/interest",
+            "farewell_message": "I appreciate your honesty. While the experience requirement is important, I encourage you to keep developing your Python skills. Consider working on projects, contributing to open source, or taking advanced courses. Feel free to reach out when you have more experience. Good luck!"
+        }
+    },
+    {
+        "input": "What can I do to improve my qualifications for this role?",
+        "candidate_info": {"experience": "1 years Python", "interest_level": "high"},
+        "context": "Position requires 3+ years Python experience",
+        "output": {
+            "should_exit": False,
+            "confidence": 0.95,
+            "reason": "Despite qualification gap, candidate shows high interest and seeks improvement advice - continue conversation",
+            "farewell_message": None
+        }
     }
 ]
 

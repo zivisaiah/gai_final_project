@@ -79,8 +79,8 @@ class ExitAdvisor:
                 # Re-raise if it's a different error
                 raise e
 
-    def _create_exit_analysis_prompt(self, current_message: str, conversation_history: List[Dict[str, str]]) -> str:
-        """Create a comprehensive prompt for LLM-based exit analysis"""
+    def _create_exit_analysis_prompt(self, current_message: str, conversation_history: List[Dict[str, str]], candidate_info: Dict[str, Any] = None) -> str:
+        """Create a comprehensive prompt for LLM-based exit analysis including qualification assessment"""
         
         # Format conversation history
         history_text = ""
@@ -90,80 +90,102 @@ class ExitAdvisor:
                 for msg in conversation_history[-8:]  # Last 8 messages for context
             ])
         
+        # Format candidate information
+        candidate_text = ""
+        if candidate_info:
+            candidate_text = f"""
+**CANDIDATE PROFILE:**
+- Name: {candidate_info.get('name', 'Not provided')}
+- Experience: {candidate_info.get('experience', 'Not provided')}
+- Interest Level: {candidate_info.get('interest_level', 'Not provided')}
+- Current Status: {candidate_info.get('current_status', 'Not provided')}
+"""
+
         prompt = f"""You are an Expert Exit Detection Agent for a recruitment conversation system.
 
 **CRITICAL INSTRUCTION: You must always respond in English only. Never use any other language.**
 
-Your task is to analyze whether a recruitment conversation should END or CONTINUE based on the user's latest message and conversation context.
+Your task is to analyze whether a recruitment conversation should END or CONTINUE based on the user's latest message, conversation context, and candidate qualifications.
 
 **CONVERSATION CONTEXT:**
 {history_text}
-
+{candidate_text}
 **LATEST USER MESSAGE:**
 {current_message}
 
 **ANALYSIS GUIDELINES:**
 
 DO **END** the conversation when you detect:
-1. **Clear Disinterest**: User explicitly states they're not interested, have found another job, or want to pass
-2. **Polite Decline**: User politely declines or says "no thank you"
-3. **Task Completion**: User confirms their needs are fully met and they're ready to conclude
-4. **Explicit Goodbye**: User says goodbye, thanks for time, or indicates they need to leave
-5. **Topic Change**: User shifts to completely unrelated topics unrelated to job/career
+
+**1. EXPLICIT DISINTEREST:**
+- User explicitly states they're not interested, have found another job, or want to pass
+- Polite decline or says "no thank you"
+- Explicit goodbye or indicates they need to leave
+
+**2. QUALIFICATION MISMATCH (CRITICAL):**
+- Candidate has significantly less experience than required (e.g., 1 year vs 3+ years required)
+- Candidate lacks fundamental skills for the position
+- Candidate's background doesn't align with job requirements
+- After providing honest feedback about qualification gaps, candidate doesn't show additional relevant experience
+
+**3. CONVERSATION COMPLETION:**
+- User confirms their needs are fully met and they're ready to conclude
+- Task completion or natural conversation end
+
+**4. TOPIC DIVERGENCE:**
+- User shifts to completely unrelated topics unrelated to job/career
 
 DO **CONTINUE** the conversation when you detect:
-1. **Interest Signals**: User expresses interest, curiosity, or engagement ("interested", "sounds good", "tell me more")
+1. **Interest Signals**: User expresses interest, curiosity, or engagement
 2. **Information Sharing**: User shares background, experience, skills, or qualifications
 3. **Questions**: User asks about the role, company, process, or next steps
 4. **Availability**: User mentions their schedule, availability, or readiness to proceed
 5. **Engagement**: User is actively participating in job-related discussion
 6. **Scheduling Intent**: User shows willingness to schedule or move forward
-7. **Neutral Responses**: Simple acknowledgments or unclear intent
+7. **Qualification Clarification**: User provides additional experience that might bridge qualification gaps
 
-**IMPORTANT CONTEXT UNDERSTANDING:**
-- "Thanks" + Interest Signal = CONTINUE (e.g., "Thanks, I'm very interested")
-- "Thanks" + Goodbye Signal = END (e.g., "Thanks, that's all I need")
-- Questions about role/process = CONTINUE
-- Expressing qualifications/experience = CONTINUE
-- Simple greetings or acknowledgments = CONTINUE
+**QUALIFICATION ASSESSMENT PRIORITY:**
+- If candidate clearly doesn't meet minimum requirements (e.g., 1 year experience for 3+ year position), lean toward END
+- If candidate shows additional relevant experience, projects, or skills that might compensate, CONTINUE
+- Consider the overall conversation flow - has qualification mismatch been addressed?
 
 **RESPONSE FORMAT:**
 You must respond with a valid JSON object:
 {{
     "should_exit": boolean,
     "confidence": float (0.0-1.0),
-    "reason": "Detailed explanation of your decision",
+    "reason": "Detailed explanation of your decision including qualification assessment if relevant",
     "farewell_message": "Appropriate goodbye message if should_exit is true, null otherwise"
 }}
 
-**EXAMPLES:**
-- "Thanks, I'm very interested!" → should_exit: false (interest expressed)
-- "Thanks, but I'm not looking right now" → should_exit: true (clear decline)
-- "What are the requirements?" → should_exit: false (seeking information)
-- "I have 5 years Python experience" → should_exit: false (sharing qualifications)
-- "I need to think about it and get back to you" → should_exit: true (postponing decision)
+**QUALIFICATION-BASED EXIT EXAMPLES:**
+- Candidate has 1 year experience, job requires 3+ years, no additional compensating skills → should_exit: true
+- Candidate has 1 year experience but mentions relevant projects/bootcamp/certifications → should_exit: false
+- Candidate asks about requirements after learning they don't meet them → should_exit: false (still engaged)
 
-Analyze the conversation carefully and make your decision based on the overall context and user intent."""
+Analyze the conversation carefully and make your decision based on the overall context, user intent, AND qualification fit."""
 
         return prompt
 
     async def analyze_conversation(
         self,
         current_message: str,
-        conversation_history: List[Dict[str, str]]
+        conversation_history: List[Dict[str, str]],
+        candidate_info: Dict[str, Any] = None
     ) -> ExitDecision:
-        """Analyze the conversation and determine if it should end using pure LLM analysis
+        """Analyze the conversation and determine if it should end using LLM analysis with qualification assessment
         
         Args:
             current_message: The latest message from the user
             conversation_history: List of previous messages in the conversation
+            candidate_info: Information about the candidate for qualification assessment
             
         Returns:
             ExitDecision object containing the decision and reasoning
         """
         try:
-            # Create comprehensive analysis prompt
-            analysis_prompt = self._create_exit_analysis_prompt(current_message, conversation_history)
+            # Create comprehensive analysis prompt with qualification assessment
+            analysis_prompt = self._create_exit_analysis_prompt(current_message, conversation_history, candidate_info)
             
             # Get LLM analysis
             response = await self.llm.ainvoke([HumanMessage(content=analysis_prompt)])

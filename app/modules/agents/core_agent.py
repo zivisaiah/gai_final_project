@@ -259,6 +259,67 @@ Analyze this context and respond with the JSON decision format only.""")
         self.conversations[new_conv.conversation_id] = new_conv
         return new_conv
     
+    async def _assess_candidate_qualifications(self, conversation: ConversationState) -> Dict[str, Any]:
+        """Continuously assess candidate qualifications against job requirements"""
+        candidate_info = conversation.candidate_info
+        
+        # Extract experience information
+        experience_str = candidate_info.get("experience", "").lower()
+        
+        # Job requirements (these could be loaded from configuration)
+        min_experience_years = 3  # Minimum 3 years Python experience required
+        
+        assessment = {
+            "meets_requirements": False,
+            "experience_gap": 0,
+            "qualification_status": "unknown",
+            "should_continue": True,
+            "assessment_reason": ""
+        }
+        
+        try:
+            # Parse experience years from candidate info
+            if "years" in experience_str or "year" in experience_str:
+                # Extract number from experience string (e.g., "1 years Python" -> 1)
+                import re
+                years_match = re.search(r'(\d+)\s*years?', experience_str)
+                if years_match:
+                    candidate_years = int(years_match.group(1))
+                    assessment["experience_gap"] = min_experience_years - candidate_years
+                    
+                    if candidate_years >= min_experience_years:
+                        assessment["meets_requirements"] = True
+                        assessment["qualification_status"] = "qualified"
+                        assessment["should_continue"] = True
+                        assessment["assessment_reason"] = f"Candidate has {candidate_years} years experience, meets {min_experience_years}+ requirement"
+                    else:
+                        assessment["meets_requirements"] = False
+                        assessment["qualification_status"] = "underqualified"
+                        # Don't immediately end - let conversation flow naturally
+                        # Exit Advisor will make the final decision based on candidate response
+                        assessment["should_continue"] = True
+                        assessment["assessment_reason"] = f"Candidate has {candidate_years} years experience, needs {min_experience_years}+ years (gap: {assessment['experience_gap']} years)"
+                else:
+                    assessment["qualification_status"] = "unclear"
+                    assessment["should_continue"] = True
+                    assessment["assessment_reason"] = "Experience format unclear, needs clarification"
+            else:
+                assessment["qualification_status"] = "unknown"
+                assessment["should_continue"] = True
+                assessment["assessment_reason"] = "No experience information provided yet"
+                
+        except Exception as e:
+            self.logger.error(f"Error assessing qualifications: {e}")
+            assessment["qualification_status"] = "error"
+            assessment["should_continue"] = True
+            assessment["assessment_reason"] = f"Assessment error: {str(e)}"
+        
+        # Store assessment in candidate info for Exit Advisor to use
+        candidate_info["qualification_assessment"] = assessment
+        
+        self.logger.info(f"Qualification assessment: {assessment}")
+        return assessment
+
     async def process_message_async(
         self, 
         user_message: str, 
@@ -272,10 +333,14 @@ Analyze this context and respond with the JSON decision format only.""")
             await conversation.add_message("user", user_message, agent=self)
             self.memory.chat_memory.add_user_message(user_message)
 
-            # --- NEW: Consult ExitAdvisor first ---
+            # --- NEW: Continuous Qualification Assessment ---
+            qualification_assessment = await self._assess_candidate_qualifications(conversation)
+            
+            # --- NEW: Consult ExitAdvisor first (with qualification assessment) ---
             exit_decision: ExitDecision = await self.exit_advisor.analyze_conversation(
                 current_message=user_message,
-                conversation_history=[{"role": m["role"], "content": m["content"]} for m in conversation.messages]
+                conversation_history=[{"role": m["role"], "content": m["content"]} for m in conversation.messages],
+                candidate_info=conversation.candidate_info
             )
 
             if exit_decision.should_exit and exit_decision.confidence >= 0.7:
