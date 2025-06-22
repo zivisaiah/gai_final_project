@@ -274,7 +274,7 @@ class ChatInterface:
         st.session_state.scheduling_context.update(context_updates)
     
     def clear_conversation(self):
-        """Clear the entire conversation including agent memory."""
+        """Clear the entire conversation including agent memory and registration data."""
         st.session_state.messages = []
         st.session_state.conversation_id = f"conv_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         st.session_state.candidate_info = {
@@ -294,6 +294,23 @@ class ChatInterface:
         # Reset slot selection state
         st.session_state.slot_selection_in_progress = False
         st.session_state.slot_booking_completed = False
+        
+        # CRITICAL FIX: Clear all registration-related session state
+        st.session_state.registration_completed = False
+        st.session_state.registration_data = {
+            'full_name': '',
+            'email': '',
+            'phone': '',
+            'position_interest': '',
+            'experience_years': 0,
+            'current_status': '',
+            'how_heard_about_us': '',
+            'registration_timestamp': None
+        }
+        st.session_state.registration_validation = {
+            'is_valid': False,
+            'errors': []
+        }
         
         # Clear Core Agent memory and conversation state
         if 'core_agent' in st.session_state:
