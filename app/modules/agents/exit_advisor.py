@@ -1,22 +1,22 @@
-from typing import Dict, List, Optional, Tuple, Any
-try:
-    from langchain_openai import ChatOpenAI
-except ImportError:
-    # Fallback for older langchain versions
-    try:
-        from langchain_community.chat_models import ChatOpenAI
-    except ImportError:
-        from langchain.chat_models import ChatOpenAI
+"""
+Exit Advisor Agent for Phase 2 - Conversation Termination Detection
 
-try:
-    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-except ImportError:
-    # Fallback for older langchain versions
-    from langchain.schema import SystemMessage, HumanMessage, AIMessage
+This module implements an intelligent agent that determines when recruitment
+conversations should naturally end based on candidate responses and engagement patterns.
+"""
 
-from pydantic import BaseModel
+import asyncio
 import json
 import logging
+from typing import Dict, List, Optional, Any
+from datetime import datetime
+from pydantic import BaseModel
+
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+
+from config.phase1_settings import get_settings
+
 
 class ExitDecision(BaseModel):
     """Model for exit advisor's decision"""
@@ -25,8 +25,9 @@ class ExitDecision(BaseModel):
     reason: str
     farewell_message: Optional[str] = None
 
+
 class ExitAdvisor:
-    """Agent responsible for detecting conversation end scenarios using pure LLM analysis"""
+    """Exit Advisor for intelligent conversation termination detection with qualification assessment"""
     
     def __init__(
         self,
@@ -34,37 +35,27 @@ class ExitAdvisor:
         temperature: float = 0.3,
         memory: Optional[any] = None  # Keep for compatibility but not used
     ):
-        """Initialize the Exit Advisor agent
+        """Initialize the Exit Advisor with LLM capabilities"""
+        self.settings = get_settings()
         
-        Args:
-            model_name: The OpenAI model to use
-            temperature: Model temperature (lower for more consistent decisions)
-            memory: Optional conversation memory (kept for compatibility)
-        """
-        # Import settings here to avoid circular imports
-        from config.phase1_settings import settings
+        # Use provided model or get from settings
+        self.model_name = model_name or self.settings.get_exit_advisor_model()
+        self.temperature = temperature
         
-        # Initialize logger
+        # Initialize LLM
+        self.llm = self._create_safe_llm(self.model_name, self.temperature)
+        
+        # Set up logging
         self.logger = logging.getLogger(__name__)
-        
-        # Use configuration-based model selection if not explicitly provided
-        if model_name is None:
-            model_name = settings.get_exit_advisor_model()
-            
-        self.model_name = model_name
-        self.is_fine_tuned = model_name.startswith("ft:") if model_name else False
-        
-        # Initialize ChatOpenAI with safe temperature handling
-        self.llm = self._create_safe_llm(model_name, temperature)
-        
-        self.logger.info(f"Exit Advisor initialized with model: {model_name}")
-
+        self.logger.info(f"Exit Advisor initialized with model: {self.model_name}")
+    
     def _create_safe_llm(self, model_name: str, temperature: float) -> ChatOpenAI:
         """Create ChatOpenAI instance with safe temperature handling"""
         try:
             # Try with the requested temperature first
             return ChatOpenAI(
-                model_name=model_name,
+                api_key=self.settings.OPENAI_API_KEY,
+                model=model_name,
                 temperature=temperature
             )
         except Exception as e:
@@ -204,19 +195,19 @@ Analyze the conversation carefully and make your decision based on the overall c
                 response_text = response_text.strip()
                 
                 decision_data = json.loads(response_text)
-            
-            # Create the exit decision
-            decision = ExitDecision(
-                should_exit=decision_data["should_exit"],
-                confidence=decision_data["confidence"],
-                reason=decision_data["reason"],
-                farewell_message=decision_data.get("farewell_message")
-            )
-            
+                
+                # Create the exit decision
+                decision = ExitDecision(
+                    should_exit=decision_data["should_exit"],
+                    confidence=decision_data["confidence"],
+                    reason=decision_data["reason"],
+                    farewell_message=decision_data.get("farewell_message")
+                )
+                
                 self.logger.info(f"Exit analysis: should_exit={decision.should_exit}, confidence={decision.confidence:.2f}, reason={decision.reason}")
-            return decision
-            
-        except (json.JSONDecodeError, KeyError) as e:
+                return decision
+                
+            except (json.JSONDecodeError, KeyError) as e:
                 self.logger.warning(f"Failed to parse LLM response as JSON: {e}. Response: {response_text}")
                 
                 # Fallback: analyze the response text for decision
