@@ -500,12 +500,25 @@ What specific Python projects or technologies have you worked with in your {actu
                     final_reasoning = f"No slots match preferences, asking for flexibility. Advisor reason: {schedule_reasoning}"
                     return decision, final_reasoning, flexibility_response
                 
+                elif schedule_decision == SchedulingDecision.NOT_SCHEDULE:
+                    # Check if this is due to no available slots vs low intent
+                    if "no available slots" in schedule_reasoning.lower() or "no slots" in schedule_reasoning.lower():
+                        # High intent but no matching slots - be transparent about it
+                        flexibility_response = await self._handle_no_slots_available(
+                            conversation, user_message, schedule_reasoning
+                        )
+                        final_reasoning = f"No slots match preferences, asking for flexibility. Advisor reason: {schedule_reasoning}"
+                        return decision, final_reasoning, flexibility_response
+                    else:
+                        # Low scheduling intent - OVERRIDE response to avoid scheduling promises
+                        override_response = await self._generate_continue_response(conversation, user_message, schedule_reasoning)
+                        final_reasoning = f"Low scheduling intent, continuing conversation. Advisor reason: {schedule_reasoning}"
+                        return AgentDecision.CONTINUE, final_reasoning, override_response
+                
                 else:
-                    # Low scheduling intent - OVERRIDE response to avoid scheduling promises
-                    # The original agent_response may contain scheduling promises, so we need to provide
-                    # a response that continues the conversation without making empty promises
+                    # Fallback for any other cases
                     override_response = await self._generate_continue_response(conversation, user_message, schedule_reasoning)
-                    final_reasoning = f"Low scheduling intent, continuing conversation. Advisor reason: {schedule_reasoning}"
+                    final_reasoning = f"Unhandled scheduling case, continuing conversation. Advisor reason: {schedule_reasoning}"
                     return AgentDecision.CONTINUE, final_reasoning, override_response
 
             # For CONTINUE or END, return the original parsed response
@@ -613,15 +626,26 @@ What specific Python projects or technologies have you worked with in your {actu
     
     async def _ask_for_flexibility(self, conversation: ConversationState, schedule_reasoning: str) -> str:
         """Ask user for flexibility in their time preferences."""
-        return f"""I understand you prefer meeting after 4 PM, but unfortunately we don't have any available slots that match that time preference.
+        
+        # Extract the user's stated preference from the last few messages
+        user_preference = "your preferred time"
+        for msg in conversation.messages[-3:]:
+            if msg.get("role") == "user":
+                content = msg.get("content", "").lower()
+                if "between" in content and ("pm" in content or "am" in content):
+                    user_preference = f"the time you mentioned ({msg.get('content', '')})"
+                    break
+        
+        return f"""I appreciate you sharing your availability! Unfortunately, we don't currently have any interview slots available during {user_preference}.
 
-Would you be flexible with your timing? We have several slots available during business hours (9 AM - 4:30 PM) on weekdays. 
+Would you be flexible with your timing? We have several slots available during business hours on weekdays:
 
-Could any of these alternative times work for you:
 • **Morning slots**: 9:00 AM - 12:00 PM
-• **Afternoon slots**: 1:00 PM - 4:30 PM
+• **Early afternoon slots**: 1:00 PM - 3:00 PM
 
-Please let me know if any of these times could work, or if you have other preferences!"""
+Would any of these alternative times work for your schedule? If not, I can also check for availability in the following weeks.
+
+Please let me know what might work best for you!"""
 
     async def _offer_alternatives(self, conversation: ConversationState, schedule_reasoning: str) -> str:
         """Offer specific alternative times from available slots."""
