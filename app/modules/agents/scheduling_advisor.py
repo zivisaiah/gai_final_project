@@ -196,29 +196,74 @@ class SchedulingAdvisor:
             # Match slots with candidate preferences
             matched_slots = []
             
+            # Extract time preferences (handle "every day between X and Y" scenarios)
+            preferred_times = set()
+            preferred_days = set()
+            
             for pref in preferred_datetimes:
                 pref_dt = pref['datetime']
+                preferred_times.add(pref_dt.time())
+                preferred_days.add(pref_dt.weekday())  # 0=Monday, 6=Sunday
+            
+            # Also check if we have time range preferences (like 12pm-2pm daily)
+            has_daily_time_range = len(preferred_times) > 1 and len(preferred_days) >= 5
+            
+            if has_daily_time_range:
+                # Handle "every day between X and Y" - match any day within time range
+                time_range_start = min(preferred_times)
+                time_range_end = max(preferred_times)
                 
-                # Find slots within 2 hours of preferred time
                 for slot in all_slots:
                     slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                    slot_time = slot_dt.time()
                     
-                    # Check if slot is on the same day
-                    if slot_dt.date() == pref_dt.date():
-                        time_diff = abs((slot_dt - pref_dt).total_seconds() / 3600)  # Hours
+                    # Check if slot time is within the preferred time range
+                    if time_range_start <= slot_time <= time_range_end:
+                        slot['preference_match'] = True
+                        slot['time_difference'] = 0  # Perfect match within range
+                        matched_slots.append(slot)
                         
-                        if time_diff <= 2:  # Within 2 hours
-                            slot['preference_match'] = True
-                            slot['time_difference'] = time_diff
-                            matched_slots.append(slot)
+            else:
+                # Handle specific datetime preferences
+                for pref in preferred_datetimes:
+                    pref_dt = pref['datetime']
+                    
+                    # Find slots within 2 hours of preferred time
+                    for slot in all_slots:
+                        slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                        
+                        # Check if slot is on the same day
+                        if slot_dt.date() == pref_dt.date():
+                            time_diff = abs((slot_dt - pref_dt).total_seconds() / 3600)  # Hours
+                            
+                            if time_diff <= 2:  # Within 2 hours
+                                slot['preference_match'] = True
+                                slot['time_difference'] = time_diff
+                                matched_slots.append(slot)
+            
+            # Remove duplicates while preserving order
+            seen_slot_ids = set()
+            unique_matched_slots = []
+            for slot in matched_slots:
+                if slot['id'] not in seen_slot_ids:
+                    seen_slot_ids.add(slot['id'])
+                    unique_matched_slots.append(slot)
+            matched_slots = unique_matched_slots
             
             # Sort matched slots by preference match and time difference
             matched_slots.sort(key=lambda x: x.get('time_difference', 999))
             
-            # If we have good matches, return them; otherwise return diversified available slots
+            # If we have good matches, prioritize them over pure diversity
             if matched_slots:
-                return self._diversify_slot_selection(matched_slots, max_slots=3)
+                self.logger.info(f"Found {len(matched_slots)} preference-matched slots, selecting best matches")
+                # For preference matches, prioritize time accuracy over diversity
+                if len(matched_slots) <= 3:
+                    return matched_slots
+                else:
+                    # Return top 3 best matches by time difference
+                    return matched_slots[:3]
             else:
+                self.logger.info("No preference matches found, using diversified selection")
                 return self._diversify_slot_selection(all_slots, max_slots=3)
                 
         except Exception as e:
