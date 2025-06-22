@@ -499,7 +499,7 @@ Analyze this context and respond with the JSON decision format only.""")
                 
         except Exception as e:
             self.logger.error(f"Error handling no slots available: {e}")
-            return "I apologize, but I'm having trouble finding suitable interview slots. Let me check with our team and get back to you."
+            return "I apologize, but I'm having trouble finding suitable interview slots at the moment. Could you please let me know your preferred days and times? This will help me suggest the best available options for you."
     
     async def _ask_for_flexibility(self, conversation: ConversationState, schedule_reasoning: str) -> str:
         """Ask user for flexibility in their time preferences."""
@@ -545,7 +545,7 @@ If none of these times work, we may need to explore other options or schedule fo
                 
         except Exception as e:
             self.logger.error(f"Error offering alternatives: {e}")
-            return "I'm having trouble accessing our calendar. Let me check with our scheduling team and get back to you."
+            return "I'm having trouble accessing our calendar at the moment. Could you please share your preferred days and times for an interview? I'll do my best to find a slot that works for your schedule."
 
     async def _generate_continue_response(
         self,

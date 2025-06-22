@@ -428,65 +428,40 @@ class RecruitmentChatbot:
         self.display_system_status()
         self.display_debug_info()
         
-        # Check if registration form should be displayed
-        show_registration_form = False
-        
-        # Show registration form if explicitly required or if scheduling was attempted without registration
+        # USER-INITIATED REGISTRATION SECTION
+        # Show registration option if not completed (user can choose to fill it or skip)
         if not st.session_state.get('registration_completed', False):
-            # Check if the last message indicated registration is required
-            if (st.session_state.messages and 
-                hasattr(st.session_state.messages[-1], 'metadata') and
-                st.session_state.messages[-1].metadata.get('action_required') == 'SHOW_REGISTRATION_FORM'):
-                show_registration_form = True
-            
-            # Also show form if user is trying to schedule but hasn't registered
-            if st.session_state.get('show_registration_prompt', False):
-                show_registration_form = True
-        
-        # Display registration form if needed
-        if show_registration_form:
-            st.markdown("---")
-            st.subheader("📋 Registration Required")
-            st.info("🔒 **Registration is required before scheduling interviews.** Please complete the form below, then I'll show you available interview slots:")
-            
-            # Display the registration form
-            registration_complete = self.registration_form.display_registration_form()
-            
-            if registration_complete:
-                st.success("✅ Registration completed! You can now schedule interviews.")
-                st.session_state.show_registration_prompt = False
+            with st.expander("📝 Optional: Quick Registration Form", expanded=False):
+                st.info("""
+                **💡 You can fill out this form to speed up the process, or simply continue chatting!**
                 
-                # Auto-continue the conversation after registration
-                self.chat_interface.add_assistant_message(
-                    "Great! Your registration is complete. Based on your availability (Sunday to Thursday, 9am-6pm), here are some available interview slots:",
-                    {
-                        'decision': 'SCHEDULE',
-                        'reasoning': 'Registration completed, proceeding with scheduling',
-                        'agent_type': 'core_agent',
-                        'auto_triggered': True
-                    }
-                )
+                This form is completely optional. You can:
+                - Fill it out now for faster interview scheduling
+                - Skip it and provide information through our conversation
+                - Come back to it later if you change your mind
+                """)
                 
-                # Trigger scheduling flow
-                try:
-                    from datetime import datetime, timedelta
-                    reference_datetime = datetime.now()
-                    all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
-                    
-                    # Apply diversification to get 3 varied slots
-                    diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
-                    
-                    if diversified_slots:
-                        self.chat_interface.update_scheduling_context({
-                            'slots_offered': diversified_slots
-                        })
-                    
-                except Exception as e:
-                    self.logger.error(f"Error getting slots after registration: {e}")
+                # Add a user choice
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("📝 Fill Registration Form", use_container_width=True):
+                        st.session_state.user_wants_registration = True
+                        st.rerun()
+                with col2:
+                    if st.button("💬 Continue Chatting", use_container_width=True):
+                        st.session_state.user_wants_registration = False
+                        st.success("Great! Let's continue our conversation naturally.")
                 
-                st.rerun()
-            
-            st.markdown("---")
+                # Show form if user explicitly requested it
+                if st.session_state.get('user_wants_registration', False):
+                    st.markdown("---")
+                    registration_complete = self.registration_form.display_registration_form()
+                    
+                    if registration_complete:
+                        st.success("✅ Registration completed! This will help speed up our conversation.")
+                        st.session_state.user_wants_registration = False
+                        st.balloons()
+                        st.rerun()
         
         # If registration is complete, show a summary
         elif st.session_state.get('registration_completed', False):
@@ -501,12 +476,7 @@ class RecruitmentChatbot:
             not st.session_state.scheduling_context.get('appointment_confirmed') and
             not st.session_state.get('slot_booking_completed', False)):
             
-            # Ensure registration is complete before booking
-            if not st.session_state.get('registration_completed', False):
-                st.error("⚠️ Registration must be completed before booking appointments.")
-                st.session_state.show_registration_prompt = True
-                st.rerun()
-                return
+            # Note: Registration is optional - users can book with information gathered conversationally
             
             # Handle slot selection
             selected_slot = st.session_state.scheduling_context['selected_slot']
@@ -541,9 +511,7 @@ class RecruitmentChatbot:
             with st.spinner("🤖 Thinking..."):
                 result = self.process_user_message(user_input)
             
-            # Check if registration form should be shown after processing
-            if result['metadata'].get('action_required') == 'SHOW_REGISTRATION_FORM':
-                st.session_state.show_registration_prompt = True
+            # Registration form is user-initiated only - no automatic prompting
             
             # Enhanced display for INFO responses with source references
             if result['metadata'].get('decision') == 'INFO':
