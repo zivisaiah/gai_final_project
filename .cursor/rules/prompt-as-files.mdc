@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+LLM prompts should be managed in seperate files, in prompts folder, as templates or as raw full prompts and not as a part of the code.

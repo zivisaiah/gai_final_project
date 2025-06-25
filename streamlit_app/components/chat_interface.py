@@ -154,8 +154,20 @@ class ChatInterface:
                             st.write(metadata['reasoning'])
                     
                     # Show scheduling slots if available
+                    # DEBUG: Track slot display
+                    if 'suggested_slots' in metadata:
+                        print(f"🔍 CHAT DEBUG: Found suggested_slots in metadata: {len(metadata['suggested_slots'])} slots")
+                        if metadata['suggested_slots']:
+                            print(f"🔍 CHAT DEBUG: First slot: {metadata['suggested_slots'][0]}")
+                        else:
+                            print(f"❌ CHAT DEBUG: suggested_slots is empty!")
+                    else:
+                        print(f"❌ CHAT DEBUG: No suggested_slots key in metadata")
+                        print(f"❌ CHAT DEBUG: Available metadata keys: {list(metadata.keys())}")
+                    
                     if 'suggested_slots' in metadata and metadata['suggested_slots']:
                         st.subheader("📅 Available Time Slots")
+                        print(f"✅ CHAT DEBUG: Displaying {len(metadata['suggested_slots'])} slot buttons")
                         for i, slot in enumerate(metadata['suggested_slots'], 1):
                             # Handle both dict and AvailableSlotResponse object
                             if hasattr(slot, 'slot_date') and hasattr(slot, 'start_time'):

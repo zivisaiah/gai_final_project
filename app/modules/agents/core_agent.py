@@ -536,6 +536,14 @@ What specific Python projects or technologies have you worked with in your {actu
                     final_reasoning = f"Unhandled scheduling case, continuing conversation. Advisor reason: {schedule_reasoning}"
                     return AgentDecision.CONTINUE, final_reasoning, override_response
 
+            # NEW: Handle contact information requests
+            if decision == AgentDecision.CONTINUE and conversation.candidate_info.get("needs_contact_info"):
+                # Clear the flag and generate contact info request
+                conversation.candidate_info["needs_contact_info"] = False
+                contact_request_response = await self._generate_contact_info_request(conversation, user_message)
+                final_reasoning = "Requesting contact information before scheduling interview"
+                return decision, final_reasoning, contact_request_response
+            
             # For CONTINUE or END, return the original parsed response
             return decision, reasoning, agent_response
             
@@ -588,8 +596,14 @@ What specific Python projects or technologies have you worked with in your {actu
         has_availability = bool(candidate_info.get("availability_mentioned"))
         has_interest = candidate_info.get("interest_level") in ["high", "medium"]
         
+        # NEW: Contact information validation for actual scheduling
+        has_email = bool(candidate_info.get("email"))
+        has_phone = bool(candidate_info.get("phone"))
+        has_contact_info = has_email or has_phone  # At least one contact method required
+        
         self.logger.info(f"Validation check - Name: {has_name}, Experience: {has_experience}, "
                         f"Availability: {has_availability}, Interest: {has_interest}")
+        self.logger.info(f"Contact validation - Email: {has_email}, Phone: {has_phone}, HasContact: {has_contact_info}")
         self.logger.info(f"Candidate info: {candidate_info}")
         
         # Override to SCHEDULE if we have enough information and availability
@@ -598,6 +612,13 @@ What specific Python projects or technologies have you worked with in your {actu
             
             self.logger.info("Overriding CONTINUE to SCHEDULE based on sufficient candidate information")
             return AgentDecision.SCHEDULE
+        
+        # NEW: Block SCHEDULE decisions if missing contact information
+        if decision == AgentDecision.SCHEDULE and not has_contact_info:
+            self.logger.info("Blocking SCHEDULE decision - missing contact information (email or phone)")
+            # Store the need for contact info in conversation state for response generation
+            conversation.candidate_info["needs_contact_info"] = True
+            return AgentDecision.CONTINUE
         
         # Don't override SCHEDULE decisions - let them proceed
         # The SchedulingAdvisor will make the final determination
@@ -757,6 +778,48 @@ I appreciate your interest in our Python developer position. If your schedule be
 
 Thank you for your time, and I wish you the best in your job search!"""
     
+    async def _generate_contact_info_request(self, conversation: ConversationState, user_message: str) -> str:
+        """Generate a request for contact information before scheduling."""
+        candidate_info = conversation.candidate_info
+        name = candidate_info.get("name", "")
+        
+        # Check what contact info we already have
+        has_email = bool(candidate_info.get("email"))
+        has_phone = bool(candidate_info.get("phone"))
+        
+        if name:
+            if not has_email and not has_phone:
+                # Need both email and phone
+                return f"""Great to hear you're interested in scheduling an interview, {name}! Before I can set up a meeting time and send you confirmation details, I'll need to get your contact information.
+
+Could you please provide:
+• **Email address** - for sending interview confirmations and details
+• **Phone number** - as a backup contact method
+
+Once I have your contact information, I'll be able to show you available time slots and confirm your interview!"""
+            
+            elif not has_email:
+                # Need email only
+                return f"""Perfect, {name}! I'm ready to schedule your interview. To send you the confirmation details and interview information, I'll need your email address.
+
+Could you please share your email with me? Once I have that, I can show you the available time slots!"""
+            
+            elif not has_phone:
+                # Need phone only (rare case, but handle it)
+                return f"""Excellent, {name}! Before I schedule your interview, could you also provide your phone number? This gives us a backup way to reach you if needed.
+
+Once I have your phone number, I'll show you the available interview time slots!"""
+        else:
+            # No name, need everything
+            return """I'd be happy to help you schedule an interview! Before I can set up a meeting time, I'll need to get some basic contact information.
+
+Could you please provide:
+• **Your name**
+• **Email address** - for sending interview confirmations  
+• **Phone number** - as a backup contact method
+
+Once I have your contact details, I'll be able to show you available time slots and confirm your interview!"""
+    
     async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
         """
         Extract candidate information using LLM analysis (new unified approach).
@@ -789,7 +852,9 @@ Thank you for your time, and I wish you the best in your job search!"""
                 "experience": "mentioned" if extracted_data.get("experience", {}).get("has_python") else "unknown",
                 "current_status": extracted_data.get("current_status"),
                 "interest_level": extracted_data.get("interest_level", "unknown"),
-                "availability_mentioned": extracted_data.get("availability_mentioned", False)
+                "availability_mentioned": extracted_data.get("availability_mentioned", False),
+                "email": extracted_data.get("email"),
+                "phone": extracted_data.get("phone")
             }
             
             self.logger.info(f"LLM-extracted candidate info: {candidate_info}")
@@ -803,7 +868,9 @@ Thank you for your time, and I wish you the best in your job search!"""
                 "experience": "unknown",
                 "current_status": None,
                 "interest_level": "unknown",
-                "availability_mentioned": False
+                "availability_mentioned": False,
+                "email": None,
+                "phone": None
             }
 
     def start_conversation(self, conversation_id: str = None) -> Tuple[str, ConversationState]:

@@ -288,6 +288,8 @@ Extract the following information about the candidate from the conversation:
 3. **Interest Level**: Gauge their enthusiasm (high/medium/low/unknown)
 4. **Availability**: Whether they've mentioned scheduling availability
 5. **Current Status**: Job search status, employment situation
+6. **Email**: Email address if provided
+7. **Phone**: Phone number if provided
 
 ## ANALYSIS GUIDELINES:
 
@@ -318,6 +320,16 @@ Extract the following information about the candidate from the conversation:
 - Just accepted: "just got a job", "starting new position"
 - Unknown: insufficient information
 
+### Email Extraction:
+- Look for: "my email is", "email: ", "@domain.com", "contact me at"
+- Extract complete email addresses (e.g., "john@example.com")
+- Return null if no email provided
+
+### Phone Extraction:
+- Look for: "my phone", "call me at", "number is", phone number patterns
+- Extract phone numbers in various formats (123-456-7890, (123) 456-7890, etc.)
+- Return null if no phone number provided
+
 ## RESPONSE FORMAT:
 Respond with ONLY valid JSON:
 
@@ -332,10 +344,14 @@ Respond with ONLY valid JSON:
   "interest_level": "high/medium/low/unknown",
   "availability_mentioned": true/false,
   "current_status": "detailed description or null",
+  "email": "email@domain.com or null",
+  "phone": "phone number or null",
   "confidence": {{
     "name": 0.0-1.0,
     "experience": 0.0-1.0,
-    "interest": 0.0-1.0
+    "interest": 0.0-1.0,
+    "email": 0.0-1.0,
+    "phone": 0.0-1.0
   }}
 }}
 

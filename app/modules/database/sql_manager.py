@@ -140,10 +140,6 @@ class SQLManager:
             
             slots = query.all()
             
-            # Filter out booked slots if available_only is True
-            if available_only:
-                slots = [slot for slot in slots if not slot.is_booked]
-            
             return [AvailableSlotResponse.model_validate(slot) for slot in slots]
     
     def get_slot_by_id(self, slot_id: int) -> Optional[AvailableSlotResponse]:
@@ -187,6 +183,11 @@ class SQLManager:
                 # Create appointment
                 appointment = Appointment(**appointment_data.model_dump())
                 session.add(appointment)
+                
+                # Mark the slot as unavailable
+                slot.is_available = False
+                slot.updated_at = datetime.utcnow()
+                
                 session.commit()
                 session.refresh(appointment)
                 
@@ -230,15 +231,24 @@ class SQLManager:
             return AppointmentResponse.model_validate(appointment) if appointment else None
     
     def update_appointment_status(self, appointment_id: int, status: str) -> Optional[AppointmentResponse]:
-        """Update appointment status."""
+        """Update appointment status and handle slot availability."""
         with self.get_session() as session:
             try:
                 appointment = session.query(Appointment).filter(Appointment.id == appointment_id).first()
                 if not appointment:
                     return None
                 
+                old_status = appointment.status
                 appointment.status = status
                 appointment.updated_at = datetime.utcnow()
+                
+                # Handle slot availability when appointment is cancelled
+                if status in ['cancelled', 'no_show'] and old_status in ['scheduled', 'confirmed']:
+                    slot = session.query(AvailableSlot).filter(AvailableSlot.id == appointment.slot_id).first()
+                    if slot and not slot.is_booked:  # Check if no other active appointments exist
+                        slot.is_available = True
+                        slot.updated_at = datetime.utcnow()
+                
                 session.commit()
                 session.refresh(appointment)
                 

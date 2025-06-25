@@ -187,6 +187,20 @@ class RecruitmentChatbot:
                     candidate_info = self.core_agent.get_candidate_info('streamlit_session')
                     available_slots = candidate_info.get('available_slots', [])
                     
+                    # CRITICAL DEBUG: Check if get_candidate_info is working properly
+                    self.logger.info(f"🔍 CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}")
+                    if candidate_info and 'available_slots' in candidate_info:
+                        self.logger.info(f"🔍 CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots")
+                    else:
+                        self.logger.error(f"❌ CRITICAL DEBUG: available_slots key missing from candidate_info!")
+                    
+                    # DEBUG: Comprehensive slot tracking
+                    self.logger.info(f"🔍 SLOT DEBUG: Core Agent decision = SCHEDULE")
+                    self.logger.info(f"🔍 SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}")
+                    self.logger.info(f"🔍 SLOT DEBUG: Found {len(available_slots)} slots in candidate_info")
+                    if available_slots:
+                        self.logger.info(f"🔍 SLOT DEBUG: First slot sample: {available_slots[0]}")
+                    
                     if available_slots:
                         scheduling_metadata = {
                             'scheduling_decision': 'SCHEDULE',
@@ -194,21 +208,28 @@ class RecruitmentChatbot:
                             'suggested_slots': available_slots
                         }
                         
-                        # Update scheduling context
+                        # Update scheduling context for UI
                         self.chat_interface.update_scheduling_context({
                             'slots_offered': available_slots
                         })
                         
                         response_metadata.update(scheduling_metadata)
+                        
+                        # DEBUG: Confirm metadata update
+                        self.logger.info(f"✅ SLOT DEBUG: Successfully passed {len(available_slots)} slots to UI metadata")
+                        self.logger.info(f"✅ SLOT DEBUG: response_metadata now contains: {list(response_metadata.keys())}")
                     else:
                         # Fallback: Get slots directly if none were stored
-                        self.logger.warning("No slots found in candidate_info, falling back to direct retrieval")
-                        from datetime import datetime, timedelta
+                        self.logger.warning("❌ SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval")
+                        self.logger.info(f"❌ SLOT DEBUG: candidate_info contents: {candidate_info}")
+                        
                         reference_datetime = datetime.now()
                         all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
                         
                         # Apply diversification to get 3 varied slots
                         diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
+                        
+                        self.logger.info(f"🔄 SLOT DEBUG: Fallback generated {len(diversified_slots)} slots")
                         
                         scheduling_metadata = {
                             'scheduling_decision': 'SCHEDULE',
@@ -221,6 +242,7 @@ class RecruitmentChatbot:
                             self.chat_interface.update_scheduling_context({
                                 'slots_offered': diversified_slots
                             })
+                            self.logger.info(f"✅ SLOT DEBUG: Fallback slots passed to UI context")
                         
                         response_metadata.update(scheduling_metadata)
                     

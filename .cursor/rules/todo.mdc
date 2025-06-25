@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always work with TODO.md file, initiate it when the project is planned and update it regularly based on the progress of the project.
