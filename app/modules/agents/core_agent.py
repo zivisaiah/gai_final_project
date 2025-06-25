@@ -273,8 +273,9 @@ Analyze this context and respond with the JSON decision format only.""")
         """Continuously assess candidate qualifications against job requirements"""
         candidate_info = conversation.candidate_info
         
-        # Extract experience information
-        experience_str = candidate_info.get("experience", "").lower()
+        # Extract experience information (handle None values)
+        experience_value = candidate_info.get("experience", "")
+        experience_str = (experience_value or "").lower()
         
         # Job requirements (these could be loaded from configuration)
         min_experience_years = 3  # Minimum 3 years Python experience required

@@ -13,15 +13,15 @@ enableCORS = false
 enableXsrfProtection = true
 
 # File watcher settings for deployment
-fileWatcherType = "none"
-runOnSave = false
+fileWatcherType = "auto"
+runOnSave = true
 
 # Resource limits for cloud deployment
 maxUploadSize = 50
 maxMessageSize = 50
 
 # Session settings
-enableStaticServing = true
+enableStaticServing = false
 
 [browser]
 # Disable auto-opening browser in cloud
@@ -43,8 +43,6 @@ showErrorDetails = false
 [runner]
 # Performance optimizations
 magicEnabled = true
-installTracer = false
-fixMatplotlib = true
 postScriptGC = true
 fastReruns = true
 
