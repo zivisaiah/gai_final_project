@@ -181,30 +181,48 @@ class RecruitmentChatbot:
             
             # Handle scheduling if needed
             if decision == AgentDecision.SCHEDULE:
-                # Core Agent already consulted SchedulingAdvisor, just get available slots for UI
-                # No need to call the advisor again - it was already called in Core Agent
+                # Core Agent already consulted SchedulingAdvisor and stored slots in candidate_info
                 try:
-                    # Get all available slots for the next 14 days
-                    from datetime import datetime, timedelta
-                    reference_datetime = datetime.now()
-                    all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
+                    # Get the slots that were already computed by Core Agent
+                    candidate_info = self.core_agent.get_candidate_info('streamlit_session')
+                    available_slots = candidate_info.get('available_slots', [])
                     
-                    # Apply diversification to get 3 varied slots
-                    diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
-                    
-                    scheduling_metadata = {
-                        'scheduling_decision': 'SCHEDULE',
-                        'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
-                        'suggested_slots': diversified_slots
-                    }
-                    
-                    # Update scheduling context
-                    if diversified_slots:
+                    if available_slots:
+                        scheduling_metadata = {
+                            'scheduling_decision': 'SCHEDULE',
+                            'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
+                            'suggested_slots': available_slots
+                        }
+                        
+                        # Update scheduling context
                         self.chat_interface.update_scheduling_context({
-                            'slots_offered': diversified_slots
+                            'slots_offered': available_slots
                         })
-                    
-                    response_metadata.update(scheduling_metadata)
+                        
+                        response_metadata.update(scheduling_metadata)
+                    else:
+                        # Fallback: Get slots directly if none were stored
+                        self.logger.warning("No slots found in candidate_info, falling back to direct retrieval")
+                        from datetime import datetime, timedelta
+                        reference_datetime = datetime.now()
+                        all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
+                        
+                        # Apply diversification to get 3 varied slots
+                        diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
+                        
+                        scheduling_metadata = {
+                            'scheduling_decision': 'SCHEDULE',
+                            'scheduling_reasoning': 'Fallback slot retrieval',
+                            'suggested_slots': diversified_slots
+                        }
+                        
+                        # Update scheduling context
+                        if diversified_slots:
+                            self.chat_interface.update_scheduling_context({
+                                'slots_offered': diversified_slots
+                            })
+                        
+                        response_metadata.update(scheduling_metadata)
                     
                 except Exception as e:
                     self.logger.error(f"Error getting slots for UI display: {e}")

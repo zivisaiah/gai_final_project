@@ -488,10 +488,24 @@ What specific Python projects or technologies have you worked with in your {actu
                     return decision, f"Slot confirmation detected. Advisor reason: {schedule_reasoning}", agent_response
                 
                 elif schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
-                    # We have slots - let the UI handle displaying them as buttons
-                    # Don't include slot text in the response since they'll be shown as clickable buttons
+                    # We have slots - store them in conversation state for UI to access
+                    conversation.candidate_info['available_slots'] = available_slots
+                    
+                    # Create a response that includes the slots in text form as backup
+                    # The UI will display them as buttons, but this provides fallback text
+                    try:
+                        slots_text = "\n".join([
+                            f"• **{datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00')).strftime('%A, %B %d at %I:%M %p')}** with {slot.get('recruiter', 'our team')}"
+                            for slot in available_slots[:3]  # Show max 3 slots
+                        ])
+                        
+                        enhanced_response = f"{agent_response}\n\nHere are the available time slots:\n\n{slots_text}\n\nPlease let me know which time works best for you!"
+                    except Exception as e:
+                        self.logger.error(f"Error formatting slots for response: {e}")
+                        enhanced_response = f"{agent_response}\n\nI have {len(available_slots)} available time slots for you to choose from. Please let me know which time works best for you!"
+                    
                     final_reasoning = f"Proactively providing schedule options. Advisor reason: {schedule_reasoning}"
-                    return decision, final_reasoning, agent_response
+                    return decision, final_reasoning, enhanced_response
                 
                 elif schedule_decision == SchedulingDecision.SCHEDULE and not available_slots:
                     # High intent but no matching slots - ask for flexibility
