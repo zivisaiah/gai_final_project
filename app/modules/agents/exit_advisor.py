@@ -110,6 +110,12 @@ Your task is to analyze whether a recruitment conversation should END or CONTINU
 
 **ANALYSIS GUIDELINES:**
 
+**IMPORTANT: ENCOURAGE EARLY ENGAGEMENT**
+- For initial interactions (greetings like "hi", "hello") → ALWAYS CONTINUE to encourage engagement
+- For conversations with <3 exchanges → STRONGLY PREFER CONTINUE unless explicit disinterest
+- Give candidates opportunity to share their background before making qualification decisions
+- Focus on building rapport and understanding candidate needs first
+
 DO **END** the conversation when you detect:
 
 **1. EXPLICIT DISINTEREST:**
@@ -117,37 +123,35 @@ DO **END** the conversation when you detect:
 - Polite decline or says "no thank you"
 - Explicit goodbye or indicates they need to leave
 
-**2. QUALIFICATION MISMATCH (CRITICAL):**
-- Candidate has less experience than required (e.g., 1-2 years vs 3+ years required) 
-- Candidate lacks fundamental skills for the position
-- Candidate's background doesn't align with job requirements
-- After providing honest feedback about qualification gaps, candidate doesn't show additional relevant experience
-- **DECISIVE RULE**: If candidate has 1+ year gap in required experience AND no compensating factors mentioned, END conversation
+**2. QUALIFICATION MISMATCH (ONLY AFTER PROPER ASSESSMENT):**
+- Candidate has provided their experience AND has significant gaps (2+ years) with no compensating factors
+- ONLY END after honest qualification feedback has been provided AND candidate shows no additional relevant experience
+- **IMPORTANT**: Do NOT end based on "unknown" qualification status - this means we need more information
 
 **3. CONVERSATION COMPLETION:**
 - User confirms their needs are fully met and they're ready to conclude
 - Task completion or natural conversation end
 
-**4. TOPIC DIVERGENCE:**
-- User shifts to completely unrelated topics unrelated to job/career
+**4. REPEATED NON-ENGAGEMENT:**
+- User provides very short, non-informative responses across multiple exchanges (4+ messages)
+- Clear pattern of disengagement over extended conversation
 
 DO **CONTINUE** the conversation when you detect:
-1. **Interest Signals**: User expresses interest, curiosity, or engagement
-2. **Information Sharing**: User shares background, experience, skills, or qualifications
-3. **Questions**: User asks about the role, company, process, or next steps
-4. **Availability**: User mentions their schedule, availability, or readiness to proceed
-5. **Engagement**: User is actively participating in job-related discussion
-6. **Scheduling Intent**: User shows willingness to schedule or move forward
-7. **Qualification Clarification**: User provides additional experience that might bridge qualification gaps
+1. **Initial Greetings**: "Hi", "Hello", "Hey" - these are conversation starters, not exit signals
+2. **Interest Signals**: User expresses interest, curiosity, or engagement
+3. **Information Sharing**: User shares background, experience, skills, or qualifications
+4. **Questions**: User asks about the role, company, process, or next steps
+5. **Availability**: User mentions their schedule, availability, or readiness to proceed
+6. **Engagement**: User is actively participating in job-related discussion
+7. **Unknown Qualification Status**: When we don't have enough information to assess qualifications
+8. **Early Conversation**: Less than 3 message exchanges - give candidates time to engage
 
-**QUALIFICATION ASSESSMENT PRIORITY:**
-- **CRITICAL DECISION RULE**: If candidate has 1+ year experience gap AND no compensating factors → END immediately
-- If candidate clearly doesn't meet minimum requirements (e.g., 2 years experience for 3+ year position), strongly lean toward END
-- If candidate shows additional relevant experience, projects, or skills that might compensate, CONTINUE
-- Consider the overall conversation flow - has qualification mismatch been addressed?
-- **CRITICAL**: After honest qualification feedback is provided, if candidate doesn't demonstrate additional relevant experience, END conversation
-- **DECISIVE APPROACH**: Don't prolong conversations with underqualified candidates unless they show strong compensating factors
-- **NEW RULE**: For candidates with 2 years experience vs 3+ required, END unless they mention specific projects, bootcamps, or additional skills
+**QUALIFICATION ASSESSMENT APPROACH:**
+- **RULE**: If qualification_status is "unknown" → CONTINUE (need more information)
+- **RULE**: If conversation has <3 exchanges → CONTINUE (too early to assess)
+- Only consider qualification-based exits AFTER we have concrete experience information
+- If candidate clearly doesn't meet requirements AND shows no compensating factors AND conversation has progressed sufficiently → consider END
+- Always give candidates opportunity to explain their background before ending
 
 **RESPONSE FORMAT:**
 You must respond with a valid JSON object:
@@ -158,14 +162,21 @@ You must respond with a valid JSON object:
     "farewell_message": "Appropriate goodbye message if should_exit is true, null otherwise"
 }}
 
-**QUALIFICATION-BASED EXIT EXAMPLES:**
-- Candidate has 1 year experience, job requires 3+ years, no additional compensating skills → should_exit: true
-- Candidate has 2 years experience, job requires 3+ years, no additional compensating skills → should_exit: true  
-- Candidate has 1-2 years experience but mentions relevant projects/bootcamp/certifications → should_exit: false
-- Candidate asks about requirements after learning they don't meet them → should_exit: false (still engaged)
-- Candidate says "I'm available" but has qualification gap and no compensating factors → should_exit: true
+**EXAMPLES OF WHAT TO CONTINUE:**
+- "Hi" → CONTINUE (initial greeting)
+- "Hello" → CONTINUE (conversation starter)
+- "I'm interested in the position" → CONTINUE (clear interest)
+- User asks questions about role → CONTINUE (engaged)
+- Qualification status is "unknown" → CONTINUE (need more info)
+- Less than 3 message exchanges → CONTINUE (too early)
 
-Analyze the conversation carefully and make your decision based on the overall context, user intent, AND qualification fit."""
+**EXAMPLES OF WHAT TO END:**
+- "I'm not interested" → END (explicit disinterest)
+- "I'll pass" → END (explicit decline)
+- "Thanks, goodbye" → END (explicit farewell)
+- After qualification discussion, candidate confirms gap with no additional skills → END
+
+Analyze the conversation carefully and prioritize CONTINUING early conversations to allow for proper engagement and qualification assessment."""
 
         return prompt
 
