@@ -860,6 +860,19 @@ pydantic>=2.0.0
 - **Result**: LLM extracted from chat and overwrote all structured form information
 - **Critical Fix**: Enhanced LLM prompts with existing form data context and preservation instructions
 
+### **🔥 CRITICAL REGRESSION: Qualification Assessment Data Loss** ✅ RESOLVED
+- **Issue**: Qualification assessment process overwriting ALL form data with null values
+- **Root Cause**: LLM responding with markdown format instead of JSON, causing parsing failure
+- **Trigger**: `conversation.candidate_info.update(enhanced_info)` after JSON parse error
+- **Result**: Complete loss of form-submitted data (name, email, phone, experience, etc.)
+- **HYBRID JSON-FIRST FIX IMPLEMENTED**:
+  - **Safe Qualification Assessment**: Complete backup/restore mechanism prevents any data loss
+  - **JSON-First Data Formatting**: Replaced markdown bullets with JSON.dumps() in all LLM prompts  
+  - **Targeted Assessment Extraction**: New `extract_qualification_assessment_llm()` method extracts only assessment
+  - **Selective Updates**: Only adds qualification_assessment field, preserves all existing data
+  - **Enhanced Error Handling**: Auto-restore original data if any LLM operation fails
+  - **Comprehensive Testing**: 8/8 form fields preserved through qualification assessment process
+
 ### **✅ TWO-MODE SYSTEM IMPLEMENTED**
 
 #### **1. Form-Based Mode** 
