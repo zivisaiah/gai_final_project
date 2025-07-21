@@ -49,15 +49,20 @@ class ConversationState:
         vs conversation-based mode (extract everything from conversation).
         """
         # Check for indicators that structured form data was provided
-        form_indicators = [
-            # Structured data fields typically populated by forms
-            bool(self.candidate_info.get("position")),  # Specific position selected
-            bool(self.candidate_info.get("email")),     # Email address provided
-            bool(self.candidate_info.get("phone")),     # Phone number provided
-        ]
+        form_indicators = {
+            "position": bool(self.candidate_info.get("position")),  # Specific position selected
+            "email": bool(self.candidate_info.get("email")),         # Email address provided
+            "phone": bool(self.candidate_info.get("phone")),         # Phone number provided
+            "structured_experience": bool(self.candidate_info.get("experience") and 
+                                        self.candidate_info.get("experience") not in ["unknown", "mentioned"]),  # Structured experience data
+            "current_status": bool(self.candidate_info.get("current_status")),  # Job status provided
+        }
         
-        # If any form indicators are present, we're likely in form mode
-        return any(form_indicators)
+        # Count how many form indicators are present
+        active_indicators = [key for key, value in form_indicators.items() if value]
+        is_form_mode = len(active_indicators) >= 2  # At least 2 form indicators suggests form submission
+        
+        return is_form_mode
     
     def _has_substantial_conversation_data(self) -> bool:
         """Check if we have substantial conversation-based information."""
@@ -81,30 +86,57 @@ class ConversationState:
         # Only process user messages for extraction
         if role == "user":
             try:
+                # Log current state before processing
+                existing_data_count = len([v for v in self.candidate_info.values() if v not in [None, "", {}, [], "unknown"]])
+                agent.logger.info(f"PRE-EXTRACTION: {existing_data_count} existing data fields: {list(self.candidate_info.keys())}")
+                
                 # Determine operation mode
                 is_form_mode = self._detect_form_mode()
                 has_conversation_data = self._has_substantial_conversation_data()
                 
+                # Enhanced logging for mode detection
+                form_indicators = {
+                    "position": bool(self.candidate_info.get("position")),
+                    "email": bool(self.candidate_info.get("email")),
+                    "phone": bool(self.candidate_info.get("phone")),
+                    "structured_experience": bool(self.candidate_info.get("experience") and 
+                                                self.candidate_info.get("experience") not in ["unknown", "mentioned"]),
+                    "current_status": bool(self.candidate_info.get("current_status")),
+                }
+                active_indicators = [key for key, value in form_indicators.items() if value]
+                agent.logger.info(f"MODE DETECTION: Form indicators: {form_indicators}, Active: {active_indicators}")
+                
                 if is_form_mode:
                     # FORM-BASED MODE: Preserve existing structured data, fill only gaps
-                    agent.logger.info("Operating in FORM-BASED mode: preserving structured data, filling gaps only")
+                    agent.logger.info(f"🔒 FORM-BASED MODE: Preserving {existing_data_count} existing fields, filling gaps only")
+                    agent.logger.info(f"🔒 EXISTING DATA TO PRESERVE: {self.candidate_info}")
                     await self._handle_form_based_extraction(agent)
                 elif has_conversation_data:
                     # CONVERSATION-BASED MODE: Full LLM extraction from conversation
-                    agent.logger.info("Operating in CONVERSATION-BASED mode: full LLM extraction")
+                    agent.logger.info(f"💬 CONVERSATION-BASED MODE: Full LLM extraction (existing data: {existing_data_count} fields)")
+                    if existing_data_count > 0:
+                        agent.logger.warning(f"⚠️  CONVERSATION MODE WITH EXISTING DATA: {self.candidate_info}")
                     await self._handle_conversation_based_extraction(agent)
                 else:
                     # MINIMAL DATA MODE: Basic extraction for very limited conversation
-                    agent.logger.info("Operating in MINIMAL DATA mode: basic extraction")
+                    agent.logger.info(f"🔹 MINIMAL DATA MODE: Basic extraction (existing data: {existing_data_count} fields)")
                     await self._handle_minimal_extraction(agent)
                 
-                agent.logger.info(f"Updated candidate info: {self.candidate_info}")
+                # Log what changed
+                final_data_count = len([v for v in self.candidate_info.values() if v not in [None, "", {}, [], "unknown"]])
+                agent.logger.info(f"POST-EXTRACTION: {final_data_count} total fields (was {existing_data_count})")
+                agent.logger.info(f"FINAL CANDIDATE INFO: {self.candidate_info}")
 
             except Exception as e:
                 agent.logger.error(f"Error during candidate info extraction: {e}")
 
     async def _handle_form_based_extraction(self, agent: 'CoreAgent'):
         """Handle form-based mode: preserve existing data, use LLM to fill gaps only."""
+        agent.logger.info("🔒 FORM-BASED EXTRACTION: Analyzing what needs to be filled")
+        
+        # Create backup of original data
+        original_data = self.candidate_info.copy()
+        
         # Identify what information is missing from the form
         missing_fields = []
         if not self.candidate_info.get("name"):
@@ -116,8 +148,12 @@ class ConversationState:
         if not self.candidate_info.get("interest_level") or self.candidate_info.get("interest_level") == "unknown":
             missing_fields.append("interest_level")
         
+        agent.logger.info(f"🔍 MISSING FIELDS IDENTIFIED: {missing_fields}")
+        agent.logger.info(f"🔒 PRESERVED FORM DATA: {original_data}")
+        
         if not missing_fields:
             # No missing fields, just update conversation sentiment
+            agent.logger.info("✅ NO MISSING FIELDS: Only updating conversation sentiment")
             self.candidate_info["conversation_sentiment"] = {
                 "overall_tone": "positive",
                 "engagement_level": "medium",
@@ -126,9 +162,12 @@ class ConversationState:
             return
         
         # Use targeted LLM extraction to fill only missing fields
+        agent.logger.info(f"🤖 CALLING TARGETED LLM for fields: {missing_fields}")
         extracted_info = await agent.extract_missing_info_llm(self, missing_fields)
+        agent.logger.info(f"🤖 LLM EXTRACTED: {extracted_info}")
         
-        # Carefully merge only the missing information
+        # Carefully merge only the missing information, preserving all form data
+        changes_made = []
         for field in missing_fields:
             if field in extracted_info and extracted_info[field] not in [None, "unknown", ""]:
                 if field == "experience":
@@ -136,13 +175,39 @@ class ConversationState:
                     current_exp = self.candidate_info.get("experience")
                     new_exp = extracted_info[field]
                     if not current_exp or current_exp in ["unknown", "mentioned"]:
+                        agent.logger.info(f"📝 UPDATING EXPERIENCE: '{current_exp}' → '{new_exp}'")
                         self.candidate_info[field] = new_exp
+                        changes_made.append(f"experience: {new_exp}")
+                    else:
+                        agent.logger.info(f"🔒 PRESERVING EXPERIENCE: '{current_exp}' (ignoring extracted: '{new_exp}')")
                 else:
-                    self.candidate_info[field] = extracted_info[field]
+                    # Only update if current value is missing/empty
+                    current_val = self.candidate_info.get(field)
+                    if not current_val or current_val in [None, "unknown", ""]:
+                        agent.logger.info(f"📝 UPDATING {field}: '{current_val}' → '{extracted_info[field]}'")
+                        self.candidate_info[field] = extracted_info[field]
+                        changes_made.append(f"{field}: {extracted_info[field]}")
+                    else:
+                        agent.logger.info(f"🔒 PRESERVING {field}: '{current_val}' (ignoring extracted: '{extracted_info[field]}')")
         
         # Always update conversation sentiment and metadata
         if "conversation_sentiment" in extracted_info:
             self.candidate_info["conversation_sentiment"] = extracted_info["conversation_sentiment"]
+            changes_made.append("conversation_sentiment")
+        
+        agent.logger.info(f"✅ FORM-BASED EXTRACTION COMPLETE: Changes made: {changes_made if changes_made else 'None (all data preserved)'}")
+        
+        # Verify no form data was lost
+        for key, original_value in original_data.items():
+            if original_value not in [None, "", {}, [], "unknown"]:
+                current_value = self.candidate_info.get(key)
+                if current_value != original_value:
+                    agent.logger.error(f"🚨 FORM DATA LOST! Field '{key}': '{original_value}' became '{current_value}'")
+                    # Restore the original value
+                    self.candidate_info[key] = original_value
+                    agent.logger.info(f"🔧 RESTORED: '{key}' back to '{original_value}'")
+                else:
+                    agent.logger.debug(f"✅ PRESERVED: {key} = {original_value}")
     
     async def _handle_conversation_based_extraction(self, agent: 'CoreAgent'):
         """Handle conversation-based mode: full LLM extraction."""
@@ -955,23 +1020,40 @@ Once I have your contact details, I'll be able to show you available time slots 
             
             missing_descriptions = [f"- {field}: {fields_description.get(field, field)}" for field in missing_fields]
             
+            # Format existing form data for context
+            existing_data_context = "## EXISTING FORM DATA (DO NOT OVERRIDE):\n"
+            for key, value in conversation.candidate_info.items():
+                if value not in [None, "", {}, [], "unknown"]:
+                    existing_data_context += f"- {key}: {value}\n"
+            
+            if len(existing_data_context.strip()) == len("## EXISTING FORM DATA (DO NOT OVERRIDE):"):
+                existing_data_context += "- No form data exists yet\n"
+            
             targeted_prompt = f"""You are extracting ONLY specific missing information from a conversation to supplement existing form data.
+
+{existing_data_context}
 
 ## CONVERSATION HISTORY:
 {self.prompts.format_conversation_context(conversation.messages)}
 
 ## EXTRACTION TASK - MISSING FIELDS ONLY:
-Extract ONLY the following missing information:
+The candidate has already provided structured form data above. Extract ONLY the following missing information from the conversation:
 {chr(10).join(missing_descriptions)}
 
+## CRITICAL INSTRUCTIONS:
+- DO NOT extract or suggest information that already exists in the form data
+- Only extract information for the specific missing fields requested
+- If information already exists in form data, leave it as null in your response
+- Do not duplicate or override existing form information
+
 ## RESPONSE FORMAT:
-Respond with ONLY valid JSON containing the requested fields:
+Respond with ONLY valid JSON containing ONLY the requested missing fields:
 
 {{
-  "name": "candidate name or null if not found",
-  "experience": "specific experience details or null if not mentioned",
-  "availability": true/false if availability is mentioned,
-  "interest_level": "high/medium/low/unknown based on engagement",
+  "name": "candidate name or null if not found/already in form",
+  "experience": "specific experience details or null if not mentioned/already in form",
+  "availability": true/false if availability is mentioned in conversation,
+  "interest_level": "high/medium/low/unknown based on conversation engagement",
   "conversation_sentiment": {{
     "overall_tone": "positive/neutral/negative",
     "engagement_level": "high/medium/low",
@@ -979,7 +1061,7 @@ Respond with ONLY valid JSON containing the requested fields:
   }}
 }}
 
-Extract only what is clearly mentioned. Do not infer or assume information."""
+Extract only what is clearly mentioned in the conversation and NOT already in the form data."""
 
             # Get LLM response
             response = await self.candidate_info_chain.ainvoke({"extraction_prompt": targeted_prompt})
@@ -1064,8 +1146,39 @@ Respond with JSON:
         candidate information, including automatic qualification assessment.
         """
         try:
-            # Generate enhanced contextual extraction prompt
-            extraction_prompt = self.prompts.get_candidate_info_extraction_prompt(conversation.messages)
+            # Check if we have existing form data to preserve
+            has_existing_data = bool(conversation.candidate_info and 
+                                   any(v not in [None, "", {}, [], "unknown"] 
+                                       for v in conversation.candidate_info.values()))
+            
+            if has_existing_data:
+                # Create context-aware prompt that includes existing data
+                existing_data_summary = "\n".join([
+                    f"- {key}: {value}" 
+                    for key, value in conversation.candidate_info.items()
+                    if value not in [None, "", {}, [], "unknown"]
+                ])
+                
+                extraction_prompt = f"""You are analyzing a conversation to extract comprehensive candidate information. 
+CRITICAL: The candidate has ALREADY provided some information via a form submission. You must PRESERVE all existing form data and ENHANCE it with conversation details.
+
+## EXISTING CANDIDATE DATA (PRESERVE ALL):
+{existing_data_summary}
+
+## CONVERSATION HISTORY:
+{self.prompts.format_conversation_context(conversation.messages)}
+
+## ENHANCED EXTRACTION TASK:
+- PRESERVE all existing form data exactly as provided above
+- ENHANCE the profile with additional details from the conversation
+- FILL any missing fields from conversation context
+- DO NOT override or change existing form data
+- SUPPLEMENT the information, don't replace it
+
+Use the enhanced extraction format but maintain all existing data integrity."""
+            else:
+                # Standard extraction prompt for pure conversation mode
+                extraction_prompt = self.prompts.get_candidate_info_extraction_prompt(conversation.messages)
             
             # Get LLM analysis with full context
             response = await self.candidate_info_chain.ainvoke({"extraction_prompt": extraction_prompt})
