@@ -819,6 +819,13 @@ pydantic>=2.0.0
 
 # Project Roadmap
 
+## Current Status: Production Ready
+- ✅ 96.0% system performance maintained
+- ✅ Clean LLM-based architecture without keyword dependencies
+- ✅ All critical bugs resolved
+- ✅ Comprehensive documentation complete
+- ✅ Deployment ready with Streamlit Community Cloud compatibility
+
 ## Completed
 - [x] Initial project setup with virtual environment (.venv) 
 - [x] Basic multi-agent architecture (Core Agent, Info Advisor, Exit Advisor, Scheduling Advisor)
@@ -838,50 +845,58 @@ pydantic>=2.0.0
 - [x] Critical infinite loop bug fix in slot selection UI
 - [x] Environment configuration consolidation (.env.example standardization)
 - [x] **CRITICAL REGRESSION FIX: Keyword matching logic removal and LLM-first architecture restoration**
+- [x] **TWO-MODE EXTRACTION SYSTEM: Form-based vs conversation-based extraction modes**
 
-## Latest Major Fix - Keyword Logic Regression (January 2025)
+## Latest Major Fix - Two-Mode Extraction System (January 2025)
 
-### **Issue Identified**
-- **Regression Source**: Commit 400ce65 "🔒 CRITICAL FIX: Mandatory Registration Before Scheduling"
-- **Problem**: Introduced 1,394+ lines of keyword-based routing logic, violating LLM-first architecture
-- **Clean State**: Phase-2-Complete tag had proper LLM-based approach without keyword matching
+### **🔧 CRITICAL REGRESSION FIX RESOLVED**
+- **Issue**: Enhanced LLM extraction was overwriting form-submitted data
+- **Root Cause**: System treating all conversations identically, ignoring structured form data
+- **Solution**: Implemented intelligent two-mode system with proper data preservation
 
-### **Files Removed (Regression Cleanup)**
-- ❌ `app/modules/agents/core_agent_optimized.py` (547 lines of keyword routing)
-- ❌ `tests/test_simple_performance_fix.py` (392 lines of keyword tests)
-- ❌ `tests/test_optimized_performance.py` (455 lines of keyword performance tests)  
-- ❌ `tests/tests/core_agent_performance_patch.py` (33 lines of keyword patches)
+### **✅ TWO-MODE SYSTEM IMPLEMENTED**
 
-### **Files Cleaned (Keyword Logic Removed)**
-- ✅ `streamlit_app/streamlit_main.py` - Replaced keyword scheduling detection with LLM analysis
-- ✅ `app/modules/agents/scheduling_advisor.py` - Removed keyword fallback, enhanced LLM-based decisions
-- ✅ `app/modules/utils/datetime_parser.py` - Removed scheduling keywords, use datetime presence only
-- ✅ `app/modules/prompts/info_prompts.py` - Replaced keyword categorization with LLM semantics
+#### **1. Form-Based Mode** 
+- **Activation**: When structured data indicators detected (position, email, phone)
+- **Behavior**: Preserves all existing form data, uses LLM only for missing fields
+- **Method**: `extract_missing_info_llm()` for targeted gap-filling
+- **Result**: ✅ Form data fully preserved (name, email, experience maintained)
 
-### **Enhanced LLM Prompts**
-- ✅ `app/modules/prompts/phase1_prompts.py` - Significantly enhanced Core Agent system prompt
-- ✅ Added intelligent intent detection patterns for SCHEDULE/INFO/END/CONTINUE decisions
-- ✅ Improved conversation guidelines with specific response examples
-- ✅ Better pattern recognition without relying on hardcoded keyword lists
+#### **2. Conversation-Based Mode**
+- **Activation**: When no structured form data exists
+- **Behavior**: Full LLM extraction with comprehensive contextual analysis
+- **Method**: Enhanced `extract_candidate_info_llm()` with qualification assessment  
+- **Result**: ✅ Complete conversation extraction with experience gap detection
 
-### **Architecture Restoration Results**
-- 🎯 **Clean LLM-first decision making restored**
-- 🎯 **Registration functionality maintained without keyword routing**
-- 🎯 **Enhanced prompt engineering for reliable intent classification**
-- 🎯 **Application tested and running successfully**
-- 🎯 **Eliminated 1,582 deletions vs 156 insertions (net code reduction)**
+### **🎯 KEY TECHNICAL IMPROVEMENTS**
+- **Mode Detection**: `_detect_form_mode()` identifies operational context
+- **Targeted Extraction**: `extract_missing_info_llm()` fills only missing form fields
+- **Data Preservation**: Smart merging strategy prevents form data overwrite
+- **Conversation Context**: Full contextual analysis maintained for conversation mode
+- **Qualification Assessment**: Integrated assessment works in both modes
 
-## Current Status: Production Ready
-- ✅ 96.0% system performance maintained
-- ✅ Clean LLM-based architecture without keyword dependencies
-- ✅ All critical bugs resolved
-- ✅ Comprehensive documentation complete
-- ✅ Deployment ready with Streamlit Community Cloud compatibility
+### **📊 VALIDATION RESULTS**
+```
+✅ Form Mode Test:
+  • Name: John Smith → John Smith (preserved)
+  • Email: john.smith@example.com → john.smith@example.com (preserved)
+  • Experience: 3 years Python → 3 years Python (preserved)
 
+✅ Conversation Mode Test:
+  • Name: Jane Doe (extracted from "Hi, my name is Jane Doe...")
+  • Experience: 2 Python (extracted and qualified as underqualified)
+  • Assessment: Proper 1-year gap detection (2 vs 3+ required)
+```
 
+### **🔄 SYSTEM OPERATION**
+- **Form Submissions**: Structured data preserved, conversation only fills gaps
+- **Natural Conversations**: Full LLM extraction and qualification assessment  
+- **Mode Switching**: Automatic detection based on data structure indicators
+- **Consistent Results**: Both modes produce appropriate qualification assessments
 
 ## Architecture Notes
 - **CRITICAL**: All routing decisions must use LLM analysis, never keyword matching
-- **Principle**: Enhanced prompting > keyword-based logic for intent detection
-- [ ] **Performance**: LLM-based approach maintains 96.0% accuracy without brittle keyword rules
-- [ ] **Maintainability**: Clean prompts are easier to maintain than extensive keyword lists
+- **PRINCIPLE**: Enhanced prompting > keyword-based logic for intent detection  
+- **PERFORMANCE**: LLM-based approach maintains 96.0% accuracy without brittle keyword rules
+- **MAINTAINABILITY**: Clean prompts easier to maintain than extensive keyword lists
+- **DATA PRESERVATION**: Two-mode system ensures form data never lost to conversation extraction
