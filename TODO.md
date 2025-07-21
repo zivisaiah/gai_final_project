@@ -953,3 +953,20 @@ pydantic>=2.0.0
 - **PERFORMANCE**: LLM-based approach maintains 96.0% accuracy without brittle keyword rules
 - **MAINTAINABILITY**: Clean prompts easier to maintain than extensive keyword lists
 - **DATA PRESERVATION**: Two-mode system ensures form data never lost to conversation extraction
+```
+
+## In Progress
+- [x] **🔥 CRITICAL: Information Extraction Failure** ⚠️ PARTIALLY RESOLVED
+  - **Root Cause**: LLM extraction prompt not properly extracting explicit user information 
+  - **Impact**: User provides email/phone/experience but system asks for them again - terrible UX
+  - **PROGRESS**: 
+    - ✅ Name extraction: Fixed (83.3% success rate, up from 66.7%)
+    - ✅ Improved extraction prompt with field-by-field instructions and examples
+    - ❌ Still failing: email, phone, experience, interest_level, current_status
+  - **Next Steps**: 
+    - Need to investigate why LLM returns null for explicitly stated information
+    - Consider alternative extraction approaches or different LLM models
+    - May need to enhance conversation context formatting or prompt structure
+  - **Test Case**: User says "my email is ziv.isaiah@gmail.com" → LLM returns `email: None`
+
+- [ ] Add more robust error handling and logging
