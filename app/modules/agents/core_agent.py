@@ -152,12 +152,12 @@ class ConversationState:
         agent.logger.info(f"🔒 PRESERVED FORM DATA: {original_data}")
         
         if not missing_fields:
-            # No missing fields, just update conversation sentiment
-            agent.logger.info("✅ NO MISSING FIELDS: Only updating conversation sentiment")
+            # No missing fields, set HIGH engagement for form-submitted candidates
+            agent.logger.info("✅ NO MISSING FIELDS: Setting HIGH engagement for form-submitted candidate")
             self.candidate_info["conversation_sentiment"] = {
-                "overall_tone": "positive",
-                "engagement_level": "medium",
-                "communication_quality": "good"
+                "overall_tone": "positive", 
+                "engagement_level": "high",      # ✅ HIGH - they filled out the form!
+                "communication_quality": "excellent"  # ✅ EXCELLENT - structured data provided
             }
             return
         
@@ -190,10 +190,17 @@ class ConversationState:
                     else:
                         agent.logger.info(f"🔒 PRESERVING {field}: '{current_val}' (ignoring extracted: '{extracted_info[field]}')")
         
-        # Always update conversation sentiment and metadata
+        # Always update conversation sentiment and metadata - but ensure HIGH engagement for form users
         if "conversation_sentiment" in extracted_info:
-            self.candidate_info["conversation_sentiment"] = extracted_info["conversation_sentiment"]
-            changes_made.append("conversation_sentiment")
+            # For form-submitted candidates, always ensure high engagement regardless of LLM output
+            form_sentiment = {
+                "overall_tone": "positive",
+                "engagement_level": "high",       # ✅ They took time to fill out the form
+                "communication_quality": "excellent"  # ✅ Provided structured information
+            }
+            self.candidate_info["conversation_sentiment"] = form_sentiment
+            changes_made.append("conversation_sentiment (form-optimized)")
+            agent.logger.info(f"✅ FORM-OPTIMIZED SENTIMENT: {form_sentiment}")
         
         agent.logger.info(f"✅ FORM-BASED EXTRACTION COMPLETE: Changes made: {changes_made if changes_made else 'None (all data preserved)'}")
         
