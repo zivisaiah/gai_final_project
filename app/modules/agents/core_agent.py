@@ -592,25 +592,43 @@ Analyze this context and respond with the JSON decision format only.""")
             qualification_status = qualification_assessment.get("qualification_status")
             experience_gap = qualification_assessment.get("experience_gap", 0)
             
-            # If candidate is underqualified and conversation is still early, be proactive
+            # CRITICAL: Don't make qualification assumptions on null/unknown data
+            # Only be proactive about qualifications when we have actual experience information
+            candidate_experience = conversation.candidate_info.get("experience")
+            has_concrete_experience = (candidate_experience and 
+                                     candidate_experience not in [None, "unknown", "mentioned", ""])
+            
+            # If candidate is underqualified AND we have concrete experience data, be proactive
             if (qualification_status == "underqualified" and 
+                has_concrete_experience and  # Must have actual experience info, not null/unknown
                 experience_gap >= 1 and  # 1+ year gap is significant for junior-mid level positions
                 len(conversation.messages) <= 4 and  # Early in conversation
                 not any("qualification" in msg.get("content", "").lower() or 
                        "experience" in msg.get("content", "").lower() or
                        "requirement" in msg.get("content", "").lower() 
-                       for msg in conversation.messages[-3:] if msg.get("role") == "assistant")):  # Haven't discussed qualifications yet
+                       for msg in conversation.messages[-3:] if msg.get("role") == "assistant")):
                 
                 self.logger.info(f"Proactively addressing qualification mismatch: {experience_gap} year gap")
                 
-                # Provide honest but encouraging qualification feedback
-                candidate_years = qualification_assessment.get("experience_gap", 0) + 3 - qualification_assessment.get("experience_gap", 0)
-                # Calculate actual years from the gap
-                actual_years = 3 - experience_gap
+                # Calculate actual years from concrete experience data (not assumptions)
+                experience_details = conversation.candidate_info.get("experience_details", {})
+                years_numeric = experience_details.get("years_numeric")
                 
-                proactive_response = f"""Hi {conversation.candidate_info.get('name', '')}! I appreciate your interest in our Python Developer position. 
+                if years_numeric is not None:
+                    actual_years = years_numeric
+                else:
+                    # Try to parse from experience string
+                    import re
+                    years_match = re.search(r'(\d+)', str(candidate_experience))
+                    actual_years = int(years_match.group(1)) if years_match else "unclear"
+                
+                # Get candidate name safely (handle null values)
+                candidate_name = conversation.candidate_info.get('name')
+                name_greeting = f"Hi {candidate_name}! " if candidate_name and candidate_name != "unknown" else "Hi! "
+                
+                proactive_response = f"""{name_greeting}I appreciate your interest in our Python Developer position. 
 
-I want to be upfront with you - this role requires at least 3 years of Python development experience, and I see you have {actual_years} years of experience. While there is an experience gap, I'd love to understand more about your background.
+I want to be upfront with you - this role requires at least 3 years of Python development experience, and I see from your profile that you have {actual_years} years of experience. While there is an experience gap, I'd love to understand more about your background.
 
 Do you have any additional experience through personal projects, bootcamps, or other programming languages that might be relevant? Sometimes candidates have stronger skills than their formal work experience might suggest.
 
@@ -1189,6 +1207,7 @@ CRITICAL INSTRUCTIONS:
 - Minimum requirement: 3+ years Python development experience
 - Respond with ONLY valid JSON, NO markdown formatting
 - Do not include any explanatory text or headers
+- **CRITICAL**: If there's insufficient experience data, use "unknown" status, NOT negative assumptions
 
 EXISTING_CANDIDATE_DATA:
 {existing_data_json}
@@ -1199,16 +1218,36 @@ RECENT_CONVERSATION:
 ASSESSMENT_TASK:
 Evaluate if candidate meets "3+ years Python development experience" requirement based on existing data and conversation.
 
+**IMPORTANT NULL/EMPTY DATA HANDLING**:
+- If candidate data is empty/null (like just "hi" message) → qualification_status: "unknown" 
+- If no concrete experience mentioned → experience_gap: 0 and qualification_status: "unknown"
+- If conversation is minimal (greetings only) → assessment_confidence: 0.0
+- DO NOT assume "0 years experience" from null/empty data
+- Only assess when you have actual experience information to evaluate
+
 REQUIRED_JSON_RESPONSE_FORMAT:
 {{
   "qualification_assessment": {{
-    "meets_requirements": true/false,
-    "experience_gap": number_of_years_short_of_requirement,
-    "qualification_status": "qualified/underqualified/overqualified",
-    "assessment_confidence": 0.0_to_1.0,
-    "key_concerns": ["array", "of", "concerns"],
-    "strengths": ["array", "of", "strengths"],
-    "assessment_reason": "brief explanation of assessment"
+    "meets_requirements": false for unknown status,
+    "experience_gap": 0 if unknown, actual gap if known,
+    "qualification_status": "qualified/underqualified/overqualified/unknown",
+    "assessment_confidence": 0.0 for unknown, 0.1-1.0 for actual assessments,
+    "key_concerns": ["Insufficient information to assess qualifications"] for unknown,
+    "strengths": ["Expressed interest in position"] for unknown or actual strengths,
+    "assessment_reason": "Need more information about experience and qualifications" for unknown
+  }}
+}}
+
+**EXAMPLE FOR MINIMAL DATA (like "hi" message)**:
+{{
+  "qualification_assessment": {{
+    "meets_requirements": false,
+    "experience_gap": 0,
+    "qualification_status": "unknown",
+    "assessment_confidence": 0.0,
+    "key_concerns": ["Insufficient information to assess qualifications"],
+    "strengths": ["Expressed initial interest in position"],
+    "assessment_reason": "Need more information about experience and qualifications"
   }}
 }}
 
@@ -1432,17 +1471,25 @@ Use the enhanced extraction format but maintain all existing data integrity. Res
             return "unknown"
     
     def _generate_assessment_reason(self, qualification_data: Dict, experience_data: Dict) -> str:
-        """Generate human-readable assessment reason."""
+        """Generate human-readable assessment reason with proper null handling."""
         status = qualification_data.get("qualification_status", "unknown")
         gap = qualification_data.get("experience_gap_years", 0)
         years_numeric = experience_data.get("years_numeric")
         
-        if status == "underqualified" and gap > 0 and years_numeric is not None:
+        # Handle null values safely
+        if gap is None:
+            gap = 0
+        if years_numeric is None:
+            years_numeric = 0
+        
+        if status == "underqualified" and gap > 0 and years_numeric > 0:
             return f"Candidate has {years_numeric} years experience, needs 3+ years (gap: {gap} years)"
         elif status == "qualified":
             return f"Candidate meets experience requirements"
         elif status == "overqualified":
             return f"Candidate exceeds experience requirements"
+        elif status == "unknown":
+            return f"Need more information about experience and qualifications"
         else:
             return f"Assessment status: {status}"
 
