@@ -257,11 +257,35 @@ class ConversationState:
                         self.candidate_info[key] = value
                         agent.logger.info(f"✅ UPDATED QUALIFICATION ASSESSMENT: {value}")
                         
-                elif key in ["experience_details", "conversation_sentiment", "extraction_metadata"]:
+                elif key in ["experience_details", "extraction_metadata"]:
                     # Always update these comprehensive analysis fields
                     if isinstance(value, dict) and value:
                         self.candidate_info[key] = value
                         agent.logger.info(f"✅ UPDATED {key}: {value}")
+                        
+                elif key == "conversation_sentiment":
+                    # Special handling for conversation sentiment - preserve high engagement for form users
+                    if isinstance(value, dict) and value:
+                        # Check if this appears to be form-based data (has structured info)
+                        has_structured_data = (
+                            self.candidate_info.get("email") and 
+                            self.candidate_info.get("phone") and
+                            self.candidate_info.get("experience") not in [None, "unknown", "mentioned"]
+                        )
+                        
+                        if has_structured_data:
+                            # Override with high engagement for form users
+                            optimized_sentiment = {
+                                "overall_tone": "positive",
+                                "engagement_level": "high",
+                                "communication_quality": "excellent"
+                            }
+                            self.candidate_info[key] = optimized_sentiment
+                            agent.logger.info(f"✅ FORM-OPTIMIZED CONVERSATION SENTIMENT: {optimized_sentiment}")
+                        else:
+                            # Use LLM sentiment for pure conversation users
+                            self.candidate_info[key] = value
+                            agent.logger.info(f"✅ UPDATED CONVERSATION SENTIMENT: {value}")
                         
                 elif key in ["name", "email", "phone", "interest_level", "current_status", 
                            "availability_mentioned", "availability_details", "position_interest"]:
