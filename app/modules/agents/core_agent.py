@@ -210,46 +210,71 @@ class ConversationState:
                     agent.logger.debug(f"✅ PRESERVED: {key} = {original_value}")
     
     async def _handle_conversation_based_extraction(self, agent: 'CoreAgent'):
-        """Handle conversation-based mode: full LLM extraction."""
+        """Handle full conversation-based extraction when no structured form data exists."""
+        agent.logger.info("💬 CONVERSATION-BASED EXTRACTION: Full LLM analysis of conversation context")
+        
+        # Get comprehensive extraction from LLM
         extracted_info = await agent.extract_candidate_info_llm(self)
+        agent.logger.info(f"🤖 LLM COMPREHENSIVE EXTRACTION: {extracted_info}")
         
         # Use the enhanced merging strategy from the original implementation
+        agent.logger.info(f"🔍 PRE-MERGE CANDIDATE INFO: {self.candidate_info}")
+        
         for key, value in extracted_info.items():
             if value not in [None, "unknown", "", {}, []]:
                 existing_value = self.candidate_info.get(key)
+                agent.logger.info(f"📝 MERGING FIELD '{key}': existing='{existing_value}' → new='{value}'")
                 
                 # Special handling for different data types
                 if key == "experience":
                     # Preserve specific experience over generic, but allow upgrades
                     if not existing_value or existing_value in ["unknown", "mentioned"]:
                         self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPDATED EXPERIENCE: '{existing_value}' → '{value}'")
                     elif (isinstance(value, str) and isinstance(existing_value, str) and 
                           "year" in value.lower() and "year" not in existing_value.lower()):
                         # Prioritize experience with year information
                         self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPGRADED EXPERIENCE (year info): '{existing_value}' → '{value}'")
                     elif (isinstance(value, str) and isinstance(existing_value, str) and 
                           len(value) > len(existing_value) and 
                           existing_value in ["unknown", "mentioned"]):
                         self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPGRADED EXPERIENCE (more detailed): '{existing_value}' → '{value}'")
+                    else:
+                        agent.logger.info(f"🔒 PRESERVED EXPERIENCE: '{existing_value}' (ignored: '{value}')")
                         
                 elif key == "qualification_assessment":
                     # Always update qualification assessment as it's comprehensive
                     if isinstance(value, dict) and value:
                         self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPDATED QUALIFICATION ASSESSMENT: {value}")
                         
                 elif key in ["experience_details", "conversation_sentiment", "extraction_metadata"]:
                     # Always update these comprehensive analysis fields
                     if isinstance(value, dict) and value:
                         self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPDATED {key}: {value}")
+                        
+                elif key in ["name", "email", "phone", "interest_level", "current_status", 
+                           "availability_mentioned", "availability_details", "position_interest"]:
+                    # Update basic fields if they don't exist or are generic
+                    if not existing_value or existing_value in [None, "unknown", ""]:
+                        self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPDATED BASIC FIELD '{key}': '{existing_value}' → '{value}'")
+                    else:
+                        agent.logger.info(f"🔒 PRESERVED BASIC FIELD '{key}': '{existing_value}' (ignored: '{value}')")
                         
                 else:
-                    # For basic fields, update if we don't have existing data or new data is better
-                    if (not existing_value or 
-                        existing_value in [None, "unknown", ""]):
+                    # For any other fields, update if current is None/empty
+                    if not existing_value:
                         self.candidate_info[key] = value
-                    elif (isinstance(value, str) and isinstance(existing_value, str) and 
-                          len(value) > len(existing_value)):
-                        self.candidate_info[key] = value
+                        agent.logger.info(f"✅ UPDATED OTHER FIELD '{key}': '{existing_value}' → '{value}'")
+            else:
+                agent.logger.info(f"⏭️  SKIPPED FIELD '{key}': value is None/empty/unknown ({value})")
+        
+        agent.logger.info(f"🔍 POST-MERGE CANDIDATE INFO: {self.candidate_info}")
+        agent.logger.info("✅ CONVERSATION-BASED EXTRACTION COMPLETE")
 
     async def _handle_minimal_extraction(self, agent: 'CoreAgent'):
         """Handle minimal data mode: very basic extraction for short interactions."""

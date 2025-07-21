@@ -230,6 +230,100 @@ DECISION: [CONTINUE/SCHEDULE/END]
 REASONING: [Your reasoning]
 RESPONSE: [Your message to the candidate]"""
 
+    # Enhanced Contextual Candidate Information Extraction Prompt
+    CANDIDATE_INFO_EXTRACTION_PROMPT = """You are an expert information extraction specialist. Extract ALL candidate information from this conversation.
+
+CONVERSATION HISTORY:
+{conversation_history}
+
+EXTRACTION TASK:
+Extract EVERY piece of candidate information mentioned in the conversation above. Be thorough and systematic.
+
+FIELD-BY-FIELD EXTRACTION INSTRUCTIONS:
+
+1. **NAME**: Look for "My name is...", "I'm...", "Call me...", introductions
+2. **EMAIL**: Look for email addresses in any format (word@domain.com)
+3. **PHONE**: Look for phone numbers in any format
+4. **EXPERIENCE**: Look for years of experience, "X years", work history
+5. **TECHNOLOGIES**: List ALL technologies, frameworks, languages mentioned
+6. **CURRENT_STATUS**: Employment status, job search status
+7. **INTEREST_LEVEL**: Gauge engagement, enthusiasm, interest signals
+8. **AVAILABILITY**: Any scheduling, time, or availability mentions
+
+CRITICAL REQUIREMENTS:
+- If information is mentioned, extract it exactly as stated
+- If information is not mentioned, use null
+- Do NOT interpret or assume - only extract what's explicitly stated
+- Pay special attention to contact information (email, phone)
+- Include ALL technologies mentioned, even briefly
+
+REQUIRED JSON RESPONSE FORMAT:
+{{
+  "name": "Extract full name if mentioned, otherwise null",
+  "email": "Extract email address if mentioned, otherwise null", 
+  "phone": "Extract phone number if mentioned, otherwise null",
+  "current_status": "Extract employment/job status if mentioned, otherwise null",
+  "interest_level": "high/medium/low based on enthusiasm shown, or unknown",
+  "availability_mentioned": true if any availability discussed, false otherwise,
+  "availability_details": "Extract specific availability info, otherwise null",
+  "position_interest": "Extract role interest (backend/frontend/etc.), otherwise null",
+  "experience": "Extract years/level of experience as stated, otherwise null",
+  "experience_details": {{
+    "level": "Extract experience level mentioned, otherwise null",
+    "years": "Extract years mentioned (e.g., '1', '3', '5+'), otherwise null",
+    "years_numeric": numeric_value_or_null,
+    "technologies": ["List ALL technologies mentioned"],
+    "has_python": true_if_python_mentioned_false_otherwise,
+    "python_details": "Extract Python-specific experience, otherwise null",
+    "career_level": "junior/mid/senior based on context, otherwise unknown"
+  }},
+  "qualification_assessment": {{
+    "meets_requirements": false_if_less_than_3_years_true_if_3_plus,
+    "experience_gap": numeric_gap_from_3_years_or_0,
+    "qualification_status": "qualified/underqualified/overqualified/unknown",
+    "assessment_confidence": 0.0_to_1.0,
+    "key_concerns": ["concerns array"],
+    "strengths": ["strengths array"]
+  }},
+  "conversation_sentiment": {{
+    "overall_tone": "positive/neutral/negative",
+    "engagement_level": "high/medium/low", 
+    "communication_quality": "excellent/good/fair/poor"
+  }},
+  "extraction_metadata": {{
+    "total_messages_analyzed": number_of_messages,
+    "confidence_score": 0.0_to_1.0,
+    "key_information_sources": ["which_messages_had_key_info"],
+    "missing_information": ["what_key_info_is_still_needed"]
+  }}
+}}
+
+EXAMPLES FOR CLARITY:
+
+Example Input: "Hi, my name is John and I'm a python developer with 2 years of experience. my email is john@gmail.com"
+
+Expected Output:
+{{
+  "name": "John",
+  "email": "john@gmail.com", 
+  "phone": null,
+  "experience": "2 years",
+  "experience_details": {{
+    "years": "2",
+    "years_numeric": 2,
+    "technologies": ["python"],
+    "has_python": true,
+    "python_details": "python developer"
+  }},
+  "qualification_assessment": {{
+    "meets_requirements": false,
+    "experience_gap": 1,
+    "qualification_status": "underqualified"
+  }}
+}}
+
+NOW EXTRACT ALL INFORMATION FROM THE CONVERSATION ABOVE. Respond with ONLY the JSON object."""
+
     @classmethod
     def get_core_agent_prompt(cls) -> str:
         """Get the main system prompt for the core agent."""
@@ -273,126 +367,6 @@ RESPONSE: [Your message to the candidate]"""
             formatted.append(f"[{timestamp}] {role}: {content}")
         
         return "\n".join(formatted)
-    
-    # Enhanced Contextual Candidate Information Extraction Prompt
-    CANDIDATE_INFO_EXTRACTION_PROMPT = """You are an intelligent candidate information extraction system. Analyze the COMPLETE conversation context to synthesize comprehensive candidate information.
-
-## CONVERSATION HISTORY:
-{conversation_history}
-
-## COMPREHENSIVE CONTEXTUAL ANALYSIS TASK:
-
-**YOUR MISSION**: Extract and synthesize ALL candidate information from the ENTIRE conversation, not just individual messages. Consider context, implications, and connections across all messages.
-
-### ENHANCED ANALYSIS FRAMEWORK:
-
-#### 1. **Name Identification** (Deep Contextual Analysis):
-- **Direct mentions**: "I'm [Name]", "My name is [Name]", "Call me [Name]"
-- **Signature patterns**: Email signatures, introductions, form submissions
-- **Contextual references**: References to the person across multiple messages
-- **Extract**: Full name or first name, prioritize most recent/complete version
-
-#### 2. **Experience Assessment** (Comprehensive Synthesis):
-- **Explicit experience**: "1 year", "5 years Python", "senior developer", "just graduated"
-- **Implied experience**: Job titles, project descriptions, technology mentions
-- **Experience patterns**: "Python developer with X years", "working as", "been doing"
-- **Technology stack**: All mentioned technologies, frameworks, tools
-- **Career progression**: Junior → Senior paths, role changes, growth indicators
-- **Python-specific**: Any Python-related experience, projects, or interests
-
-#### 3. **Interest Level Assessment** (Multi-Message Analysis):
-- **High enthusiasm**: "very interested", "excited", "love to", "definitely want"
-- **Engagement patterns**: Asking questions, requesting information, active participation
-- **Scheduling eagerness**: "when can we", "let's schedule", "available"
-- **Medium interest**: "interested", "sounds good", "tell me more", consistent engagement
-- **Low signals**: "not sure", "maybe", "just looking", minimal responses
-- **Disinterest patterns**: "not interested", "found something else", withdrawal
-
-#### 4. **Availability & Scheduling Context** (Comprehensive Timeline Analysis):
-- **Direct availability**: "I'm available", "free next week", specific times/dates
-- **Scheduling interest**: "when can we meet", "let's set up", "what's next"
-- **Time preferences**: Morning/afternoon/evening preferences, day restrictions
-- **Schedule flexibility**: "anytime", "pretty flexible", specific constraints
-- **Urgency indicators**: "soon", "quickly", "ASAP", "no rush"
-
-#### 5. **Current Professional Status** (Career Context Analysis):
-- **Active job search**: "looking for", "seeking", "open to opportunities"
-- **Employment status**: "currently working", "between jobs", "unemployed"
-- **Career transitions**: "changing careers", "new field", "pivoting"
-- **Recent changes**: "just left", "starting new role", "recently graduated"
-- **Availability for work**: Immediate, notice period, future availability
-
-#### 6. **Contact Information** (Comprehensive Collection):
-- **Email patterns**: "email@domain.com", "my email is", "contact me at"
-- **Phone patterns**: All formats (123) 456-7890, +1-123-456-7890, etc.
-- **Multiple contacts**: Various emails/phones mentioned across conversation
-- **Preferred contact**: Which method they prefer or mention most
-
-#### 7. **Position-Specific Context** (Role Alignment Analysis):
-- **Role interest**: "backend", "frontend", "full-stack", specific position types
-- **Technology alignment**: How their experience matches Python developer role
-- **Career goals**: What they want to achieve, growth aspirations
-- **Fit assessment**: How well they align with the position requirements
-
-## JOB REQUIREMENTS CONTEXT:
-**Python Developer Position Requirements:**
-- Minimum 3+ years Python development experience
-- Backend development experience preferred
-- Strong technical skills in Python frameworks
-- Professional development background
-
-## ENHANCED RESPONSE FORMAT:
-Respond with comprehensive JSON including qualification assessment:
-
-{{
-  "name": "Full name or first name if available, null if not mentioned",
-  "experience": {{
-    "level": "Detailed experience description synthesized from full conversation",
-    "years": "Specific years mentioned (e.g., '1', '3', '5+') or null if unclear", 
-    "years_numeric": actual number for calculation or null,
-    "technologies": ["comprehensive list of ALL technologies mentioned"],
-    "has_python": true/false,
-    "python_details": "Specific Python experience details or null",
-    "career_level": "junior/mid/senior/unknown based on context"
-  }},
-  "interest_level": "high/medium/low/unknown based on overall engagement",
-  "availability_mentioned": true/false,
-  "availability_details": "Specific availability information or null",
-  "current_status": "Comprehensive employment/career status or null",
-  "email": "Complete email address or null",
-  "phone": "Complete phone number or null",
-  "position_interest": "Specific role interest (backend/frontend/etc.) or null",
-  "qualification_assessment": {{
-    "meets_requirements": true/false,
-    "experience_gap_years": numeric gap (0 if meets requirements),
-    "qualification_status": "qualified/underqualified/overqualified/unknown",
-    "assessment_confidence": 0.0-1.0,
-    "key_concerns": ["list of qualification concerns or empty array"],
-    "strengths": ["list of candidate strengths or empty array"]
-  }},
-  "conversation_sentiment": {{
-    "overall_tone": "positive/neutral/negative",
-    "engagement_level": "high/medium/low",
-    "communication_quality": "excellent/good/fair/poor"
-  }},
-  "extraction_metadata": {{
-    "total_messages_analyzed": number,
-    "confidence_score": 0.0-1.0,
-    "key_information_sources": ["which messages contained key info"],
-    "missing_information": ["what key info is still needed"]
-  }}
-}}
-
-## CRITICAL REQUIREMENTS:
-1. **SYNTHESIZE across ALL messages** - don't just look at the latest message
-2. **PRESERVE specific details** - "1 year Python" not just "mentioned"
-3. **ASSESS qualifications** against 3+ years requirement
-4. **PROVIDE qualification reasoning** - why qualified/underqualified
-5. **RESPOND with VALID JSON ONLY** - no additional text
-
-Analyze the COMPLETE conversation context and extract comprehensive candidate profile."""
-
-
     
     @classmethod
     def get_candidate_info_extraction_prompt(cls, conversation_history: List[Dict]) -> str:
