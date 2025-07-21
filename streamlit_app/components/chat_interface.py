@@ -339,10 +339,25 @@ class ChatInterface:
     
     def export_conversation(self) -> Dict:
         """Export the conversation for analysis or storage."""
+        # CRITICAL FIX: Get candidate info from Core Agent instead of session state
+        candidate_info = st.session_state.candidate_info.copy()  # Start with session state
+        
+        # If Core Agent exists and has extracted data, use that instead
+        if 'core_agent' in st.session_state:
+            try:
+                core_agent_info = st.session_state.core_agent.get_candidate_info('streamlit_session')
+                if core_agent_info:
+                    # Merge Core Agent's extracted data (prioritize non-null values)
+                    for key, value in core_agent_info.items():
+                        if value is not None and value != "" and value != "unknown":
+                            candidate_info[key] = value
+            except Exception as e:
+                print(f"Warning: Could not get candidate info from Core Agent: {e}")
+        
         return {
             'conversation_id': st.session_state.conversation_id,
             'messages': [msg.to_dict() for msg in st.session_state.messages],
-            'candidate_info': st.session_state.candidate_info,
+            'candidate_info': candidate_info,  # Use the merged candidate info
             'conversation_stage': st.session_state.conversation_stage,
             'scheduling_context': st.session_state.scheduling_context,
             'exported_at': datetime.now().isoformat()

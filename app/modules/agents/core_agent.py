@@ -723,9 +723,23 @@ What specific Python projects or technologies have you worked with in your {actu
 
                 # Handle different scheduling advisor decisions
                 if schedule_decision == SchedulingDecision.CONFIRM_SLOT:
-                    # User is confirming a previously offered slot - don't offer more slots
-                    self.logger.info("SchedulingAdvisor detected slot confirmation. Not offering additional slots.")
-                    return decision, f"Slot confirmation detected. Advisor reason: {schedule_reasoning}", agent_response
+                    # User is confirming a previously offered slot - trigger actual booking
+                    self.logger.info("SchedulingAdvisor detected slot confirmation. Triggering booking process.")
+                    
+                    # Try to match the user's confirmation to a specific slot
+                    booking_result = await self._handle_slot_confirmation(
+                        conversation, user_message, available_slots
+                    )
+                    
+                    if booking_result.get('success'):
+                        # Successful booking - return confirmation message
+                        confirmation_msg = booking_result.get('confirmation_message', 
+                                                            'Your interview has been scheduled successfully!')
+                        return decision, f"Slot confirmed and booked. {schedule_reasoning}", confirmation_msg
+                    else:
+                        # Booking failed - ask for clarification
+                        error_msg = f"I'd like to confirm your interview slot, but I need to clarify the specific time. {booking_result.get('error', 'Please let me know which specific date and time works for you.')}"
+                        return AgentDecision.CONTINUE, f"Slot confirmation failed: {booking_result.get('error', 'unclear slot')}", error_msg
                 
                 elif schedule_decision == SchedulingDecision.SCHEDULE and available_slots:
                     # We have slots - store them in conversation state for UI to access
@@ -956,6 +970,132 @@ If none of these times work, we may need to explore other options or schedule fo
         except Exception as e:
             self.logger.error(f"Error offering alternatives: {e}")
             return "I'm having trouble accessing our calendar at the moment. Could you please share your preferred days and times for an interview? I'll do my best to find a slot that works for your schedule."
+
+    async def _handle_slot_confirmation(
+        self,
+        conversation: ConversationState,
+        user_message: str,
+        available_slots: List[Dict]
+    ) -> Dict:
+        """
+        Handle when user confirms a specific slot and trigger actual booking.
+        
+        Args:
+            conversation: Current conversation state
+            user_message: User's confirmation message (e.g., "9am is great")
+            available_slots: List of available slots to match against
+            
+        Returns:
+            Dict with booking result and confirmation details
+        """
+        try:
+            # Extract time reference from user message
+            import re
+            from datetime import datetime, time, date, timedelta
+            
+            # Look for time patterns in user message
+            time_patterns = [
+                r'(\d{1,2})\s*am',
+                r'(\d{1,2})\s*pm', 
+                r'(\d{1,2}):(\d{2})\s*(am|pm)',
+                r'(\d{1,2})\s*o\'?clock'
+            ]
+            
+            matched_time = None
+            for pattern in time_patterns:
+                match = re.search(pattern, user_message.lower())
+                if match:
+                    if len(match.groups()) == 1:
+                        # Simple hour format (e.g., "9am")
+                        hour = int(match.group(1))
+                        if 'pm' in user_message.lower() and hour != 12:
+                            hour += 12
+                        elif 'am' in user_message.lower() and hour == 12:
+                            hour = 0
+                        matched_time = time(hour, 0)
+                    elif len(match.groups()) == 3:
+                        # Hour:minute format (e.g., "9:30am")
+                        hour = int(match.group(1))
+                        minute = int(match.group(2))
+                        if match.group(3).lower() == 'pm' and hour != 12:
+                            hour += 12
+                        elif match.group(3).lower() == 'am' and hour == 12:
+                            hour = 0
+                        matched_time = time(hour, minute)
+                    break
+            
+            if not matched_time:
+                return {
+                    'success': False,
+                    'error': 'Could not identify specific time from your message'
+                }
+            
+            # Find matching slot
+            best_match = None
+            min_time_diff = float('inf')
+            
+            for slot in available_slots:
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                slot_time = slot_dt.time()
+                
+                # Calculate time difference in minutes
+                slot_minutes = slot_time.hour * 60 + slot_time.minute
+                matched_minutes = matched_time.hour * 60 + matched_time.minute
+                time_diff = abs(slot_minutes - matched_minutes)
+                
+                # Consider it a match if within 30 minutes
+                if time_diff <= 30 and time_diff < min_time_diff:
+                    best_match = slot
+                    min_time_diff = time_diff
+            
+            if not best_match:
+                return {
+                    'success': False,
+                    'error': f'No available slots found near {matched_time.strftime("%I:%M %p")}'
+                }
+            
+            # Book the appointment using SchedulingAdvisor
+            candidate_info = conversation.candidate_info
+            slot_datetime = datetime.fromisoformat(best_match['datetime'].replace('Z', '+00:00'))
+            recruiter_id = best_match.get('recruiter_id', 1)
+            slot_id = best_match.get('id')
+            
+            booking_result = self.scheduling_advisor.book_appointment(
+                candidate_info,
+                slot_datetime,
+                recruiter_id,
+                45,  # 45 minutes duration
+                slot_id
+            )
+            
+            if booking_result['success']:
+                self.logger.info(f"Successfully booked appointment {booking_result.get('appointment_id')}")
+                
+                # Update conversation state to mark as completed
+                conversation.candidate_info['appointment_booked'] = True
+                conversation.candidate_info['appointment_details'] = {
+                    'datetime': slot_datetime.strftime("%A, %B %d, %Y at %I:%M %p"),
+                    'recruiter': booking_result.get('recruiter', {}).get('name', 'Our recruiter'),
+                    'appointment_id': booking_result.get('appointment_id')
+                }
+                
+                return {
+                    'success': True,
+                    'confirmation_message': booking_result.get('confirmation_message', ''),
+                    'appointment_details': conversation.candidate_info['appointment_details']
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': booking_result.get('error', 'Unknown booking error')
+                }
+                
+        except Exception as e:
+            self.logger.error(f"Error handling slot confirmation: {e}")
+            return {
+                'success': False,
+                'error': f'Booking system error: {str(e)}'
+            }
 
     async def _generate_continue_response(
         self,

@@ -572,6 +572,15 @@ class RecruitmentChatbot:
             if result['metadata'].get('decision') == 'INFO':
                 self.display_info_response_enhanced(result['response'], result['metadata'])
             else:
+                # Check if this is a successful booking confirmation
+                if ('booked' in result['metadata'].get('reasoning', '').lower() and 
+                    'successfully' in result['response'].lower()):
+                    # This is a booking confirmation - mark as completed
+                    self.chat_interface.update_conversation_stage('completed')
+                    self.chat_interface.update_scheduling_context({
+                        'appointment_confirmed': True
+                    })
+                
                 # Add regular assistant response
                 self.chat_interface.add_assistant_message(
                     result['response'],
