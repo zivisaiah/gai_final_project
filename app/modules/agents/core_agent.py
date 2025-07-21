@@ -52,31 +52,54 @@ class ConversationState:
         }
         self.messages.append(message)
         
-        # New: Use LLM-based extraction for all user messages for consistency
+        # Enhanced: Use contextual LLM-based extraction for comprehensive analysis
         if role == "user":
             try:
-                # Use the agent's LLM extraction method
+                # Use the enhanced contextual extraction method
                 extracted_info = await agent.extract_candidate_info_llm(self)
                 
-                # CRITICAL FIX: Only update with LLM data if it's more specific than existing data
+                # Enhanced merging strategy that preserves valuable information
                 for key, value in extracted_info.items():
-                    if value not in [None, "unknown", ""]:
+                    if value not in [None, "unknown", "", {}, []]:
                         existing_value = self.candidate_info.get(key)
                         
-                        # Preserve detailed existing information over generic LLM extractions
+                        # Special handling for different data types
                         if key == "experience":
-                            # Don't overwrite specific experience (e.g., "2 years Python") with generic "mentioned"
-                            if existing_value and existing_value not in ["unknown", "mentioned"] and value == "mentioned":
-                                continue  # Keep existing detailed experience
-                        
-                        # For other fields, only update if we don't have existing data or new data is more specific
-                        if not existing_value or existing_value in [None, "unknown", ""]:
-                            self.candidate_info[key] = value
+                            # Preserve specific experience over generic, but allow upgrades
+                            if not existing_value or existing_value in ["unknown", "mentioned"]:
+                                self.candidate_info[key] = value
+                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                                  "year" in value.lower() and "year" not in existing_value.lower()):
+                                # Prioritize experience with year information
+                                self.candidate_info[key] = value
+                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                                  len(value) > len(existing_value) and 
+                                  existing_value in ["unknown", "mentioned"]):
+                                self.candidate_info[key] = value
+                                
+                        elif key == "qualification_assessment":
+                            # Always update qualification assessment as it's comprehensive
+                            if isinstance(value, dict) and value:
+                                self.candidate_info[key] = value
+                                
+                        elif key in ["experience_details", "conversation_sentiment", "extraction_metadata"]:
+                            # Always update these comprehensive analysis fields
+                            if isinstance(value, dict) and value:
+                                self.candidate_info[key] = value
+                                
+                        else:
+                            # For basic fields, update if we don't have existing data or new data is better
+                            if (not existing_value or 
+                                existing_value in [None, "unknown", ""]):
+                                self.candidate_info[key] = value
+                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                                  len(value) > len(existing_value)):
+                                self.candidate_info[key] = value
                 
-                agent.logger.info(f"Updated candidate info via LLM: {self.candidate_info}")
+                agent.logger.info(f"Enhanced candidate info update: {self.candidate_info}")
 
             except Exception as e:
-                agent.logger.error(f"Error during LLM info extraction in ConversationState: {e}")
+                agent.logger.error(f"Error during enhanced LLM info extraction in ConversationState: {e}")
 
     def add_decision(self, decision: AgentDecision, reasoning: str, response: str):
         """Record a decision made by the agent."""
@@ -270,66 +293,57 @@ Analyze this context and respond with the JSON decision format only.""")
         return new_conv
     
     async def _assess_candidate_qualifications(self, conversation: ConversationState) -> Dict[str, Any]:
-        """Continuously assess candidate qualifications against job requirements"""
+        """
+        Get qualification assessment from the enhanced LLM extraction.
+        
+        Since qualification assessment is now integrated into the extraction process,
+        this method simply returns the existing assessment or triggers re-extraction.
+        """
         candidate_info = conversation.candidate_info
         
-        # Extract experience information (handle None values)
-        experience_value = candidate_info.get("experience", "")
-        experience_str = (experience_value or "").lower()
-        
-        # Job requirements (these could be loaded from configuration)
-        min_experience_years = 3  # Minimum 3 years Python experience required
-        
-        assessment = {
-            "meets_requirements": False,
-            "experience_gap": 0,
-            "qualification_status": "unknown",
-            "should_continue": True,
-            "assessment_reason": ""
-        }
-        
-        try:
-            # Parse experience years from candidate info
-            if "years" in experience_str or "year" in experience_str:
-                # Extract number from experience string (e.g., "1 years Python" -> 1)
-                import re
-                years_match = re.search(r'(\d+)\s*years?', experience_str)
-                if years_match:
-                    candidate_years = int(years_match.group(1))
-                    assessment["experience_gap"] = min_experience_years - candidate_years
-                    
-                    if candidate_years >= min_experience_years:
-                        assessment["meets_requirements"] = True
-                        assessment["qualification_status"] = "qualified"
-                        assessment["should_continue"] = True
-                        assessment["assessment_reason"] = f"Candidate has {candidate_years} years experience, meets {min_experience_years}+ requirement"
-                    else:
-                        assessment["meets_requirements"] = False
-                        assessment["qualification_status"] = "underqualified"
-                        # Don't immediately end - let conversation flow naturally
-                        # Exit Advisor will make the final decision based on candidate response
-                        assessment["should_continue"] = True
-                        assessment["assessment_reason"] = f"Candidate has {candidate_years} years experience, needs {min_experience_years}+ years (gap: {assessment['experience_gap']} years)"
-                else:
-                    assessment["qualification_status"] = "unclear"
-                    assessment["should_continue"] = True
-                    assessment["assessment_reason"] = "Experience format unclear, needs clarification"
-            else:
-                assessment["qualification_status"] = "unknown"
-                assessment["should_continue"] = True
-                assessment["assessment_reason"] = "No experience information provided yet"
+        # Check if we already have a qualification assessment from LLM extraction
+        if "qualification_assessment" in candidate_info and candidate_info["qualification_assessment"]:
+            existing_assessment = candidate_info["qualification_assessment"]
+            
+            # Validate assessment completeness
+            if (existing_assessment.get("qualification_status", "unknown") != "unknown" and
+                existing_assessment.get("assessment_confidence", 0) > 0.3):
                 
+                self.logger.info(f"Using existing qualification assessment: {existing_assessment}")
+                return existing_assessment
+        
+        # If no valid assessment exists, trigger enhanced LLM extraction
+        self.logger.info("No valid qualification assessment found, triggering enhanced LLM extraction")
+        try:
+            # Re-extract with full conversation context to get qualification assessment
+            enhanced_info = await self.extract_candidate_info_llm(conversation)
+            
+            # Update conversation state with enhanced info
+            conversation.candidate_info.update(enhanced_info)
+            
+            # Return the qualification assessment
+            assessment = enhanced_info.get("qualification_assessment", {})
+            
+            self.logger.info(f"Enhanced qualification assessment: {assessment}")
+            return assessment
+            
         except Exception as e:
-            self.logger.error(f"Error assessing qualifications: {e}")
-            assessment["qualification_status"] = "error"
-            assessment["should_continue"] = True
-            assessment["assessment_reason"] = f"Assessment error: {str(e)}"
-        
-        # Store assessment in candidate info for Exit Advisor to use
-        candidate_info["qualification_assessment"] = assessment
-        
-        self.logger.info(f"Qualification assessment: {assessment}")
-        return assessment
+            self.logger.error(f"Error in enhanced qualification assessment: {e}")
+            
+            # Fallback assessment structure
+            fallback_assessment = {
+                "meets_requirements": False,
+                "experience_gap": 3,
+                "qualification_status": "unknown",
+                "assessment_confidence": 0.0,
+                "key_concerns": [f"Assessment error: {str(e)}"],
+                "strengths": [],
+                "should_continue": True,
+                "assessment_reason": f"Unable to assess qualifications: {str(e)}"
+            }
+            
+            candidate_info["qualification_assessment"] = fallback_assessment
+            return fallback_assessment
 
     async def process_message_async(
         self, 
@@ -822,56 +836,156 @@ Once I have your contact details, I'll be able to show you available time slots 
     
     async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
         """
-        Extract candidate information using LLM analysis (new unified approach).
+        Enhanced contextual candidate information extraction using LLM analysis.
         
-        This method demonstrates the proper LLM-based approach that should replace
-        the keyword-based extraction for architectural consistency.
+        This method uses the full conversation context to synthesize comprehensive
+        candidate information, including automatic qualification assessment.
         """
         try:
-            # Generate extraction prompt
+            # Generate enhanced contextual extraction prompt
             extraction_prompt = self.prompts.get_candidate_info_extraction_prompt(conversation.messages)
             
-            # Get LLM analysis
+            # Get LLM analysis with full context
             response = await self.candidate_info_chain.ainvoke({"extraction_prompt": extraction_prompt})
             response_text = response.content.strip()
             
-            # Parse JSON response
+            self.logger.debug(f"Raw LLM extraction response: {response_text}")
+            
+            # Parse JSON response with enhanced error handling
             import json
             import re
             
-            # Extract JSON from response
+            # Clean and extract JSON from response
+            response_text = response_text.replace("```json", "").replace("```", "").strip()
             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
             
             extracted_data = json.loads(response_text)
             
-            # Convert to compatible format
+            # Enhanced data processing with comprehensive mapping
+            experience_data = extracted_data.get("experience", {})
+            qualification_data = extracted_data.get("qualification_assessment", {})
+            
+            # Convert to enhanced candidate_info format with backward compatibility
             candidate_info = {
+                # Basic information
                 "name": extracted_data.get("name"),
-                "experience": "mentioned" if extracted_data.get("experience", {}).get("has_python") else "unknown",
+                "email": extracted_data.get("email"), 
+                "phone": extracted_data.get("phone"),
                 "current_status": extracted_data.get("current_status"),
                 "interest_level": extracted_data.get("interest_level", "unknown"),
                 "availability_mentioned": extracted_data.get("availability_mentioned", False),
-                "email": extracted_data.get("email"),
-                "phone": extracted_data.get("phone")
+                "availability_details": extracted_data.get("availability_details"),
+                "position_interest": extracted_data.get("position_interest"),
+                
+                # Enhanced experience information
+                "experience": self._format_experience_field(experience_data),
+                "experience_details": {
+                    "level": experience_data.get("level"),
+                    "years": experience_data.get("years"),
+                    "years_numeric": experience_data.get("years_numeric"),
+                    "technologies": experience_data.get("technologies", []),
+                    "has_python": experience_data.get("has_python", False),
+                    "python_details": experience_data.get("python_details"),
+                    "career_level": experience_data.get("career_level", "unknown")
+                },
+                
+                # Integrated qualification assessment
+                "qualification_assessment": {
+                    "meets_requirements": qualification_data.get("meets_requirements", False),
+                    "experience_gap": qualification_data.get("experience_gap_years", 0),
+                    "qualification_status": qualification_data.get("qualification_status", "unknown"),
+                    "assessment_confidence": qualification_data.get("assessment_confidence", 0.0),
+                    "key_concerns": qualification_data.get("key_concerns", []),
+                    "strengths": qualification_data.get("strengths", []),
+                    "should_continue": not qualification_data.get("meets_requirements", True),  # Continue if underqualified
+                    "assessment_reason": self._generate_assessment_reason(qualification_data, experience_data)
+                },
+                
+                # Conversation context
+                "conversation_sentiment": extracted_data.get("conversation_sentiment", {}),
+                "extraction_metadata": extracted_data.get("extraction_metadata", {})
             }
             
-            self.logger.info(f"LLM-extracted candidate info: {candidate_info}")
+            self.logger.info(f"Enhanced LLM-extracted candidate info: {candidate_info}")
+            self.logger.info(f"Qualification assessment: {candidate_info['qualification_assessment']}")
+            
             return candidate_info
             
         except Exception as e:
-            self.logger.error(f"Error in LLM candidate info extraction: {e}")
-            # Return default values instead of falling back to deprecated keyword method
+            self.logger.error(f"Error in enhanced LLM candidate info extraction: {e}")
+            self.logger.error(f"Raw response that caused error: {response_text if 'response_text' in locals() else 'N/A'}")
+            
+            # Return enhanced default structure
             return {
                 "name": None,
                 "experience": "unknown",
                 "current_status": None,
-                "interest_level": "unknown",
+                "interest_level": "unknown", 
                 "availability_mentioned": False,
                 "email": None,
-                "phone": None
+                "phone": None,
+                "experience_details": {
+                    "level": None,
+                    "years": None,
+                    "years_numeric": None,
+                    "technologies": [],
+                    "has_python": False,
+                    "python_details": None,
+                    "career_level": "unknown"
+                },
+                "qualification_assessment": {
+                    "meets_requirements": False,
+                    "experience_gap": 3,
+                    "qualification_status": "unknown",
+                    "assessment_confidence": 0.0,
+                    "key_concerns": ["Unable to assess qualifications due to extraction error"],
+                    "strengths": [],
+                    "should_continue": True,
+                    "assessment_reason": f"Assessment error: {str(e)}"
+                },
+                "conversation_sentiment": {},
+                "extraction_metadata": {"error": str(e)}
             }
+    
+    def _format_experience_field(self, experience_data: Dict) -> str:
+        """Format experience data for backward compatibility with existing code."""
+        if not experience_data:
+            return "unknown"
+        
+        # Preserve specific experience details
+        years = experience_data.get("years")
+        level = experience_data.get("level", "").lower()
+        has_python = experience_data.get("has_python", False)
+        
+        if years and has_python:
+            return f"{years} Python"
+        elif years and "python" in level:
+            return f"{years} Python"
+        elif years:
+            return f"{years} years"
+        elif has_python:
+            return "mentioned Python"
+        elif level and level != "null":
+            return "mentioned"
+        else:
+            return "unknown"
+    
+    def _generate_assessment_reason(self, qualification_data: Dict, experience_data: Dict) -> str:
+        """Generate human-readable assessment reason."""
+        status = qualification_data.get("qualification_status", "unknown")
+        gap = qualification_data.get("experience_gap_years", 0)
+        years_numeric = experience_data.get("years_numeric")
+        
+        if status == "underqualified" and gap > 0 and years_numeric is not None:
+            return f"Candidate has {years_numeric} years experience, needs 3+ years (gap: {gap} years)"
+        elif status == "qualified":
+            return f"Candidate meets experience requirements"
+        elif status == "overqualified":
+            return f"Candidate exceeds experience requirements"
+        else:
+            return f"Assessment status: {status}"
 
     def start_conversation(self, conversation_id: str = None) -> Tuple[str, ConversationState]:
         """Start a new conversation with initial greeting."""
