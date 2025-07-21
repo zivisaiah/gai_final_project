@@ -107,14 +107,16 @@ class RecruitmentChatbot:
         """Process user message through the agent system."""
         start_time = time.time()
         try:
-            # CRITICAL FIX: Sync candidate info from session state to Core Agent
-            # This ensures registration form data is available to the Core Agent
+            # CRITICAL FIX: Smart sync - only update Core Agent with NON-NULL session state data
+            # This preserves extracted data while allowing registration form data to flow through
             conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
             
-            # Update Core Agent's candidate info with session state data
+            # Smart merge: only update fields that have actual values in session state
             if st.session_state.candidate_info:
-                conversation_state.candidate_info.update(st.session_state.candidate_info)
-                self.logger.info(f"Synced candidate info to Core Agent: {conversation_state.candidate_info}")
+                for key, value in st.session_state.candidate_info.items():
+                    if value is not None and value != "" and value != "unknown":
+                        conversation_state.candidate_info[key] = value
+                self.logger.info(f"Smart synced candidate info to Core Agent: {conversation_state.candidate_info}")
             
             # Check if registration is not complete - let LLM handle intent detection
             if not st.session_state.get('registration_completed', False):
@@ -154,9 +156,14 @@ class RecruitmentChatbot:
             # Calculate response time
             response_time = time.time() - start_time
             
-            # Update candidate info from conversation state (bidirectional sync)
+            # CRITICAL FIX: Bidirectional sync - update session state with Core Agent's extracted data
             if conversation_state.candidate_info:
-                self.chat_interface.update_candidate_info(conversation_state.candidate_info)
+                # Only update session state with non-null values to preserve existing data
+                extracted_data = {k: v for k, v in conversation_state.candidate_info.items() 
+                                if v is not None and v != "" and v != "unknown"}
+                if extracted_data:
+                    self.chat_interface.update_candidate_info(extracted_data)
+                    self.logger.info(f"Updated session state with extracted data: {list(extracted_data.keys())}")
             
             response_metadata = {
                 'decision': decision.value,

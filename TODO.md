@@ -956,6 +956,24 @@ pydantic>=2.0.0
 ```
 
 ## In Progress
+- [x] **🔥 CRITICAL: Streamlit-Core Agent Sync Bug** ✅ **COMPLETELY RESOLVED** 
+  - **Root Cause IDENTIFIED**: Destructive sync cycle between Streamlit session state and Core Agent candidate_info
+  - **THE DESTRUCTIVE CYCLE**: 
+    - Session state initialized with `{'name': None, 'email': None, 'phone': None}`
+    - Sync TO Core Agent: `conversation_state.candidate_info.update(st.session_state.candidate_info)` overwrites extracted data with None values
+    - Core Agent extracts perfectly: `{'name': 'Ziv', 'email': 'ziv.isaiah@gmail.com'}`  
+    - Next message: Cycle repeats, destroying extracted data again
+  - **SMART SYNC SOLUTION**:
+    - ✅ **Smart Sync TO Core Agent**: Only update fields with non-null values to preserve extracted data
+    - ✅ **Enhanced Bidirectional Sync**: Update session state with extracted data to prevent loss on next cycle
+    - ✅ **Non-Destructive Logic**: `if value is not None and value != "" and value != "unknown"` prevents None overwrites
+  - **VERIFICATION**: 
+    - ✅ **Complete Data Preservation**: All user information now flows correctly between session state and Core Agent
+    - ✅ **Multi-Message Persistence**: Data preserved across multiple conversation turns
+    - ✅ **Test Confirmed**: Smart sync preserves data while old sync destroys data
+  - **IMPACT**: User provides complete information → System successfully retains all data across the entire conversation ✅
+  - **STATUS**: 100% resolved - from data loss on every message to perfect data persistence
+
 - [x] **🔥 CRITICAL: Information Extraction Failure** ✅ **COMPLETELY RESOLVED**
   - **Root Cause IDENTIFIED**: LLM extraction works perfectly, but processing errors cause complete data loss
   - **FINAL FIX**: 
