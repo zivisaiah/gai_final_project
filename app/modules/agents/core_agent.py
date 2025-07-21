@@ -464,10 +464,10 @@ Analyze this context and respond with the JSON decision format only.""")
     
     async def _assess_candidate_qualifications(self, conversation: ConversationState) -> Dict[str, Any]:
         """
-        Get qualification assessment from the enhanced LLM extraction.
+        Get qualification assessment from enhanced LLM extraction with complete data protection.
         
-        Since qualification assessment is now integrated into the extraction process,
-        this method simply returns the existing assessment or triggers re-extraction.
+        This method safely extracts qualification assessment while preserving all existing form data.
+        Uses backup/restore mechanism to prevent any data loss during LLM operations.
         """
         candidate_info = conversation.candidate_info
         
@@ -482,38 +482,51 @@ Analyze this context and respond with the JSON decision format only.""")
                 self.logger.info(f"Using existing qualification assessment: {existing_assessment}")
                 return existing_assessment
         
-        # If no valid assessment exists, trigger enhanced LLM extraction
-        self.logger.info("No valid qualification assessment found, triggering enhanced LLM extraction")
+        # If no valid assessment exists, trigger protected LLM extraction
+        self.logger.info("No valid qualification assessment found, triggering protected LLM extraction")
+        
+        # CRITICAL: Backup all form data before any LLM operation
+        original_candidate_info = conversation.candidate_info.copy()
+        self.logger.info(f"🔒 BACKING UP candidate data: {original_candidate_info}")
+        
         try:
-            # Re-extract with full conversation context to get qualification assessment
-            enhanced_info = await self.extract_candidate_info_llm(conversation)
+            # Extract qualification assessment using safe LLM method
+            enhanced_info = await self.extract_qualification_assessment_llm(conversation)
             
-            # Update conversation state with enhanced info
-            conversation.candidate_info.update(enhanced_info)
-            
-            # Return the qualification assessment
-            assessment = enhanced_info.get("qualification_assessment", {})
-            
-            self.logger.info(f"Enhanced qualification assessment: {assessment}")
-            return assessment
+            # SELECTIVE UPDATE: Only add qualification assessment, preserve everything else
+            if "qualification_assessment" in enhanced_info and enhanced_info["qualification_assessment"]:
+                conversation.candidate_info["qualification_assessment"] = enhanced_info["qualification_assessment"]
+                assessment = enhanced_info["qualification_assessment"]
+                
+                self.logger.info(f"✅ SAFE ASSESSMENT UPDATE: Added qualification only")
+                self.logger.info(f"Enhanced qualification assessment: {assessment}")
+                return assessment
+            else:
+                raise ValueError("No valid qualification assessment in LLM response")
             
         except Exception as e:
-            self.logger.error(f"Error in enhanced qualification assessment: {e}")
+            # RESTORE original data completely if anything goes wrong
+            conversation.candidate_info.clear()
+            conversation.candidate_info.update(original_candidate_info)
+            self.logger.error(f"🔧 RESTORED original candidate data after assessment error: {e}")
             
-            # Fallback assessment structure
-            fallback_assessment = {
-                "meets_requirements": False,
-                "experience_gap": 3,
-                "qualification_status": "unknown",
-                "assessment_confidence": 0.0,
-                "key_concerns": [f"Assessment error: {str(e)}"],
-                "strengths": [],
-                "should_continue": True,
-                "assessment_reason": f"Unable to assess qualifications: {str(e)}"
-            }
-            
-            candidate_info["qualification_assessment"] = fallback_assessment
+            # Return safe fallback assessment
+            fallback_assessment = self._create_safe_fallback_assessment(str(e))
+            conversation.candidate_info["qualification_assessment"] = fallback_assessment
             return fallback_assessment
+
+    def _create_safe_fallback_assessment(self, error_msg: str = "Assessment unavailable") -> Dict[str, Any]:
+        """Create a safe fallback qualification assessment."""
+        return {
+            "meets_requirements": False,
+            "experience_gap": 3,
+            "qualification_status": "unknown",
+            "assessment_confidence": 0.0,
+            "key_concerns": [f"Assessment error: {error_msg}"],
+            "strengths": [],
+            "should_continue": True,
+            "assessment_reason": f"Unable to assess qualifications: {error_msg}"
+        }
 
     async def process_message_async(
         self, 
@@ -1009,6 +1022,12 @@ Once I have your contact details, I'll be able to show you available time slots 
         Extract only specific missing information fields using targeted LLM analysis.
         Used in form-based mode to preserve existing structured data.
         """
+        import json
+        import re
+        
+        # Define regex pattern at method level to avoid f-string conflicts
+        json_pattern = r'\{.*\}'
+        
         try:
             # Create targeted extraction prompt for missing fields only
             fields_description = {
@@ -1020,35 +1039,37 @@ Once I have your contact details, I'll be able to show you available time slots 
             
             missing_descriptions = [f"- {field}: {fields_description.get(field, field)}" for field in missing_fields]
             
-            # Format existing form data for context
-            existing_data_context = "## EXISTING FORM DATA (DO NOT OVERRIDE):\n"
-            for key, value in conversation.candidate_info.items():
-                if value not in [None, "", {}, [], "unknown"]:
-                    existing_data_context += f"- {key}: {value}\n"
+            # Format existing form data as clean JSON (not markdown)
+            existing_data_json = json.dumps({
+                key: value for key, value in conversation.candidate_info.items()
+                if value not in [None, "", {}, [], "unknown"]
+            }, indent=2)
             
-            if len(existing_data_context.strip()) == len("## EXISTING FORM DATA (DO NOT OVERRIDE):"):
-                existing_data_context += "- No form data exists yet\n"
+            conversation_json = json.dumps([
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in conversation.messages[-5:]  # Recent messages for context
+            ], indent=2)
             
             targeted_prompt = f"""You are extracting ONLY specific missing information from a conversation to supplement existing form data.
 
-{existing_data_context}
+EXISTING_FORM_DATA_JSON:
+{existing_data_json}
 
-## CONVERSATION HISTORY:
-{self.prompts.format_conversation_context(conversation.messages)}
+CONVERSATION_HISTORY_JSON:
+{conversation_json}
 
-## EXTRACTION TASK - MISSING FIELDS ONLY:
+EXTRACTION_TASK_MISSING_FIELDS_ONLY:
 The candidate has already provided structured form data above. Extract ONLY the following missing information from the conversation:
 {chr(10).join(missing_descriptions)}
 
-## CRITICAL INSTRUCTIONS:
+CRITICAL_INSTRUCTIONS:
 - DO NOT extract or suggest information that already exists in the form data
 - Only extract information for the specific missing fields requested
 - If information already exists in form data, leave it as null in your response
 - Do not duplicate or override existing form information
+- Respond with ONLY valid JSON, no markdown formatting
 
-## RESPONSE FORMAT:
-Respond with ONLY valid JSON containing ONLY the requested missing fields:
-
+REQUIRED_JSON_RESPONSE_FORMAT:
 {{
   "name": "candidate name or null if not found/already in form",
   "experience": "specific experience details or null if not mentioned/already in form",
@@ -1061,18 +1082,15 @@ Respond with ONLY valid JSON containing ONLY the requested missing fields:
   }}
 }}
 
-Extract only what is clearly mentioned in the conversation and NOT already in the form data."""
+Extract only what is clearly mentioned in the conversation and NOT already in the form data. JSON_RESPONSE_ONLY:"""
 
             # Get LLM response
             response = await self.candidate_info_chain.ainvoke({"extraction_prompt": targeted_prompt})
             response_text = response.content.strip()
             
             # Parse JSON response
-            import json
-            import re
-            
             response_text = response_text.replace("```json", "").replace("```", "").strip()
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            json_match = re.search(json_pattern, response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
             
@@ -1100,6 +1118,12 @@ Extract only what is clearly mentioned in the conversation and NOT already in th
         Extract very basic information using simple LLM analysis.
         Used in minimal data mode for short interactions.
         """
+        import json
+        import re
+        
+        # Define regex pattern at method level to avoid f-string conflicts
+        json_pattern = r'\{.*\}'
+        
         try:
             latest_message = conversation.messages[-1].get("content", "") if conversation.messages else ""
             
@@ -1121,11 +1145,8 @@ Respond with JSON:
             response_text = response.content.strip()
             
             # Parse JSON
-            import json
-            import re
-            
             response_text = response_text.replace("```json", "").replace("```", "").strip()
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            json_match = re.search(json_pattern, response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
             
@@ -1138,6 +1159,101 @@ Respond with JSON:
             self.logger.error(f"Error in simple info extraction: {e}")
             return {}
 
+    async def extract_qualification_assessment_llm(self, conversation: ConversationState) -> Dict:
+        """
+        Safe qualification assessment extraction using JSON-first approach.
+        
+        This method extracts ONLY qualification assessment without touching any existing data.
+        Uses JSON formatting to prevent markdown contamination issues.
+        """
+        try:
+            import json
+            
+            # Format existing candidate data as clean JSON (not markdown)
+            existing_data_json = json.dumps({
+                key: value for key, value in conversation.candidate_info.items()
+                if value not in [None, "", {}, [], "unknown"]
+            }, indent=2)
+            
+            # Format conversation history as JSON
+            conversation_json = json.dumps([
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in conversation.messages[-5:]  # Last 5 messages for context
+            ], indent=2)
+            
+            # Create JSON-first qualification assessment prompt
+            assessment_prompt = f"""You are a qualification assessment specialist. Extract qualification assessment ONLY.
+
+CRITICAL INSTRUCTIONS:
+- Analyze candidate against Python Developer position requirements
+- Minimum requirement: 3+ years Python development experience
+- Respond with ONLY valid JSON, NO markdown formatting
+- Do not include any explanatory text or headers
+
+EXISTING_CANDIDATE_DATA:
+{existing_data_json}
+
+RECENT_CONVERSATION:
+{conversation_json}
+
+ASSESSMENT_TASK:
+Evaluate if candidate meets "3+ years Python development experience" requirement based on existing data and conversation.
+
+REQUIRED_JSON_RESPONSE_FORMAT:
+{{
+  "qualification_assessment": {{
+    "meets_requirements": true/false,
+    "experience_gap": number_of_years_short_of_requirement,
+    "qualification_status": "qualified/underqualified/overqualified",
+    "assessment_confidence": 0.0_to_1.0,
+    "key_concerns": ["array", "of", "concerns"],
+    "strengths": ["array", "of", "strengths"],
+    "assessment_reason": "brief explanation of assessment"
+  }}
+}}
+
+JSON_RESPONSE_ONLY:"""
+
+            # Get LLM response
+            response = await self.candidate_info_chain.ainvoke({"extraction_prompt": assessment_prompt})
+            response_text = response.content.strip()
+            
+            self.logger.debug(f"Raw qualification assessment response: {response_text}")
+            
+            # Enhanced JSON parsing
+            import re
+            
+            # Remove any potential markdown formatting
+            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            
+            # Find JSON object in response
+            json_pattern = r'\{.*\}'
+            json_match = re.search(json_pattern, response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            # Parse JSON
+            assessment_data = json.loads(response_text)
+            
+            # Validate response structure
+            if "qualification_assessment" in assessment_data:
+                assessment = assessment_data["qualification_assessment"]
+                
+                # Add calculated fields for backward compatibility
+                assessment["should_continue"] = not assessment.get("meets_requirements", True)
+                
+                self.logger.info(f"✅ QUALIFICATION ASSESSMENT EXTRACTED: {assessment}")
+                return {"qualification_assessment": assessment}
+            else:
+                raise ValueError("No qualification_assessment key in LLM response")
+            
+        except Exception as e:
+            self.logger.error(f"Error in JSON-first qualification assessment: {e}")
+            self.logger.error(f"Raw response: {response_text if 'response_text' in locals() else 'N/A'}")
+            
+            # Return empty dict - calling method will handle fallback
+            return {}
+
     async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
         """
         Enhanced contextual candidate information extraction using LLM analysis.
@@ -1145,6 +1261,12 @@ Respond with JSON:
         This method uses the full conversation context to synthesize comprehensive
         candidate information, including automatic qualification assessment.
         """
+        import json
+        import re
+        
+        # Define regex pattern at method level to avoid f-string conflicts
+        json_pattern = r'\{.*\}'
+        
         try:
             # Check if we have existing form data to preserve
             has_existing_data = bool(conversation.candidate_info and 
@@ -1152,30 +1274,35 @@ Respond with JSON:
                                        for v in conversation.candidate_info.values()))
             
             if has_existing_data:
-                # Create context-aware prompt that includes existing data
-                existing_data_summary = "\n".join([
-                    f"- {key}: {value}" 
-                    for key, value in conversation.candidate_info.items()
+                # Create context-aware prompt using JSON formatting (not markdown)
+                existing_data_json = json.dumps({
+                    key: value for key, value in conversation.candidate_info.items()
                     if value not in [None, "", {}, [], "unknown"]
-                ])
+                }, indent=2)
+                
+                conversation_json = json.dumps([
+                    {"role": msg["role"], "content": msg["content"]}
+                    for msg in conversation.messages[-8:]  # Last 8 messages for context
+                ], indent=2)
                 
                 extraction_prompt = f"""You are analyzing a conversation to extract comprehensive candidate information. 
-CRITICAL: The candidate has ALREADY provided some information via a form submission. You must PRESERVE all existing form data and ENHANCE it with conversation details.
+CRITICAL: The candidate has ALREADY provided information via form submission. You must PRESERVE all existing data and ENHANCE it with conversation details.
 
-## EXISTING CANDIDATE DATA (PRESERVE ALL):
-{existing_data_summary}
+EXISTING_CANDIDATE_DATA_JSON:
+{existing_data_json}
 
-## CONVERSATION HISTORY:
-{self.prompts.format_conversation_context(conversation.messages)}
+CONVERSATION_HISTORY_JSON:
+{conversation_json}
 
-## ENHANCED EXTRACTION TASK:
+ENHANCED_EXTRACTION_TASK:
 - PRESERVE all existing form data exactly as provided above
 - ENHANCE the profile with additional details from the conversation
 - FILL any missing fields from conversation context
 - DO NOT override or change existing form data
 - SUPPLEMENT the information, don't replace it
+- Respond with ONLY valid JSON, no markdown formatting
 
-Use the enhanced extraction format but maintain all existing data integrity."""
+Use the enhanced extraction format but maintain all existing data integrity. Respond with valid JSON only."""
             else:
                 # Standard extraction prompt for pure conversation mode
                 extraction_prompt = self.prompts.get_candidate_info_extraction_prompt(conversation.messages)
@@ -1187,12 +1314,9 @@ Use the enhanced extraction format but maintain all existing data integrity."""
             self.logger.debug(f"Raw LLM extraction response: {response_text}")
             
             # Parse JSON response with enhanced error handling
-            import json
-            import re
-            
             # Clean and extract JSON from response
             response_text = response_text.replace("```json", "").replace("```", "").strip()
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            json_match = re.search(json_pattern, response_text, re.DOTALL)
             if json_match:
                 response_text = json_match.group(0)
             
