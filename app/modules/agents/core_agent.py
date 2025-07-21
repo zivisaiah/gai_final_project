@@ -1387,8 +1387,29 @@ Use the enhanced extraction format but maintain all existing data integrity. Res
             extracted_data = json.loads(response_text)
             
             # Enhanced data processing with comprehensive mapping
-            experience_data = extracted_data.get("experience", {})
-            qualification_data = extracted_data.get("qualification_assessment", {})
+            # CRITICAL FIX: Handle both string and dict formats for experience/qualification data
+            raw_experience = extracted_data.get("experience", {})
+            raw_qualification = extracted_data.get("qualification_assessment", {})
+            
+            # Convert experience data to dict format if it's a string
+            if isinstance(raw_experience, str):
+                experience_data = {
+                    "years": raw_experience if raw_experience not in ["unknown", ""] else None,
+                    "level": None,
+                    "years_numeric": self._extract_years_from_string(raw_experience),
+                    "technologies": ["python"] if raw_experience and "python" in raw_experience.lower() else [],
+                    "has_python": raw_experience and "python" in raw_experience.lower(),
+                    "python_details": None,
+                    "career_level": "unknown"
+                }
+            else:
+                experience_data = raw_experience or {}
+            
+            # Convert qualification data to dict format if needed
+            if isinstance(raw_qualification, dict):
+                qualification_data = raw_qualification
+            else:
+                qualification_data = {}
             
             # Convert to enhanced candidate_info format with backward compatibility
             candidate_info = {
@@ -1479,7 +1500,7 @@ Use the enhanced extraction format but maintain all existing data integrity. Res
         
         # Preserve specific experience details
         years = experience_data.get("years")
-        level = experience_data.get("level", "").lower()
+        level = (experience_data.get("level") or "").lower()
         has_python = experience_data.get("has_python", False)
         
         if years and has_python:
@@ -1517,6 +1538,18 @@ Use the enhanced extraction format but maintain all existing data integrity. Res
             return f"Need more information about experience and qualifications"
         else:
             return f"Assessment status: {status}"
+
+    def _extract_years_from_string(self, experience_str: str) -> Optional[int]:
+        """Extract numeric years from experience string (e.g., '1 years' -> 1)."""
+        if not experience_str or experience_str in ["unknown", ""]:
+            return None
+        
+        import re
+        # Look for patterns like "1 years", "3+ years", "5 year", etc.
+        match = re.search(r'(\d+)', experience_str)
+        if match:
+            return int(match.group(1))
+        return None
 
     def start_conversation(self, conversation_id: str = None) -> Tuple[str, ConversationState]:
         """Start a new conversation with initial greeting."""
