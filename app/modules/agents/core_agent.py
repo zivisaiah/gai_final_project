@@ -73,6 +73,31 @@ class ConversationState:
         meaningful_messages = [m for m in user_messages if len(m.get("content", "").strip()) > 10]
         
         return len(meaningful_messages) >= 1 and total_content_length > 20
+
+    def _get_better_tone(self, tone1: str, tone2: str) -> str:
+        """Return the more positive tone between two options."""
+        tone_hierarchy = {"negative": 0, "neutral": 1, "positive": 2}
+        score1 = tone_hierarchy.get(tone1.lower(), 1)
+        score2 = tone_hierarchy.get(tone2.lower(), 1)
+        return tone1 if score1 >= score2 else tone2
+    
+    def _get_better_engagement(self, eng1: str, eng2: str) -> str:
+        """Return the higher engagement level between two options."""
+        engagement_hierarchy = {"low": 0, "medium": 1, "high": 2}
+        score1 = engagement_hierarchy.get(eng1.lower(), 0)
+        score2 = engagement_hierarchy.get(eng2.lower(), 0)
+        return eng1 if score1 >= score2 else eng2
+    
+    def _get_better_quality(self, qual1: str, qual2: str) -> str:
+        """Return the better communication quality between two options."""
+        quality_hierarchy = {"poor": 0, "fair": 1, "good": 2, "excellent": 3}
+        score1 = quality_hierarchy.get(qual1.lower(), 0)
+        score2 = quality_hierarchy.get(qual2.lower(), 0)
+        return qual1 if score1 >= score2 else qual2
+
+    def _is_form_based_candidate(self) -> bool:
+        """Check if this candidate came through form submission."""
+        return self._detect_form_mode()
         
     async def add_message(self, role: str, content: str, agent: 'CoreAgent', timestamp: datetime = None):
         """Add a message and update state using appropriate extraction mode."""
@@ -190,23 +215,44 @@ class ConversationState:
                     else:
                         agent.logger.info(f"🔒 PRESERVING {field}: '{current_val}' (ignoring extracted: '{extracted_info[field]}')")
         
-        # Always update conversation sentiment and metadata - but ensure HIGH engagement for form users
+        # Always update conversation sentiment - smart logic for form vs conversation users
         if "conversation_sentiment" in extracted_info:
-            # For form-submitted candidates, always ensure high engagement regardless of LLM output
-            form_sentiment = {
-                "overall_tone": "positive",
-                "engagement_level": "high",       # ✅ They took time to fill out the form
-                "communication_quality": "excellent"  # ✅ Provided structured information
-            }
-            self.candidate_info["conversation_sentiment"] = form_sentiment
-            changes_made.append("conversation_sentiment (form-optimized)")
-            agent.logger.info(f"✅ FORM-OPTIMIZED SENTIMENT: {form_sentiment}")
+            llm_sentiment = extracted_info["conversation_sentiment"]
+            
+            # For form-submitted candidates, ensure minimum high engagement but allow improvements
+            if self._is_form_based_candidate():
+                base_form_sentiment = {
+                    "overall_tone": "positive",
+                    "engagement_level": "high", 
+                    "communication_quality": "excellent"
+                }
+                
+                # Take the BETTER of form baseline vs current conversation assessment
+                final_sentiment = {
+                    "overall_tone": self._get_better_tone(base_form_sentiment["overall_tone"], llm_sentiment.get("overall_tone", "neutral")),
+                    "engagement_level": self._get_better_engagement(base_form_sentiment["engagement_level"], llm_sentiment.get("engagement_level", "low")),
+                    "communication_quality": self._get_better_quality(base_form_sentiment["communication_quality"], llm_sentiment.get("communication_quality", "poor"))
+                }
+                
+                self.candidate_info["conversation_sentiment"] = final_sentiment
+                changes_made.append("conversation_sentiment (smart-form)")
+                agent.logger.info(f"✅ SMART FORM SENTIMENT: Base={base_form_sentiment}, LLM={llm_sentiment}, Final={final_sentiment}")
+            else:
+                # Non-form users: use LLM assessment directly
+                self.candidate_info["conversation_sentiment"] = llm_sentiment
+                changes_made.append("conversation_sentiment (llm-direct)")
+                agent.logger.info(f"✅ LLM SENTIMENT: {llm_sentiment}")
         
         agent.logger.info(f"✅ FORM-BASED EXTRACTION COMPLETE: Changes made: {changes_made if changes_made else 'None (all data preserved)'}")
         
-        # Verify no form data was lost
+        # Verify no critical form data was lost (but allow sentiment to evolve)
         for key, original_value in original_data.items():
             if original_value not in [None, "", {}, [], "unknown"]:
+                # Skip conversation_sentiment - it should be allowed to evolve during conversation
+                if key == "conversation_sentiment":
+                    agent.logger.debug(f"✅ SENTIMENT EVOLUTION ALLOWED: {key} can change during conversation")
+                    continue
+                    
                 current_value = self.candidate_info.get(key)
                 if current_value != original_value:
                     agent.logger.error(f"🚨 FORM DATA LOST! Field '{key}': '{original_value}' became '{current_value}'")
