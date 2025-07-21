@@ -43,8 +43,34 @@ class ConversationState:
         self.last_decision = None
         self.last_reasoning = None
         
+    def _detect_form_mode(self) -> bool:
+        """
+        Detect if we're operating in form-based mode (structured data exists) 
+        vs conversation-based mode (extract everything from conversation).
+        """
+        # Check for indicators that structured form data was provided
+        form_indicators = [
+            # Structured data fields typically populated by forms
+            bool(self.candidate_info.get("position")),  # Specific position selected
+            bool(self.candidate_info.get("email")),     # Email address provided
+            bool(self.candidate_info.get("phone")),     # Phone number provided
+        ]
+        
+        # If any form indicators are present, we're likely in form mode
+        return any(form_indicators)
+    
+    def _has_substantial_conversation_data(self) -> bool:
+        """Check if we have substantial conversation-based information."""
+        user_messages = [m for m in self.messages if m.get("role") == "user"]
+        
+        # Look for substantial conversation content
+        total_content_length = sum(len(m.get("content", "")) for m in user_messages)
+        meaningful_messages = [m for m in user_messages if len(m.get("content", "").strip()) > 10]
+        
+        return len(meaningful_messages) >= 1 and total_content_length > 20
+        
     async def add_message(self, role: str, content: str, agent: 'CoreAgent', timestamp: datetime = None):
-        """Add a message and update state using LLM-based analysis."""
+        """Add a message and update state using appropriate extraction mode."""
         message = {
             "role": role,
             "content": content,
@@ -52,57 +78,136 @@ class ConversationState:
         }
         self.messages.append(message)
         
-        # Enhanced: Use contextual LLM-based extraction for comprehensive analysis
+        # Only process user messages for extraction
         if role == "user":
             try:
-                # Use the enhanced contextual extraction method
-                extracted_info = await agent.extract_candidate_info_llm(self)
+                # Determine operation mode
+                is_form_mode = self._detect_form_mode()
+                has_conversation_data = self._has_substantial_conversation_data()
                 
-                # Enhanced merging strategy that preserves valuable information
-                for key, value in extracted_info.items():
-                    if value not in [None, "unknown", "", {}, []]:
-                        existing_value = self.candidate_info.get(key)
-                        
-                        # Special handling for different data types
-                        if key == "experience":
-                            # Preserve specific experience over generic, but allow upgrades
-                            if not existing_value or existing_value in ["unknown", "mentioned"]:
-                                self.candidate_info[key] = value
-                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
-                                  "year" in value.lower() and "year" not in existing_value.lower()):
-                                # Prioritize experience with year information
-                                self.candidate_info[key] = value
-                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
-                                  len(value) > len(existing_value) and 
-                                  existing_value in ["unknown", "mentioned"]):
-                                self.candidate_info[key] = value
-                                
-                        elif key == "qualification_assessment":
-                            # Always update qualification assessment as it's comprehensive
-                            if isinstance(value, dict) and value:
-                                self.candidate_info[key] = value
-                                
-                        elif key in ["experience_details", "conversation_sentiment", "extraction_metadata"]:
-                            # Always update these comprehensive analysis fields
-                            if isinstance(value, dict) and value:
-                                self.candidate_info[key] = value
-                                
-                        else:
-                            # For basic fields, update if we don't have existing data or new data is better
-                            if (not existing_value or 
-                                existing_value in [None, "unknown", ""]):
-                                self.candidate_info[key] = value
-                            elif (isinstance(value, str) and isinstance(existing_value, str) and 
-                                  len(value) > len(existing_value)):
-                                self.candidate_info[key] = value
+                if is_form_mode:
+                    # FORM-BASED MODE: Preserve existing structured data, fill only gaps
+                    agent.logger.info("Operating in FORM-BASED mode: preserving structured data, filling gaps only")
+                    await self._handle_form_based_extraction(agent)
+                elif has_conversation_data:
+                    # CONVERSATION-BASED MODE: Full LLM extraction from conversation
+                    agent.logger.info("Operating in CONVERSATION-BASED mode: full LLM extraction")
+                    await self._handle_conversation_based_extraction(agent)
+                else:
+                    # MINIMAL DATA MODE: Basic extraction for very limited conversation
+                    agent.logger.info("Operating in MINIMAL DATA mode: basic extraction")
+                    await self._handle_minimal_extraction(agent)
                 
-                agent.logger.info(f"Enhanced candidate info update: {self.candidate_info}")
+                agent.logger.info(f"Updated candidate info: {self.candidate_info}")
 
             except Exception as e:
-                agent.logger.error(f"Error during enhanced LLM info extraction in ConversationState: {e}")
+                agent.logger.error(f"Error during candidate info extraction: {e}")
+
+    async def _handle_form_based_extraction(self, agent: 'CoreAgent'):
+        """Handle form-based mode: preserve existing data, use LLM to fill gaps only."""
+        # Identify what information is missing from the form
+        missing_fields = []
+        if not self.candidate_info.get("name"):
+            missing_fields.append("name")
+        if not self.candidate_info.get("experience") or self.candidate_info.get("experience") in ["unknown", "mentioned"]:
+            missing_fields.append("experience")
+        if not self.candidate_info.get("availability_mentioned"):
+            missing_fields.append("availability")
+        if not self.candidate_info.get("interest_level") or self.candidate_info.get("interest_level") == "unknown":
+            missing_fields.append("interest_level")
+        
+        if not missing_fields:
+            # No missing fields, just update conversation sentiment
+            self.candidate_info["conversation_sentiment"] = {
+                "overall_tone": "positive",
+                "engagement_level": "medium",
+                "communication_quality": "good"
+            }
+            return
+        
+        # Use targeted LLM extraction to fill only missing fields
+        extracted_info = await agent.extract_missing_info_llm(self, missing_fields)
+        
+        # Carefully merge only the missing information
+        for field in missing_fields:
+            if field in extracted_info and extracted_info[field] not in [None, "unknown", ""]:
+                if field == "experience":
+                    # For experience, only update if we have something better than current
+                    current_exp = self.candidate_info.get("experience")
+                    new_exp = extracted_info[field]
+                    if not current_exp or current_exp in ["unknown", "mentioned"]:
+                        self.candidate_info[field] = new_exp
+                else:
+                    self.candidate_info[field] = extracted_info[field]
+        
+        # Always update conversation sentiment and metadata
+        if "conversation_sentiment" in extracted_info:
+            self.candidate_info["conversation_sentiment"] = extracted_info["conversation_sentiment"]
+    
+    async def _handle_conversation_based_extraction(self, agent: 'CoreAgent'):
+        """Handle conversation-based mode: full LLM extraction."""
+        extracted_info = await agent.extract_candidate_info_llm(self)
+        
+        # Use the enhanced merging strategy from the original implementation
+        for key, value in extracted_info.items():
+            if value not in [None, "unknown", "", {}, []]:
+                existing_value = self.candidate_info.get(key)
+                
+                # Special handling for different data types
+                if key == "experience":
+                    # Preserve specific experience over generic, but allow upgrades
+                    if not existing_value or existing_value in ["unknown", "mentioned"]:
+                        self.candidate_info[key] = value
+                    elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                          "year" in value.lower() and "year" not in existing_value.lower()):
+                        # Prioritize experience with year information
+                        self.candidate_info[key] = value
+                    elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                          len(value) > len(existing_value) and 
+                          existing_value in ["unknown", "mentioned"]):
+                        self.candidate_info[key] = value
+                        
+                elif key == "qualification_assessment":
+                    # Always update qualification assessment as it's comprehensive
+                    if isinstance(value, dict) and value:
+                        self.candidate_info[key] = value
+                        
+                elif key in ["experience_details", "conversation_sentiment", "extraction_metadata"]:
+                    # Always update these comprehensive analysis fields
+                    if isinstance(value, dict) and value:
+                        self.candidate_info[key] = value
+                        
+                else:
+                    # For basic fields, update if we don't have existing data or new data is better
+                    if (not existing_value or 
+                        existing_value in [None, "unknown", ""]):
+                        self.candidate_info[key] = value
+                    elif (isinstance(value, str) and isinstance(existing_value, str) and 
+                          len(value) > len(existing_value)):
+                        self.candidate_info[key] = value
+
+    async def _handle_minimal_extraction(self, agent: 'CoreAgent'):
+        """Handle minimal data mode: very basic extraction for short interactions."""
+        # For very short interactions, just extract basics without complex analysis
+        latest_message = self.messages[-1].get("content", "") if self.messages else ""
+        
+        # Simple name detection
+        if not self.candidate_info.get("name"):
+            if any(phrase in latest_message.lower() for phrase in ["my name is", "i'm", "i am", "call me"]):
+                # Use simple LLM extraction just for name
+                simple_extraction = await agent.extract_simple_info_llm(self, ["name"])
+                if simple_extraction.get("name"):
+                    self.candidate_info["name"] = simple_extraction["name"]
+        
+        # Update basic sentiment
+        self.candidate_info["conversation_sentiment"] = {
+            "overall_tone": "neutral",
+            "engagement_level": "low" if len(latest_message) < 20 else "medium", 
+            "communication_quality": "fair"
+        }
 
     def add_decision(self, decision: AgentDecision, reasoning: str, response: str):
-        """Record a decision made by the agent."""
+        """Track agent decisions for analysis."""
         decision_record = {
             "decision": decision.value,
             "reasoning": reasoning,
@@ -834,6 +939,123 @@ Could you please provide:
 
 Once I have your contact details, I'll be able to show you available time slots and confirm your interview!"""
     
+    async def extract_missing_info_llm(self, conversation: ConversationState, missing_fields: List[str]) -> Dict:
+        """
+        Extract only specific missing information fields using targeted LLM analysis.
+        Used in form-based mode to preserve existing structured data.
+        """
+        try:
+            # Create targeted extraction prompt for missing fields only
+            fields_description = {
+                "name": "candidate's name from introductions or mentions",
+                "experience": "Python development experience (years, level, technologies)",
+                "availability": "scheduling availability, time preferences, or readiness to interview",
+                "interest_level": "level of interest in the position (high/medium/low)"
+            }
+            
+            missing_descriptions = [f"- {field}: {fields_description.get(field, field)}" for field in missing_fields]
+            
+            targeted_prompt = f"""You are extracting ONLY specific missing information from a conversation to supplement existing form data.
+
+## CONVERSATION HISTORY:
+{self.prompts.format_conversation_context(conversation.messages)}
+
+## EXTRACTION TASK - MISSING FIELDS ONLY:
+Extract ONLY the following missing information:
+{chr(10).join(missing_descriptions)}
+
+## RESPONSE FORMAT:
+Respond with ONLY valid JSON containing the requested fields:
+
+{{
+  "name": "candidate name or null if not found",
+  "experience": "specific experience details or null if not mentioned",
+  "availability": true/false if availability is mentioned,
+  "interest_level": "high/medium/low/unknown based on engagement",
+  "conversation_sentiment": {{
+    "overall_tone": "positive/neutral/negative",
+    "engagement_level": "high/medium/low",
+    "communication_quality": "excellent/good/fair/poor"
+  }}
+}}
+
+Extract only what is clearly mentioned. Do not infer or assume information."""
+
+            # Get LLM response
+            response = await self.candidate_info_chain.ainvoke({"extraction_prompt": targeted_prompt})
+            response_text = response.content.strip()
+            
+            # Parse JSON response
+            import json
+            import re
+            
+            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            extracted_data = json.loads(response_text)
+            
+            # Map availability field
+            if "availability" in extracted_data:
+                extracted_data["availability_mentioned"] = extracted_data.pop("availability")
+            
+            self.logger.info(f"Targeted extraction for missing fields {missing_fields}: {extracted_data}")
+            return extracted_data
+            
+        except Exception as e:
+            self.logger.error(f"Error in targeted missing info extraction: {e}")
+            return {
+                "conversation_sentiment": {
+                    "overall_tone": "neutral",
+                    "engagement_level": "medium",
+                    "communication_quality": "good"
+                }
+            }
+
+    async def extract_simple_info_llm(self, conversation: ConversationState, fields: List[str]) -> Dict:
+        """
+        Extract very basic information using simple LLM analysis.
+        Used in minimal data mode for short interactions.
+        """
+        try:
+            latest_message = conversation.messages[-1].get("content", "") if conversation.messages else ""
+            
+            simple_prompt = f"""Extract basic information from this message:
+
+Message: "{latest_message}"
+
+Extract only what is explicitly mentioned:
+- name: person's name if mentioned
+- basic_info: any other basic information
+
+Respond with JSON:
+{{
+  "name": "name or null",
+  "basic_info": "any other info or null"
+}}"""
+
+            response = await self.candidate_info_chain.ainvoke({"extraction_prompt": simple_prompt})
+            response_text = response.content.strip()
+            
+            # Parse JSON
+            import json
+            import re
+            
+            response_text = response_text.replace("```json", "").replace("```", "").strip()
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            extracted_data = json.loads(response_text)
+            
+            self.logger.info(f"Simple extraction: {extracted_data}")
+            return extracted_data
+            
+        except Exception as e:
+            self.logger.error(f"Error in simple info extraction: {e}")
+            return {}
+
     async def extract_candidate_info_llm(self, conversation: ConversationState) -> Dict:
         """
         Enhanced contextual candidate information extraction using LLM analysis.
