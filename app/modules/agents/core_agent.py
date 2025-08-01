@@ -1085,105 +1085,83 @@ If none of these times work, we may need to explore other options or schedule fo
             Dict with booking result and confirmation details
         """
         try:
-            # Extract time reference from user message
-            import re
             from datetime import datetime, time, date, timedelta
+            import json
             
-            # Look for time patterns in user message
-            time_patterns = [
-                # More specific patterns first
-                r'(\d{1,2}):(\d{2})\s*(am|pm)',  # e.g., "10:00 AM", "2:30 pm"
-                r'(\d{1,2})\s*(am|pm)',           # e.g., "9am", "10 AM"
-                r'(\d{1,2})\s*o\'?clock',         # e.g., "3 o'clock"
-                r'at\s*(\d{1,2}):(\d{2})',        # e.g., "at 10:00" (assumes AM if <12)
-                r'at\s*(\d{1,2})'                 # e.g., "at 10" (assumes AM if <12)
-            ]
+            # Use LLM to parse the slot selection from user message
+            slot_parsing_prompt = f"""You are a scheduling assistant that extracts slot selection information from user messages.
+
+Given the user's message and the list of available slots they were shown, identify which slot they are selecting.
+
+User Message: "{user_message}"
+
+Available Slots Shown:
+{json.dumps([{
+    'datetime': slot['datetime'],
+    'recruiter': slot['recruiter'],
+    'formatted': datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00')).strftime('%A, %B %d at %I:%M %p')
+} for slot in available_slots], indent=2)}
+
+Extract the following information:
+1. Which slot is the user selecting? (match by time, day, or any identifying information)
+2. What time did they mention? (if any)
+3. What day/date did they mention? (if any)
+4. Are they asking a question instead of confirming?
+
+Respond with JSON:
+{{
+  "is_confirmation": true/false,
+  "selected_slot_index": 0-based index of selected slot or -1 if none,
+  "mentioned_time": "extracted time like 10:00 AM" or null,
+  "mentioned_day": "extracted day/date" or null,
+  "confidence": 0.0 to 1.0,
+  "reasoning": "brief explanation of your selection"
+}}
+"""
             
-            matched_time = None
-            user_message_lower = user_message.lower()
+            # Get LLM analysis
+            response = await self.candidate_info_chain.ainvoke({"extraction_prompt": slot_parsing_prompt})
+            response_text = response.content.strip()
             
-            for pattern in time_patterns:
-                match = re.search(pattern, user_message_lower, re.IGNORECASE)
-                if match:
-                    groups = match.groups()
-                    
-                    if len(groups) == 3:  # Hour:minute format with AM/PM
-                        hour = int(groups[0])
-                        minute = int(groups[1])
-                        period = groups[2].lower()
-                        
-                        if period == 'pm' and hour != 12:
-                            hour += 12
-                        elif period == 'am' and hour == 12:
-                            hour = 0
-                            
-                        matched_time = time(hour, minute)
-                        
-                    elif len(groups) == 2 and groups[1] in ['am', 'pm']:  # Hour with AM/PM
-                        hour = int(groups[0])
-                        period = groups[1].lower()
-                        
-                        if period == 'pm' and hour != 12:
-                            hour += 12
-                        elif period == 'am' and hour == 12:
-                            hour = 0
-                            
-                        matched_time = time(hour, 0)
-                        
-                    elif len(groups) == 2:  # Hour:minute without AM/PM
-                        hour = int(groups[0])
-                        minute = int(groups[1])
-                        # Assume AM for times < 12, PM for >= 12
-                        if hour < 12 and hour >= 7:  # Business hours assumption
-                            matched_time = time(hour, minute)
-                        elif hour >= 12:
-                            matched_time = time(hour, minute)
-                            
-                    elif len(groups) == 1:  # Just hour
-                        hour = int(groups[0])
-                        # For "o'clock" or "at X" patterns
-                        if 7 <= hour < 12:  # Morning business hours
-                            matched_time = time(hour, 0)
-                        elif hour >= 12 or hour <= 6:  # Afternoon or very early
-                            matched_time = time(hour, 0)
-                            
-                    if matched_time:
-                        self.logger.info(f"Parsed time from '{user_message}': {matched_time}")
-                        break
-            
-            if not matched_time:
-                # Try to extract the exact text that failed parsing for better error message
-                time_text_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)', user_message_lower)
-                time_text = time_text_match.group(0) if time_text_match else "time"
+            # Parse JSON response
+            try:
+                # Clean JSON from markdown if needed
+                if '```json' in response_text:
+                    response_text = response_text.split('```json')[1].split('```')[0].strip()
+                elif '```' in response_text:
+                    response_text = response_text.split('```')[1].split('```')[0].strip()
                 
+                slot_selection = json.loads(response_text)
+                
+                self.logger.info(f"LLM slot parsing result: {slot_selection}")
+                
+                # Check if this is actually a confirmation
+                if not slot_selection.get('is_confirmation', False):
+                    return {
+                        'success': False,
+                        'error': 'It seems you have a question or need clarification. Which specific time slot would you prefer?'
+                    }
+                
+                # Check if we identified a slot
+                selected_index = slot_selection.get('selected_slot_index', -1)
+                if selected_index < 0 or selected_index >= len(available_slots):
+                    mentioned_time = slot_selection.get('mentioned_time', 'your preferred time')
+                    return {
+                        'success': False,
+                        'error': f'I couldn\'t match "{mentioned_time}" to any of the available slots. Please select from the options shown above.'
+                    }
+                
+                # Get the selected slot
+                best_match = available_slots[selected_index]
+                self.logger.info(f"User selected slot: {best_match}")
+                
+            except (json.JSONDecodeError, KeyError) as e:
+                self.logger.error(f"Error parsing LLM slot selection response: {e}")
                 return {
                     'success': False,
-                    'error': f'Could not parse the time "{time_text}" from your message. Please specify a time like "10:00 AM" or "2pm".'
+                    'error': 'I had trouble understanding your selection. Could you please specify which date and time you prefer?'
                 }
             
-            # Find matching slot
-            best_match = None
-            min_time_diff = float('inf')
-            
-            for slot in available_slots:
-                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
-                slot_time = slot_dt.time()
-                
-                # Calculate time difference in minutes
-                slot_minutes = slot_time.hour * 60 + slot_time.minute
-                matched_minutes = matched_time.hour * 60 + matched_time.minute
-                time_diff = abs(slot_minutes - matched_minutes)
-                
-                # Consider it a match if within 30 minutes
-                if time_diff <= 30 and time_diff < min_time_diff:
-                    best_match = slot
-                    min_time_diff = time_diff
-            
-            if not best_match:
-                return {
-                    'success': False,
-                    'error': f'No available slots found near {matched_time.strftime("%I:%M %p")}'
-                }
             
             # Book the appointment using SchedulingAdvisor
             candidate_info = conversation.candidate_info
