@@ -502,6 +502,8 @@ Choose when ready to schedule an interview.
 - Candidate has expressed clear interest and you have their basic info
 - Candidate has indicated availability
 - Natural scheduling moment reached
+- IMPORTANT: When deciding SCHEDULE, say you'll "show available times" or "provide scheduling options"
+- DO NOT say "I will go ahead and schedule" or "I'll schedule it" - let the candidate choose from options
 
 ### END:
 Choose when conversation should conclude.
@@ -523,7 +525,12 @@ Your entire response must be only the JSON object. No additional text, explanati
 ## Tone & Style:
 - Professional but warm and approachable
 - Concise but informative
-- Encouraging and positive"""
+- Encouraging and positive
+
+## IMPORTANT Response Guidelines:
+- For SCHEDULE: Say "Let me show you available times" or "Here are our available slots"
+- Never promise to "go ahead and schedule" when you're actually showing options
+- Be clear about whether you're booking something or showing options to choose from"""
         
         # Create prompt template with proper context variables
         self.decision_prompt = ChatPromptTemplate.from_messages([
@@ -1084,39 +1091,74 @@ If none of these times work, we may need to explore other options or schedule fo
             
             # Look for time patterns in user message
             time_patterns = [
-                r'(\d{1,2})\s*am',
-                r'(\d{1,2})\s*pm', 
-                r'(\d{1,2}):(\d{2})\s*(am|pm)',
-                r'(\d{1,2})\s*o\'?clock'
+                # More specific patterns first
+                r'(\d{1,2}):(\d{2})\s*(am|pm)',  # e.g., "10:00 AM", "2:30 pm"
+                r'(\d{1,2})\s*(am|pm)',           # e.g., "9am", "10 AM"
+                r'(\d{1,2})\s*o\'?clock',         # e.g., "3 o'clock"
+                r'at\s*(\d{1,2}):(\d{2})',        # e.g., "at 10:00" (assumes AM if <12)
+                r'at\s*(\d{1,2})'                 # e.g., "at 10" (assumes AM if <12)
             ]
             
             matched_time = None
+            user_message_lower = user_message.lower()
+            
             for pattern in time_patterns:
-                match = re.search(pattern, user_message.lower())
+                match = re.search(pattern, user_message_lower, re.IGNORECASE)
                 if match:
-                    if len(match.groups()) == 1:
-                        # Simple hour format (e.g., "9am")
-                        hour = int(match.group(1))
-                        if 'pm' in user_message.lower() and hour != 12:
+                    groups = match.groups()
+                    
+                    if len(groups) == 3:  # Hour:minute format with AM/PM
+                        hour = int(groups[0])
+                        minute = int(groups[1])
+                        period = groups[2].lower()
+                        
+                        if period == 'pm' and hour != 12:
                             hour += 12
-                        elif 'am' in user_message.lower() and hour == 12:
+                        elif period == 'am' and hour == 12:
                             hour = 0
-                        matched_time = time(hour, 0)
-                    elif len(match.groups()) == 3:
-                        # Hour:minute format (e.g., "9:30am")
-                        hour = int(match.group(1))
-                        minute = int(match.group(2))
-                        if match.group(3).lower() == 'pm' and hour != 12:
-                            hour += 12
-                        elif match.group(3).lower() == 'am' and hour == 12:
-                            hour = 0
+                            
                         matched_time = time(hour, minute)
-                    break
+                        
+                    elif len(groups) == 2 and groups[1] in ['am', 'pm']:  # Hour with AM/PM
+                        hour = int(groups[0])
+                        period = groups[1].lower()
+                        
+                        if period == 'pm' and hour != 12:
+                            hour += 12
+                        elif period == 'am' and hour == 12:
+                            hour = 0
+                            
+                        matched_time = time(hour, 0)
+                        
+                    elif len(groups) == 2:  # Hour:minute without AM/PM
+                        hour = int(groups[0])
+                        minute = int(groups[1])
+                        # Assume AM for times < 12, PM for >= 12
+                        if hour < 12 and hour >= 7:  # Business hours assumption
+                            matched_time = time(hour, minute)
+                        elif hour >= 12:
+                            matched_time = time(hour, minute)
+                            
+                    elif len(groups) == 1:  # Just hour
+                        hour = int(groups[0])
+                        # For "o'clock" or "at X" patterns
+                        if 7 <= hour < 12:  # Morning business hours
+                            matched_time = time(hour, 0)
+                        elif hour >= 12 or hour <= 6:  # Afternoon or very early
+                            matched_time = time(hour, 0)
+                            
+                    if matched_time:
+                        self.logger.info(f"Parsed time from '{user_message}': {matched_time}")
+                        break
             
             if not matched_time:
+                # Try to extract the exact text that failed parsing for better error message
+                time_text_match = re.search(r'(\d{1,2}(?::\d{2})?\s*(?:am|pm)?)', user_message_lower)
+                time_text = time_text_match.group(0) if time_text_match else "time"
+                
                 return {
                     'success': False,
-                    'error': 'Could not identify specific time from your message'
+                    'error': f'Could not parse the time "{time_text}" from your message. Please specify a time like "10:00 AM" or "2pm".'
                 }
             
             # Find matching slot
