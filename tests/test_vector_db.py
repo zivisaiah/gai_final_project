@@ -437,7 +437,7 @@ class TestVectorStoreIntegration:
 
 def run_vector_db_evaluation():
     """Run comprehensive vector database evaluation"""
-    print("🧪 Running Vector Database Evaluation...")
+    print("[TEST_TUBE] Running Vector Database Evaluation...")
     
     # Run all tests
     pytest_args = [
@@ -450,9 +450,9 @@ def run_vector_db_evaluation():
     exit_code = pytest.main(pytest_args)
     
     if exit_code == 0:
-        print("✅ All vector database tests passed!")
+        print("[OK] All vector database tests passed!")
     else:
-        print("❌ Some vector database tests failed")
+        print("[X] Some vector database tests failed")
     
     return exit_code == 0
 

@@ -80,37 +80,37 @@ class ChatInterface:
     
     def display_chat_header(self):
         """Display the chat header with title and info."""
-        st.title("🤖 Python Developer Recruitment Assistant")
+        st.title("[AI] Python Developer Recruitment Assistant")
         
         # Show conversation status prominently
         stage = st.session_state.conversation_stage
         if stage == 'completed':
-            st.success("✅ **Interview Scheduled Successfully!** - Conversation Complete")
+            st.success("[SUCCESS] **Interview Scheduled Successfully!** - Conversation Complete")
         elif stage == 'ended':
-            st.info("🔴 **Conversation Ended**")
+            st.info("[ENDED] **Conversation Ended**")
         
         # Display conversation info in sidebar
         with st.sidebar:
-            st.header("📊 Conversation Info")
+            st.header("[INFO] Conversation Info")
             st.write(f"**Conversation ID:** {st.session_state.conversation_id}")
             st.write(f"**Messages:** {len(st.session_state.messages)}")
             st.write(f"**Stage:** {st.session_state.conversation_stage.title()}")
             
             # Display candidate info if available
             if any(st.session_state.candidate_info.values()):
-                st.subheader("👤 Candidate Info")
+                st.subheader("[USER] Candidate Info")
                 for key, value in st.session_state.candidate_info.items():
                     if value:
                         st.write(f"**{key.title()}:** {value}")
             
             # Display scheduling context if relevant
             if st.session_state.scheduling_context['slots_offered']:
-                st.subheader("📅 Scheduling")
+                st.subheader("[SCHEDULE] Scheduling")
                 st.write(f"**Slots Offered:** {len(st.session_state.scheduling_context['slots_offered'])}")
                 if st.session_state.scheduling_context['selected_slot']:
                     st.write(f"**Selected:** {st.session_state.scheduling_context['selected_slot']}")
                 if st.session_state.scheduling_context['appointment_confirmed']:
-                    st.success("✅ Appointment Confirmed!")
+                    st.success("[CONFIRMED] Appointment Confirmed!")
             
             # Different buttons based on conversation stage
             if stage in ['completed', 'ended']:
@@ -118,7 +118,7 @@ class ChatInterface:
                     self.clear_conversation()
                     st.rerun()
             else:
-                if st.button("🗑️ Clear Conversation", type="secondary", key="sidebar_clear_conversation"):
+                if st.button("[TRASH] Clear Conversation", type="secondary", key="sidebar_clear_conversation"):
                     self.clear_conversation()
                     st.rerun()
     
@@ -131,14 +131,14 @@ class ChatInterface:
         """Display a single chat message with appropriate styling."""
         
         if message.role == 'user':
-            with st.chat_message("user", avatar="👤"):
+            with st.chat_message("user", avatar="U"):
                 st.write(message.content)
                 if message.metadata:
-                    with st.expander("📋 Message Details", expanded=False):
+                    with st.expander("[CLIPBOARD] Message Details", expanded=False):
                         st.json(message.metadata)
         
         elif message.role == 'assistant':
-            with st.chat_message("assistant", avatar="🤖"):
+            with st.chat_message("assistant", avatar="AI"):
                 st.write(message.content)
                 
                 # Display any special metadata
@@ -156,18 +156,18 @@ class ChatInterface:
                     # Show scheduling slots if available
                     # DEBUG: Track slot display
                     if 'suggested_slots' in metadata:
-                        print(f"🔍 CHAT DEBUG: Found suggested_slots in metadata: {len(metadata['suggested_slots'])} slots")
+                        print(f"[SEARCH] CHAT DEBUG: Found suggested_slots in metadata: {len(metadata['suggested_slots'])} slots")
                         if metadata['suggested_slots']:
-                            print(f"🔍 CHAT DEBUG: First slot: {metadata['suggested_slots'][0]}")
+                            print(f"[SEARCH] CHAT DEBUG: First slot: {metadata['suggested_slots'][0]}")
                         else:
-                            print(f"❌ CHAT DEBUG: suggested_slots is empty!")
+                            print(f"[ERROR] CHAT DEBUG: suggested_slots is empty!")
                     else:
-                        print(f"❌ CHAT DEBUG: No suggested_slots key in metadata")
-                        print(f"❌ CHAT DEBUG: Available metadata keys: {list(metadata.keys())}")
+                        print(f"[ERROR] CHAT DEBUG: No suggested_slots key in metadata")
+                        print(f"[X] CHAT DEBUG: Available metadata keys: {list(metadata.keys())}")
                     
                     if 'suggested_slots' in metadata and metadata['suggested_slots']:
-                        st.subheader("📅 Available Time Slots")
-                        print(f"✅ CHAT DEBUG: Displaying {len(metadata['suggested_slots'])} slot buttons")
+                        st.subheader("[CALENDAR] Available Time Slots")
+                        print(f"[OK] CHAT DEBUG: Displaying {len(metadata['suggested_slots'])} slot buttons")
                         for i, slot in enumerate(metadata['suggested_slots'], 1):
                             # Handle both dict and AvailableSlotResponse object
                             if hasattr(slot, 'slot_date') and hasattr(slot, 'start_time'):
@@ -201,13 +201,13 @@ class ChatInterface:
                     
                     # Show appointment confirmation if available
                     if 'appointment_confirmed' in metadata and metadata['appointment_confirmed']:
-                        st.success("🎉 **Interview Scheduled Successfully!**")
+                        st.success("[PARTY] **Interview Scheduled Successfully!**")
                         if 'appointment_details' in metadata:
                             details = metadata['appointment_details']
-                            st.write(f"📅 **Date & Time:** {details.get('datetime', 'TBD')}")
-                            st.write(f"👤 **Interviewer:** {details.get('recruiter', 'TBD')}")
-                            st.write(f"⏱️ **Duration:** {details.get('duration', 45)} minutes")
-                        st.info("✅ **Conversation Complete** - No further action needed.")
+                            st.write(f"[CALENDAR] **Date & Time:** {details.get('datetime', 'TBD')}")
+                            st.write(f"[USER] **Interviewer:** {details.get('recruiter', 'TBD')}")
+                            st.write(f"[TIMER] **Duration:** {details.get('duration', 45)} minutes")
+                        st.info("[OK] **Conversation Complete** - No further action needed.")
         
         elif message.role == 'system':
             with st.chat_message("assistant", avatar="ℹ️"):
@@ -366,7 +366,7 @@ class ChatInterface:
     def display_conversation_stats(self):
         """Display conversation statistics in the sidebar."""
         with st.sidebar:
-            st.subheader("📈 Conversation Stats")
+            st.subheader("[CHART_UP] Conversation Stats")
             
             total_messages = len(st.session_state.messages)
             user_messages = len([m for m in st.session_state.messages if m.role == 'user'])
@@ -384,7 +384,7 @@ class ChatInterface:
             if st.button("📥 Export Conversation"):
                 conversation_data = self.export_conversation()
                 st.download_button(
-                    label="💾 Download JSON",
+                    label="[FLOPPY] Download JSON",
                     data=json.dumps(conversation_data, indent=2),
                     file_name=f"conversation_{st.session_state.conversation_id}.json",
                     mime="application/json"
@@ -392,7 +392,7 @@ class ChatInterface:
     
     def display_quick_actions(self):
         """Display quick action buttons."""
-        st.subheader("⚡ Quick Actions")
+        st.subheader("[!] Quick Actions")
         
         # If conversation ended or completed, only show Start Over
         if st.session_state.conversation_stage in ['ended', 'completed']:
@@ -409,7 +409,7 @@ class ChatInterface:
                 self.add_user_quick_message("Hi, I'd like to start over.")
         
         with col2:
-            if st.button("📅 Schedule Interview", key="quick_schedule"):
+            if st.button("[CALENDAR] Schedule Interview", key="quick_schedule"):
                 self.add_user_quick_message("I'd like to schedule an interview.")
         
         with col3:
@@ -436,9 +436,9 @@ class ChatInterface:
 I'm here to help you learn about our Python developer position and potentially schedule an interview.
 
 I can help you with:
-• 📋 Information about the role and requirements
+• [CLIPBOARD] Information about the role and requirements
 • 💼 Understanding our company and team
-• 📅 Scheduling an interview at your convenience
+• [CALENDAR] Scheduling an interview at your convenience
 • ❓ Answering any questions you might have
 
 Feel free to ask me anything or let me know if you're interested in scheduling an interview!""",

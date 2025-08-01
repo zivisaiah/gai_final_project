@@ -97,7 +97,7 @@ class AdminPanel:
     
     def display_conversation_analytics(self):
         """Display conversation analytics dashboard."""
-        st.subheader("📊 Conversation Analytics")
+        st.subheader("[ANALYTICS] Conversation Analytics")
         
         logs = st.session_state.admin_analytics['conversation_logs']
         
@@ -185,7 +185,7 @@ class AdminPanel:
     
     def display_agent_performance(self):
         """Display agent performance monitoring."""
-        st.subheader("🤖 Agent Performance Monitoring")
+        st.subheader("[AGENT] Agent Performance Monitoring")
         
         performance_data = st.session_state.admin_analytics['agent_performance']
         
@@ -273,7 +273,7 @@ class AdminPanel:
     
     def display_system_metrics(self):
         """Display system metrics visualization."""
-        st.subheader("⚙️ System Metrics")
+        st.subheader("[GEAR] System Metrics")
         
         metrics_data = st.session_state.admin_analytics['system_metrics']
         
@@ -353,16 +353,16 @@ class AdminPanel:
     
     def display_export_controls(self):
         """Display conversation export functionality."""
-        st.subheader("📁 Export & Data Management")
+        st.subheader("[FOLDER] Export & Data Management")
         
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("📊 Export Analytics Data"):
+            if st.button("[EXPORT] Export Analytics Data"):
                 self.export_analytics_data()
         
         with col2:
-            if st.button("💬 Export Conversations"):
+            if st.button("[CHAT] Export Conversations"):
                 self.export_conversation_data()
         
         with col3:
@@ -462,14 +462,14 @@ class AdminPanel:
     
     def display_admin_panel(self):
         """Display the complete admin panel."""
-        st.title("🛠️ Admin Panel")
+        st.title("[TOOLS] Admin Panel")
         
         # Create tabs for different sections
         tab1, tab2, tab3, tab4 = st.tabs([
-            "📊 Analytics", 
-            "🤖 Agent Performance", 
-            "⚙️ System Metrics", 
-            "📁 Export & Data"
+            "[ANALYTICS] Analytics", 
+            "[AGENT] Agent Performance", 
+            "[GEAR] System Metrics", 
+            "[FOLDER] Export & Data"
         ])
         
         with tab1:

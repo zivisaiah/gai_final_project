@@ -213,10 +213,10 @@ Each interview will take approximately {duration} minutes. Which time slot works
         
         "confirmation_request": """Great! I'd like to confirm your interview appointment:
 
-📅 **Date & Time:** {formatted_datetime}
-👤 **Interviewer:** {recruiter_name}
-⏱️ **Duration:** {duration} minutes
-📧 **Location:** Video call (link will be sent via email)
+[CALENDAR] **Date & Time:** {formatted_datetime}
+[USER] **Interviewer:** {recruiter_name}
+[TIMER] **Duration:** {duration} minutes
+[EMAIL] **Location:** Video call (link will be sent via email)
 
 Does this time work for you? If yes, I'll send you a calendar invitation with all the details.""",
         

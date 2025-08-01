@@ -11,6 +11,14 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Import console encoding handler for Windows compatibility
+try:
+    from app.modules.utils.console_encoding import setup_console_encoding
+    setup_console_encoding()
+except ImportError:
+    # Fallback if module doesn't exist yet
+    pass
+
 from app.modules.agents.core_agent import CoreAgent
 from app.modules.database.sql_manager import SQLManager
 from config.phase1_settings import Settings
@@ -22,18 +30,18 @@ def initialize_app():
     
     # Load settings
     settings = Settings()
-    print(f"✅ Settings loaded for environment: {settings.ENVIRONMENT}")
+    print(f"[OK] Settings loaded for environment: {settings.ENVIRONMENT}")
     
     # Initialize database
     sql_manager = SQLManager(settings.DATABASE_URL)
-    print("✅ Database connection initialized")
+    print("[OK] Database connection initialized")
     
     # Initialize core agent
     core_agent = CoreAgent(
         openai_api_key=settings.OPENAI_API_KEY,
         sql_manager=sql_manager
     )
-    print("✅ Core Agent initialized")
+    print("[OK] Core Agent initialized")
     
     return {
         'settings': settings,
@@ -46,17 +54,17 @@ def main():
     """Main application function."""
     try:
         components = initialize_app()
-        print("\n🎯 Phase 1 Application Ready!")
-        print("📝 Available components:")
+        print("\n[TARGET] Phase 1 Application Ready!")
+        print("[MEMO] Available components:")
         print("   - Core Agent (Continue/Schedule decisions)")
         print("   - SQL Manager (Database operations)")
         print("   - Settings (Configuration management)")
-        print("\n💡 Next: Run the Streamlit UI with: streamlit run streamlit_app/streamlit_main.py")
+        print("\n[IDEA] Next: Run the Streamlit UI with: streamlit run streamlit_app/streamlit_main.py")
         
         return components
         
     except Exception as e:
-        print(f"❌ Error initializing application: {e}")
+        print(f"[X] Error initializing application: {e}")
         sys.exit(1)
 
 

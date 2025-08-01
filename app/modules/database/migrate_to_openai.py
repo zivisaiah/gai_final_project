@@ -26,7 +26,7 @@ from app.modules.database.openai_vector_store import OpenAIVectorStore
 def extract_documents_from_local() -> List[Dict[str, Any]]:
     """Extract all documents from local ChromaDB"""
     try:
-        print("📂 Connecting to local ChromaDB...")
+        print("[FOLDER] Connecting to local ChromaDB...")
         local_store = VectorStore(
             collection_name="job_description_docs",
             embedding_function="sentence_transformers"
@@ -34,7 +34,7 @@ def extract_documents_from_local() -> List[Dict[str, Any]]:
         
         # Get collection info
         info = local_store.get_collection_info()
-        print(f"📊 Found {info.get('count', 0)} documents in local store")
+        print(f"[CHART] Found {info.get('count', 0)} documents in local store")
         
         # Get all documents
         collection = local_store.collection
@@ -52,11 +52,11 @@ def extract_documents_from_local() -> List[Dict[str, Any]]:
                     'metadata': metadata
                 })
         
-        print(f"✅ Extracted {len(documents)} documents")
+        print(f"[OK] Extracted {len(documents)} documents")
         return documents
         
     except Exception as e:
-        print(f"❌ Error extracting from local store: {e}")
+        print(f"[X] Error extracting from local store: {e}")
         return []
 
 
@@ -67,7 +67,7 @@ def upload_documents_to_openai(documents: List[Dict[str, Any]]) -> bool:
         openai_store = OpenAIVectorStore(vector_store_name="job_description_docs")
         
         if not documents:
-            print("⚠️ No documents to upload")
+            print("[!] No documents to upload")
             return False
         
         # Prepare documents for upload
@@ -82,8 +82,8 @@ def upload_documents_to_openai(documents: List[Dict[str, Any]]) -> bool:
             metadatas=metadatas
         )
         
-        print(f"✅ Successfully uploaded {len(file_ids)} documents")
-        print(f"🆔 File IDs: {file_ids}")
+        print(f"[OK] Successfully uploaded {len(file_ids)} documents")
+        print(f"[ID] File IDs: {file_ids}")
         
         # Wait a moment for processing
         print("⏳ Waiting for OpenAI processing...")
@@ -91,7 +91,7 @@ def upload_documents_to_openai(documents: List[Dict[str, Any]]) -> bool:
         
         # Verify upload
         store_info = openai_store.get_vector_store_info()
-        print(f"📊 OpenAI Vector Store Info:")
+        print(f"[CHART] OpenAI Vector Store Info:")
         print(f"   Name: {store_info.get('name', 'N/A')}")
         print(f"   File Count: {store_info.get('file_count', 0)}")
         print(f"   Status: {store_info.get('status', 'N/A')}")
@@ -100,14 +100,14 @@ def upload_documents_to_openai(documents: List[Dict[str, Any]]) -> bool:
         return True
         
     except Exception as e:
-        print(f"❌ Error uploading to OpenAI: {e}")
+        print(f"[X] Error uploading to OpenAI: {e}")
         return False
 
 
 def test_openai_search() -> bool:
     """Test search functionality on OpenAI Vector Store"""
     try:
-        print("🔍 Testing OpenAI Vector Store search...")
+        print("[SEARCH] Testing OpenAI Vector Store search...")
         openai_store = OpenAIVectorStore(vector_store_name="job_description_docs")
         
         test_queries = [
@@ -117,20 +117,20 @@ def test_openai_search() -> bool:
         ]
         
         for query in test_queries:
-            print(f"\n🔍 Query: '{query}'")
+            print(f"\n[SEARCH] Query: '{query}'")
             results = openai_store.similarity_search(query, n_results=1)
             
             if results:
-                print(f"✅ Found {len(results)} results")
+                print(f"[OK] Found {len(results)} results")
                 for result in results:
-                    print(f"📝 Preview: {result.get('document', '')[:100]}...")
+                    print(f"[MEMO] Preview: {result.get('document', '')[:100]}...")
             else:
-                print("⚠️ No results found")
+                print("[!] No results found")
         
         return True
         
     except Exception as e:
-        print(f"❌ Error testing search: {e}")
+        print(f"[X] Error testing search: {e}")
         return False
 
 
@@ -140,7 +140,7 @@ def backup_local_data(documents: List[Dict[str, Any]]) -> bool:
         backup_file = project_root / "data" / "local_chromadb_backup.json"
         backup_file.parent.mkdir(exist_ok=True)
         
-        print(f"💾 Creating backup at {backup_file}")
+        print(f"[FLOPPY] Creating backup at {backup_file}")
         
         with open(backup_file, 'w', encoding='utf-8') as f:
             json.dump({
@@ -150,11 +150,11 @@ def backup_local_data(documents: List[Dict[str, Any]]) -> bool:
                 'migration_version': '1.0'
             }, f, indent=2, ensure_ascii=False)
         
-        print(f"✅ Backup created: {backup_file}")
+        print(f"[OK] Backup created: {backup_file}")
         return True
         
     except Exception as e:
-        print(f"❌ Error creating backup: {e}")
+        print(f"[X] Error creating backup: {e}")
         return False
 
 
@@ -166,29 +166,29 @@ def main():
     # Step 1: Extract documents from local store
     documents = extract_documents_from_local()
     if not documents:
-        print("❌ No documents found to migrate")
+        print("[X] No documents found to migrate")
         return
     
     # Step 2: Create backup
     backup_success = backup_local_data(documents)
     if not backup_success:
-        print("⚠️ Warning: Backup failed, but continuing...")
+        print("[!] Warning: Backup failed, but continuing...")
     
     # Step 3: Upload to OpenAI
     upload_success = upload_documents_to_openai(documents)
     if not upload_success:
-        print("❌ Migration failed during upload")
+        print("[X] Migration failed during upload")
         return
     
     # Step 4: Test the new setup
     test_success = test_openai_search()
     if not test_success:
-        print("⚠️ Warning: Search testing failed")
+        print("[!] Warning: Search testing failed")
     
-    print("\n🎉 MIGRATION COMPLETE!")
+    print("\n[PARTY] MIGRATION COMPLETE!")
     print("=" * 60)
-    print("✅ Your documents are now stored in OpenAI Vector Stores")
-    print("💡 Next steps:")
+    print("[OK] Your documents are now stored in OpenAI Vector Stores")
+    print("[IDEA] Next steps:")
     print("   1. Update Info Advisor to use OpenAI Vector Store")
     print("   2. Test the complete system")
     print("   3. Optional: Clean up local ChromaDB if satisfied")

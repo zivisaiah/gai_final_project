@@ -31,12 +31,12 @@ def test_mvc_architecture():
     try:
         response = requests.get("http://localhost:8501", timeout=5)
         if response.status_code == 200:
-            log_message("✅ Streamlit application is running", "SUCCESS")
+            log_message("[OK] Streamlit application is running", "SUCCESS")
         else:
-            log_message(f"❌ Streamlit app returned status code: {response.status_code}", "ERROR")
+            log_message(f"[X] Streamlit app returned status code: {response.status_code}", "ERROR")
             return False
     except requests.exceptions.RequestException as e:
-        log_message(f"❌ Cannot connect to Streamlit app: {e}", "ERROR")
+        log_message(f"[X] Cannot connect to Streamlit app: {e}", "ERROR")
         return False
     
     return True
@@ -44,8 +44,8 @@ def test_mvc_architecture():
 def display_architecture_info():
     """Display information about the new MVC architecture."""
     log_message("")
-    log_message("🎯 NEW CLEAN MVC ARCHITECTURE:", "SUCCESS")
-    log_message("  📱 VIEW (Streamlit):")
+    log_message("[TARGET] NEW CLEAN MVC ARCHITECTURE:", "SUCCESS")
+    log_message("  [PHONE] VIEW (Streamlit):")
     log_message("     - Only handles UI/presentation")
     log_message("     - User input collection")
     log_message("     - Response display")
@@ -57,7 +57,7 @@ def display_architecture_info():
     log_message("     - Continue/Schedule decisions") 
     log_message("     - Orchestrates all advisors")
     log_message("")
-    log_message("  🗄️ MODEL (Database + Advisors):")
+    log_message("  [CABINET] MODEL (Database + Advisors):")
     log_message("     - Data persistence")
     log_message("     - Specialized advisor logic")
     log_message("     - External API calls")
@@ -72,17 +72,17 @@ def display_decision_flow():
     log_message("  4️⃣ Core Agent → Response")
     log_message("  5️⃣ Response → Streamlit → User")
     log_message("")
-    log_message("📋 BENEFITS OF NEW ARCHITECTURE:")
-    log_message("  ✅ Single source of truth for business logic")
-    log_message("  ✅ No duplicate/conflicting decision logic")
-    log_message("  ✅ Easier to maintain and test")
-    log_message("  ✅ Proper separation of concerns")
-    log_message("  ✅ Follows software engineering best practices")
+    log_message("[CLIPBOARD] BENEFITS OF NEW ARCHITECTURE:")
+    log_message("  [OK] Single source of truth for business logic")
+    log_message("  [OK] No duplicate/conflicting decision logic")
+    log_message("  [OK] Easier to maintain and test")
+    log_message("  [OK] Proper separation of concerns")
+    log_message("  [OK] Follows software engineering best practices")
     log_message("")
 
 def display_test_scenarios():
     """Display test scenarios for the MVC architecture."""
-    log_message("🧪 TEST SCENARIOS FOR MVC ARCHITECTURE:", "SUCCESS")
+    log_message("[TEST_TUBE] TEST SCENARIOS FOR MVC ARCHITECTURE:", "SUCCESS")
     log_message("  1. Technology Preference Exit:")
     log_message("     Input: 'I'm more interested in Java development'")
     log_message("     Expected: Core Agent → Exit Advisor → END decision")
@@ -103,7 +103,7 @@ def display_test_scenarios():
 def monitor_application():
     """Monitor the application with clean MVC architecture."""
     log_message("🚀 Starting MVC Architecture Monitoring...", "SUCCESS")
-    log_message(f"📍 Application URL: http://localhost:8501")
+    log_message(f"[LOCATION] Application URL: http://localhost:8501")
     log_message("")
     
     # Test application health
@@ -115,8 +115,8 @@ def monitor_application():
     display_decision_flow()
     display_test_scenarios()
     
-    log_message("🌐 Open http://localhost:8501 in your browser to test the clean MVC architecture", "SUCCESS")
-    log_message("💬 Try the test scenarios above to see centralized business logic in action", "SUCCESS")
+    log_message("[WEB] Open http://localhost:8501 in your browser to test the clean MVC architecture", "SUCCESS")
+    log_message("[CHAT] Try the test scenarios above to see centralized business logic in action", "SUCCESS")
     log_message("")
     log_message("🔄 Monitoring will continue... (Press Ctrl+C to stop)")
     log_message("=" * 60)
@@ -132,21 +132,21 @@ def monitor_application():
             try:
                 response = requests.get("http://localhost:8501", timeout=5)
                 if response.status_code == 200:
-                    log_message(f"✅ Health check #{counter} - MVC architecture running normally", "SUCCESS")
+                    log_message(f"[OK] Health check #{counter} - MVC architecture running normally", "SUCCESS")
                 else:
-                    log_message(f"⚠️ Health check #{counter} - Status: {response.status_code}", "WARNING")
+                    log_message(f"[!] Health check #{counter} - Status: {response.status_code}", "WARNING")
             except requests.exceptions.RequestException as e:
-                log_message(f"❌ Health check #{counter} failed: {e}", "ERROR")
+                log_message(f"[X] Health check #{counter} failed: {e}", "ERROR")
                 break
                 
     except KeyboardInterrupt:
         log_message("🛑 MVC Architecture monitoring stopped by user", "WARNING")
-        log_message("📊 Summary: Clean MVC architecture successfully implemented", "SUCCESS")
+        log_message("[CHART] Summary: Clean MVC architecture successfully implemented", "SUCCESS")
         log_message("   - All business logic centralized in Core Agent", "SUCCESS")
         log_message("   - No duplicate decision logic", "SUCCESS")
         log_message("   - Proper separation of concerns achieved", "SUCCESS")
     except Exception as e:
-        log_message(f"❌ Monitoring error: {e}", "ERROR")
+        log_message(f"[X] Monitoring error: {e}", "ERROR")
 
 if __name__ == "__main__":
     monitor_application() 

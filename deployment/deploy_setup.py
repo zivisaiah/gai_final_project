@@ -33,7 +33,7 @@ class DeploymentSetup:
         
     def validate_project_structure(self) -> bool:
         """Validate that all required files and directories exist"""
-        logger.info("🔍 Validating project structure...")
+        logger.info("[SEARCH] Validating project structure...")
         
         required_files = [
             "app/__init__.py",
@@ -68,19 +68,19 @@ class DeploymentSetup:
                 missing_dirs.append(dir_path)
         
         if missing_files or missing_dirs:
-            logger.error("❌ Missing required files/directories:")
+            logger.error("[X] Missing required files/directories:")
             for f in missing_files:
                 logger.error(f"  - File: {f}")
             for d in missing_dirs:
                 logger.error(f"  - Directory: {d}")
             return False
             
-        logger.info("✅ Project structure validation passed")
+        logger.info("[OK] Project structure validation passed")
         return True
     
     def validate_environment_variables(self) -> bool:
         """Validate required environment variables"""
-        logger.info("🔍 Validating environment variables...")
+        logger.info("[SEARCH] Validating environment variables...")
         
         required_env_vars = [
             "OPENAI_API_KEY",
@@ -99,7 +99,7 @@ class DeploymentSetup:
         # Check .env.example exists
         env_example = self.project_root / ".env.example"
         if not env_example.exists():
-            logger.error("❌ .env.example file not found")
+            logger.error("[X] .env.example file not found")
             return False
             
         # Check required variables
@@ -108,16 +108,16 @@ class DeploymentSetup:
                 missing_vars.append(var)
         
         if missing_vars:
-            logger.error(f"❌ Missing required environment variables: {missing_vars}")
-            logger.info("💡 Please set these in Streamlit Cloud secrets or .env file")
+            logger.error(f"[X] Missing required environment variables: {missing_vars}")
+            logger.info("[IDEA] Please set these in Streamlit Cloud secrets or .env file")
             return False
             
-        logger.info("✅ Environment variables validation passed")
+        logger.info("[OK] Environment variables validation passed")
         return True
     
     def validate_dependencies(self) -> bool:
         """Validate that all dependencies can be imported"""
-        logger.info("🔍 Validating dependencies...")
+        logger.info("[SEARCH] Validating dependencies...")
         
         critical_imports = [
             ("streamlit", "streamlit"),
@@ -134,21 +134,21 @@ class DeploymentSetup:
         for package_name, import_name in critical_imports:
             try:
                 __import__(import_name)
-                logger.info(f"  ✓ {package_name}")
+                logger.info(f"  [v] {package_name}")
             except ImportError as e:
                 failed_imports.append((package_name, str(e)))
-                logger.error(f"  ✗ {package_name}: {e}")
+                logger.error(f"  [x] {package_name}: {e}")
         
         if failed_imports:
-            logger.error("❌ Failed to import critical dependencies")
+            logger.error("[X] Failed to import critical dependencies")
             return False
             
-        logger.info("✅ Dependencies validation passed")
+        logger.info("[OK] Dependencies validation passed")
         return True
     
     def create_streamlit_secrets_template(self) -> None:
         """Create a template for Streamlit Cloud secrets"""
-        logger.info("📝 Creating Streamlit secrets template...")
+        logger.info("[MEMO] Creating Streamlit secrets template...")
         
         secrets_template = {
             "OPENAI_API_KEY": "your-openai-api-key-here",
@@ -164,12 +164,12 @@ class DeploymentSetup:
         with open(secrets_file, 'w') as f:
             toml.dump(secrets_template, f)
             
-        logger.info(f"✅ Created secrets template: {secrets_file}")
-        logger.info("💡 Copy this to Streamlit Cloud App Settings > Secrets")
+        logger.info(f"[OK] Created secrets template: {secrets_file}")
+        logger.info("[IDEA] Copy this to Streamlit Cloud App Settings > Secrets")
     
     def optimize_for_cloud(self) -> None:
         """Apply cloud-specific optimizations"""
-        logger.info("⚡ Applying cloud optimizations...")
+        logger.info("[!] Applying cloud optimizations...")
         
         # Create .streamlit directory
         streamlit_config_dir = self.project_root / ".streamlit"
@@ -182,7 +182,7 @@ class DeploymentSetup:
         if config_source.exists():
             import shutil
             shutil.copy2(config_source, config_dest)
-            logger.info(f"✅ Copied Streamlit config to {config_dest}")
+            logger.info(f"[OK] Copied Streamlit config to {config_dest}")
         
         # Create packages.txt for system dependencies
         packages_txt = self.project_root / "packages.txt"
@@ -190,13 +190,13 @@ class DeploymentSetup:
             with open(packages_txt, 'w') as f:
                 f.write("# System packages for Streamlit Cloud\n")
                 f.write("# Add any system dependencies here\n")
-            logger.info("✅ Created packages.txt template")
+            logger.info("[OK] Created packages.txt template")
         
-        logger.info("✅ Cloud optimizations applied")
+        logger.info("[OK] Cloud optimizations applied")
     
     def test_streamlit_app(self) -> bool:
         """Test if the Streamlit app can start without errors"""
-        logger.info("🧪 Testing Streamlit app startup...")
+        logger.info("[TEST_TUBE] Testing Streamlit app startup...")
         
         try:
             # Import the main Streamlit app
@@ -204,21 +204,21 @@ class DeploymentSetup:
             
             # Test basic imports
             from streamlit_main import main
-            logger.info("✅ Streamlit app imports successfully")
+            logger.info("[OK] Streamlit app imports successfully")
             
             # Test configuration loading
             if (self.project_root / ".streamlit" / "config.toml").exists():
-                logger.info("✅ Streamlit config found")
+                logger.info("[OK] Streamlit config found")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Streamlit app test failed: {e}")
+            logger.error(f"[X] Streamlit app test failed: {e}")
             return False
     
     def generate_deployment_report(self) -> Dict:
         """Generate a comprehensive deployment readiness report"""
-        logger.info("📊 Generating deployment report...")
+        logger.info("[CHART] Generating deployment report...")
         
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -252,10 +252,10 @@ class DeploymentSetup:
         with open(report_file, 'w') as f:
             json.dump(report, f, indent=2)
             
-        logger.info(f"📊 Deployment report saved: {report_file}")
+        logger.info(f"[CHART] Deployment report saved: {report_file}")
         
         # Print summary
-        status = "✅ READY" if report["deployment_ready"] else "❌ NOT READY"
+        status = "[OK] READY" if report["deployment_ready"] else "[X] NOT READY"
         score = f"{report['readiness_score']:.1%}"
         
         logger.info(f"🚀 Deployment Status: {status} ({score})")
@@ -277,8 +277,8 @@ class DeploymentSetup:
             report = self.generate_deployment_report()
             
             if report["deployment_ready"]:
-                logger.info("\n🎉 DEPLOYMENT SETUP COMPLETE!")
-                logger.info("📋 Next steps:")
+                logger.info("\n[PARTY] DEPLOYMENT SETUP COMPLETE!")
+                logger.info("[CLIPBOARD] Next steps:")
                 logger.info("  1. Create new app on Streamlit Cloud")
                 logger.info("  2. Connect to your GitHub repository")
                 logger.info("  3. Set main file path: streamlit_app/streamlit_main.py")
@@ -286,12 +286,12 @@ class DeploymentSetup:
                 logger.info("  5. Deploy and test!")
                 return True
             else:
-                logger.error("\n❌ Deployment setup incomplete")
-                logger.info("📋 Please fix the issues above and run again")
+                logger.error("\n[X] Deployment setup incomplete")
+                logger.info("[CLIPBOARD] Please fix the issues above and run again")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Setup failed: {e}")
+            logger.error(f"[X] Setup failed: {e}")
             return False
 
 def main():
@@ -300,10 +300,10 @@ def main():
     success = setup.run_full_setup()
     
     if success:
-        print("\n✅ Deployment setup completed successfully!")
+        print("\n[OK] Deployment setup completed successfully!")
         sys.exit(0)
     else:
-        print("\n❌ Deployment setup failed!")
+        print("\n[X] Deployment setup failed!")
         sys.exit(1)
 
 if __name__ == "__main__":

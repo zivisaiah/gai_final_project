@@ -18,6 +18,14 @@ import traceback
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# Import console encoding handler for Windows compatibility
+try:
+    from app.modules.utils.console_encoding import setup_console_encoding
+    setup_console_encoding()
+except ImportError:
+    # Fallback if module doesn't exist yet
+    pass
+
 # Import our components
 from streamlit_app.components.chat_interface import ChatInterface, create_chat_interface
 from streamlit_app.components.admin_panel import create_admin_panel
@@ -75,7 +83,7 @@ class RecruitmentChatbot:
         try:
             # Check if OpenAI API key is available
             if not self.settings.OPENAI_API_KEY:
-                st.error("⚠️ OpenAI API key not found. Please set OPENAI_API_KEY in your environment.")
+                st.error("[!] OpenAI API key not found. Please set OPENAI_API_KEY in your environment.")
                 st.stop()
             
             # Initialize Core Agent with vector store type for INFO capabilities
@@ -100,7 +108,7 @@ class RecruitmentChatbot:
             
         except Exception as e:
             self.logger.error(f"Error initializing agents: {e}")
-            st.error(f"❌ Error initializing AI agents: {e}")
+            st.error(f"[X] Error initializing AI agents: {e}")
             st.stop()
     
     def process_user_message(self, user_message: str) -> Dict:
@@ -195,18 +203,18 @@ class RecruitmentChatbot:
                     available_slots = candidate_info.get('available_slots', [])
                     
                     # CRITICAL DEBUG: Check if get_candidate_info is working properly
-                    self.logger.info(f"🔍 CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}")
+                    self.logger.info(f"[SEARCH] CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}")
                     if candidate_info and 'available_slots' in candidate_info:
-                        self.logger.info(f"🔍 CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots")
+                        self.logger.info(f"[SEARCH] CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots")
                     else:
-                        self.logger.error(f"❌ CRITICAL DEBUG: available_slots key missing from candidate_info!")
+                        self.logger.error(f"[X] CRITICAL DEBUG: available_slots key missing from candidate_info!")
                     
                     # DEBUG: Comprehensive slot tracking
-                    self.logger.info(f"🔍 SLOT DEBUG: Core Agent decision = SCHEDULE")
-                    self.logger.info(f"🔍 SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}")
-                    self.logger.info(f"🔍 SLOT DEBUG: Found {len(available_slots)} slots in candidate_info")
+                    self.logger.info(f"[SEARCH] SLOT DEBUG: Core Agent decision = SCHEDULE")
+                    self.logger.info(f"[SEARCH] SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}")
+                    self.logger.info(f"[SEARCH] SLOT DEBUG: Found {len(available_slots)} slots in candidate_info")
                     if available_slots:
-                        self.logger.info(f"🔍 SLOT DEBUG: First slot sample: {available_slots[0]}")
+                        self.logger.info(f"[SEARCH] SLOT DEBUG: First slot sample: {available_slots[0]}")
                     
                     if available_slots:
                         scheduling_metadata = {
@@ -223,12 +231,12 @@ class RecruitmentChatbot:
                         response_metadata.update(scheduling_metadata)
                         
                         # DEBUG: Confirm metadata update
-                        self.logger.info(f"✅ SLOT DEBUG: Successfully passed {len(available_slots)} slots to UI metadata")
-                        self.logger.info(f"✅ SLOT DEBUG: response_metadata now contains: {list(response_metadata.keys())}")
+                        self.logger.info(f"[OK] SLOT DEBUG: Successfully passed {len(available_slots)} slots to UI metadata")
+                        self.logger.info(f"[OK] SLOT DEBUG: response_metadata now contains: {list(response_metadata.keys())}")
                     else:
                         # Fallback: Get slots directly if none were stored
-                        self.logger.warning("❌ SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval")
-                        self.logger.info(f"❌ SLOT DEBUG: candidate_info contents: {candidate_info}")
+                        self.logger.warning("[X] SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval")
+                        self.logger.info(f"[X] SLOT DEBUG: candidate_info contents: {candidate_info}")
                         
                         reference_datetime = datetime.now()
                         all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
@@ -249,7 +257,7 @@ class RecruitmentChatbot:
                             self.chat_interface.update_scheduling_context({
                                 'slots_offered': diversified_slots
                             })
-                            self.logger.info(f"✅ SLOT DEBUG: Fallback slots passed to UI context")
+                            self.logger.info(f"[OK] SLOT DEBUG: Fallback slots passed to UI context")
                         
                         response_metadata.update(scheduling_metadata)
                     
@@ -379,35 +387,35 @@ class RecruitmentChatbot:
     def display_system_status(self):
         """Display system status in the sidebar."""
         with st.sidebar:
-            st.subheader("🔧 System Status")
+            st.subheader("[WRENCH] System Status")
             
             # Agent status
-            st.write("**Core Agent:** ✅ Ready")
-            st.write("**Scheduling Advisor:** ✅ Ready")
-            st.write("**Exit Advisor:** ✅ Ready")
+            st.write("**Core Agent:** [OK] Ready")
+            st.write("**Scheduling Advisor:** [OK] Ready")
+            st.write("**Exit Advisor:** [OK] Ready")
             
             # Database status
             try:
                 stats = self.scheduling_advisor.get_scheduling_statistics()
-                st.write("**Database:** ✅ Connected")
+                st.write("**Database:** [OK] Connected")
                 st.write(f"**Available Slots:** {stats.get('available_slots', 0)}")
                 st.write(f"**Recruiters:** {stats.get('recruiter_count', 0)}")
             except Exception as e:
-                st.write("**Database:** ❌ Error")
+                st.write("**Database:** [X] Error")
                 st.write(f"Error: {str(e)[:50]}...")
             
             # API status
             if self.settings.OPENAI_API_KEY:
-                st.write("**OpenAI API:** ✅ Configured")
+                st.write("**OpenAI API:** [OK] Configured")
                 st.write(f"**Model:** {self.settings.OPENAI_MODEL}")
             else:
-                st.write("**OpenAI API:** ❌ Not configured")
+                st.write("**OpenAI API:** [X] Not configured")
     
     def display_debug_info(self):
         """Display debug information if enabled."""
         if st.sidebar.checkbox("🐛 Debug Mode", value=False):
             with st.sidebar:
-                st.subheader("🔍 Debug Info")
+                st.subheader("[SEARCH] Debug Info")
                 
                 # Conversation state
                 if hasattr(self.core_agent, 'conversation_state'):
@@ -421,7 +429,7 @@ class RecruitmentChatbot:
                     st.write(f"• {key}")
                 
                 # Settings
-                with st.expander("⚙️ Settings"):
+                with st.expander("[GEAR] Settings"):
                     st.write(f"**Model:** {self.settings.OPENAI_MODEL}")
                     st.write(f"**Temperature:** {self.settings.OPENAI_TEMPERATURE}")
                     st.write(f"**Max Tokens:** {self.settings.OPENAI_MAX_TOKENS}")
@@ -432,7 +440,7 @@ class RecruitmentChatbot:
         # Configure Streamlit page
         st.set_page_config(
             page_title="AI Recruitment Assistant",
-            page_icon="🤖",
+            page_icon="[BOT]",
             layout="wide",
             initial_sidebar_state="expanded"
         )
@@ -465,7 +473,7 @@ class RecruitmentChatbot:
         """, unsafe_allow_html=True)
         
         # Main navigation tabs
-        tab1, tab2 = st.tabs(["💬 Chat Interface", "🛠️ Admin Panel"])
+        tab1, tab2 = st.tabs(["[CHAT] Chat Interface", "[TOOLS] Admin Panel"])
         
         with tab1:
             self.display_chat_interface()
@@ -476,7 +484,7 @@ class RecruitmentChatbot:
     def display_chat_interface(self):
         """Display the main chat interface."""
         # Main title
-        st.title("🤖 AI Recruitment Assistant")
+        st.title("[BOT] AI Recruitment Assistant")
         st.markdown("*Intelligent conversations for Python developer positions with multi-agent orchestration*")
         
         # Display system status and debug info in sidebar
@@ -486,9 +494,9 @@ class RecruitmentChatbot:
         # USER-INITIATED REGISTRATION SECTION
         # Show registration option if not completed (user can choose to fill it or skip)
         if not st.session_state.get('registration_completed', False):
-            with st.expander("📝 Optional: Quick Registration Form", expanded=False):
+            with st.expander("[MEMO] Optional: Quick Registration Form", expanded=False):
                 st.info("""
-                **💡 You can fill out this form to speed up the process, or simply continue chatting!**
+                **[IDEA] You can fill out this form to speed up the process, or simply continue chatting!**
                 
                 This form is completely optional. You can:
                 - Fill it out now for faster interview scheduling
@@ -499,11 +507,11 @@ class RecruitmentChatbot:
                 # Add a user choice
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("📝 Fill Registration Form", use_container_width=True):
+                    if st.button("[MEMO] Fill Registration Form", use_container_width=True):
                         st.session_state.user_wants_registration = True
                         st.rerun()
                 with col2:
-                    if st.button("💬 Continue Chatting", use_container_width=True):
+                    if st.button("[CHAT] Continue Chatting", use_container_width=True):
                         st.session_state.user_wants_registration = False
                         st.success("Great! Let's continue our conversation naturally.")
                 
@@ -513,14 +521,14 @@ class RecruitmentChatbot:
                     registration_complete = self.registration_form.display_registration_form()
                     
                     if registration_complete:
-                        st.success("✅ Registration completed! This will help speed up our conversation.")
+                        st.success("[OK] Registration completed! This will help speed up our conversation.")
                         st.session_state.user_wants_registration = False
                         st.balloons()
                         st.rerun()
         
         # If registration is complete, show a summary
         elif st.session_state.get('registration_completed', False):
-            with st.expander("👤 Registration Summary", expanded=False):
+            with st.expander("[USER] Registration Summary", expanded=False):
                 self.registration_form.display_registration_summary()
         
         # Render chat interface
@@ -563,7 +571,7 @@ class RecruitmentChatbot:
         # Process user input if provided
         elif user_input:
             # Process regular user message
-            with st.spinner("🤖 Thinking..."):
+            with st.spinner("[BOT] Thinking..."):
                 result = self.process_user_message(user_input)
             
             # Registration form is user-initiated only - no automatic prompting
@@ -616,23 +624,23 @@ class RecruitmentChatbot:
             st.progress(confidence, f"Confidence: {confidence:.0%}")
             
             has_context = metadata.get('has_context', True)
-            st.write(f"**Context Available:** {'✅' if has_context else '❌'}")
+            st.write(f"**Context Available:** {'[OK]' if has_context else '[X]'}")
             
             # Show sources used
             if metadata.get('sources_used'):
-                st.write("**📁 Sources Referenced:**")
+                st.write("**[FOLDER] Sources Referenced:**")
                 for source in metadata['sources_used']:
                     st.write(f"• {source}")
             
             # Show response time
             if 'response_time' in metadata:
-                st.write(f"**⏱️ Response Time:** {metadata['response_time']:.2f}s")
+                st.write(f"**[TIMER] Response Time:** {metadata['response_time']:.2f}s")
     
     def display_session_stats(self):
         """Display session statistics in sidebar."""
         with st.sidebar:
             st.markdown("---")
-            st.subheader("📊 Session Statistics")
+            st.subheader("[CHART] Session Statistics")
             
             if st.session_state.admin_analytics['conversation_logs']:
                 total_interactions = len(st.session_state.admin_analytics['conversation_logs'])
@@ -670,7 +678,7 @@ def main():
         chatbot.run()
         
     except Exception as e:
-        st.error(f"❌ Application Error: {e}")
+        st.error(f"[X] Application Error: {e}")
         st.write("Please check your configuration and try again.")
         
         # Display error details in debug mode

@@ -25,7 +25,7 @@ from config.phase1_settings import get_settings
 
 async def test_core_agent_decisions():
     """Test Core Agent decision making with simple cases"""
-    print("🎯 Testing Core Agent Decision Making...")
+    print("[TARGET] Testing Core Agent Decision Making...")
     
     # Initialize Core Agent with default temperature
     try:
@@ -33,9 +33,9 @@ async def test_core_agent_decisions():
             model_name="gpt-3.5-turbo",  # Use reliable model
             vector_store_type="local"     # Use local for reliability
         )
-        print("✅ Core Agent initialized")
+        print("[OK] Core Agent initialized")
     except Exception as e:
-        print(f"❌ Core Agent initialization failed: {e}")
+        print(f"[X] Core Agent initialization failed: {e}")
         return {"accuracy": 0.0, "total_tests": 0, "results": []}
     
     # Simple test cases for reliability
@@ -88,7 +88,7 @@ async def test_core_agent_decisions():
                 'correct': correct
             })
             
-            status = "✓" if correct else "✗"
+            status = "[v]" if correct else "[x]"
             print(f"  Test {i+1:2d}: {expected:8s} -> {predicted:8s} {status}")
             
         except Exception as e:
@@ -101,7 +101,7 @@ async def test_core_agent_decisions():
             })
     
     accuracy = correct_predictions / len(test_cases) if test_cases else 0
-    print(f"🎯 Core Agent Accuracy: {accuracy:.1%} ({correct_predictions}/{len(test_cases)})")
+    print(f"[TARGET] Core Agent Accuracy: {accuracy:.1%} ({correct_predictions}/{len(test_cases)})")
     
     return {
         "accuracy": accuracy,
@@ -122,9 +122,9 @@ async def test_info_advisor_quality():
             temperature=1.0,  # Use default temperature
             vector_store_type="local"
         )
-        print("✅ Info Advisor initialized")
+        print("[OK] Info Advisor initialized")
     except Exception as e:
-        print(f"❌ Info Advisor initialization failed: {e}")
+        print(f"[X] Info Advisor initialization failed: {e}")
         return {"quality": 0.0, "total_tests": 0, "results": []}
     
     # Simple test questions
@@ -192,7 +192,7 @@ async def test_info_advisor_quality():
 
 def test_vector_database():
     """Test vector database functionality"""
-    print("🗄️ Testing Vector Database...")
+    print("[CABINET] Testing Vector Database...")
     
     try:
         from app.modules.database.vector_store import VectorStore
@@ -216,13 +216,13 @@ def test_vector_database():
                 results = vector_store.search(query, n_results=2)
                 has_results = len(results.get("documents", [[]])[0]) > 0
                 search_results.append(has_results)
-                print(f"  Query '{query}': {'✓' if has_results else '✗'}")
+                print(f"  Query '{query}': {'[v]' if has_results else '[x]'}")
             except Exception as e:
                 print(f"  Query '{query}': ERROR - {str(e)[:30]}...")
                 search_results.append(False)
         
         success_rate = sum(search_results) / len(search_results) if search_results else 0
-        print(f"🗄️ Vector DB Success Rate: {success_rate:.1%}")
+        print(f"[CABINET] Vector DB Success Rate: {success_rate:.1%}")
         
         return {
             "success_rate": success_rate,
@@ -231,7 +231,7 @@ def test_vector_database():
         }
         
     except Exception as e:
-        print(f"❌ Vector DB test failed: {e}")
+        print(f"[X] Vector DB test failed: {e}")
         return {"success_rate": 0.0, "total_queries": 0, "successful_queries": 0}
 
 
@@ -266,10 +266,10 @@ async def run_simplified_evaluation():
         
         # 5. Generate summary
         print("\n" + "="*60)
-        print("📋 PHASE 3.5 SIMPLIFIED EVALUATION SUMMARY")
+        print("[CLIPBOARD] PHASE 3.5 SIMPLIFIED EVALUATION SUMMARY")
         print("="*60)
         
-        print(f"\n🎯 PERFORMANCE METRICS:")
+        print(f"\n[TARGET] PERFORMANCE METRICS:")
         print(f"   Core Agent Accuracy:    {core_accuracy:.1%}")
         print(f"   Info Advisor Quality:   {info_quality:.1%}")
         print(f"   Vector DB Success:      {vector_success:.1%}")
@@ -277,22 +277,22 @@ async def run_simplified_evaluation():
         
         # Check target achievement
         target_met = system_score >= 0.85
-        print(f"\n🎯 TARGET (85%): {'✅ ACHIEVED' if target_met else '❌ NOT MET'}")
+        print(f"\n[TARGET] TARGET (85%): {'[OK] ACHIEVED' if target_met else '[X] NOT MET'}")
         
         if target_met:
-            print("🎉 EXCELLENT! System meets performance targets.")
-            print("✅ Ready for Phase 3.6: Deployment Preparation")
+            print("[PARTY] EXCELLENT! System meets performance targets.")
+            print("[OK] Ready for Phase 3.6: Deployment Preparation")
         else:
             gap = 0.85 - system_score
-            print(f"⚠️  Improvement needed: {gap:.1%} points below target")
+            print(f"[!]  Improvement needed: {gap:.1%} points below target")
             
             # Specific recommendations
             if core_accuracy < 0.7:
-                print("💡 Priority: Improve Core Agent decision accuracy")
+                print("[IDEA] Priority: Improve Core Agent decision accuracy")
             if info_quality < 0.7:
-                print("💡 Priority: Improve Info Advisor responses")
+                print("[IDEA] Priority: Improve Info Advisor responses")
             if vector_success < 0.7:
-                print("💡 Priority: Fix vector database issues")
+                print("[IDEA] Priority: Fix vector database issues")
         
         # 6. Save results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -313,18 +313,18 @@ async def run_simplified_evaluation():
         with open(report_file, 'w') as f:
             json.dump(evaluation_report, f, indent=2, default=str)
         
-        print(f"\n💾 Results saved to: {report_file}")
+        print(f"\n[FLOPPY] Results saved to: {report_file}")
         
         # 7. Performance summary
         end_time = time.time()
         total_time = end_time - start_time
-        print(f"⏱️  Total evaluation time: {total_time:.1f}s")
+        print(f"[TIMER]  Total evaluation time: {total_time:.1f}s")
         print("="*60)
         
         return evaluation_report
         
     except Exception as e:
-        print(f"❌ Evaluation failed: {e}")
+        print(f"[X] Evaluation failed: {e}")
         raise
 
 
@@ -334,15 +334,15 @@ if __name__ == "__main__":
         results = asyncio.run(run_simplified_evaluation())
         
         if results["target_met"]:
-            print("\n🎯 Phase 3.5 EVALUATION COMPLETE!")
+            print("\n[TARGET] Phase 3.5 EVALUATION COMPLETE!")
             sys.exit(0)
         else:
-            print("\n⚠️  Phase 3.5 needs improvement")
+            print("\n[!]  Phase 3.5 needs improvement")
             sys.exit(1)
             
     except KeyboardInterrupt:
         print("\n⏹️  Evaluation interrupted")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Evaluation error: {e}")
+        print(f"\n[X] Evaluation error: {e}")
         sys.exit(1) 

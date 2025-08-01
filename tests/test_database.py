@@ -233,15 +233,15 @@ def test_settings_configuration():
 
 if __name__ == "__main__":
     # Run a quick manual test
-    print("🧪 Running Database Tests...")
+    print("[TEST_TUBE] Running Database Tests...")
     
     # Test basic functionality
     sql_manager = SQLManager("sqlite:///:memory:")
     
-    print("✅ Database connection:", sql_manager.test_connection())
+    print("[OK] Database connection:", sql_manager.test_connection())
     
     stats = sql_manager.get_database_stats()
-    print("✅ Database stats:", stats)
+    print("[OK] Database stats:", stats)
     
     # Test creating a recruiter
     recruiter_data = RecruiterCreate(
@@ -249,10 +249,10 @@ if __name__ == "__main__":
         email="manual@test.com"
     )
     recruiter = sql_manager.create_recruiter(recruiter_data)
-    print(f"✅ Created recruiter: {recruiter.name} (ID: {recruiter.id})")
+    print(f"[OK] Created recruiter: {recruiter.name} (ID: {recruiter.id})")
     
     # Test getting next available slots
     slots = sql_manager.get_next_available_slots(count=3)
-    print(f"✅ Found {len(slots)} available slots")
+    print(f"[OK] Found {len(slots)} available slots")
     
-    print("\n🎉 All manual tests passed!") 
+    print("\n[PARTY] All manual tests passed!") 
