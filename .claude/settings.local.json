@@ -12,7 +12,10 @@
       "Bash(gtimeout:*)",
       "Bash(grep:*)",
       "Bash(git checkout:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(./run_app.sh)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }

@@ -6,7 +6,7 @@ Specialized agent for handling interview scheduling decisions and time slot mana
 import re
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 
@@ -270,6 +270,96 @@ class SchedulingAdvisor:
             self.logger.error(f"Error getting available slots: {e}")
             return []
 
+    def _filter_slots_by_preferences(self, available_slots: List[Dict], time_preferences: Dict) -> List[Dict]:
+        """
+        Filter available slots based on parsed time preferences from conversation.
+        
+        Args:
+            available_slots: List of all available slots
+            time_preferences: Parsed time preferences including constraints like 'after 10am'
+            
+        Returns:
+            List of slots that match the preferences
+        """
+        if not time_preferences or not available_slots:
+            return available_slots
+            
+        filtered_slots = []
+        
+        # Extract constraint information
+        parsed_expressions = time_preferences.get('parsed_expressions', [])
+        preferred_times = time_preferences.get('preferred_times', [])
+        preferred_days = time_preferences.get('preferred_days', [])
+        exclusions = time_preferences.get('exclusions', [])
+        
+        # Parse time constraints from expressions
+        time_constraints = {}
+        for expr in parsed_expressions:
+            expr_lower = expr.lower()
+            if 'after' in expr_lower:
+                # Extract time after 'after' (e.g., 'after 10am' -> 10:00)
+                import re
+                time_match = re.search(r'after\s+(\d{1,2})(?::?(\d{2}))?\s*(am|pm)?', expr_lower)
+                if time_match:
+                    hour = int(time_match.group(1))
+                    minute = int(time_match.group(2) or 0)
+                    if time_match.group(3) == 'pm' and hour != 12:
+                        hour += 12
+                    elif time_match.group(3) == 'am' and hour == 12:
+                        hour = 0
+                    time_constraints['after'] = time(hour, minute)
+                    self.logger.info(f"Parsed 'after' constraint: {time_constraints['after']}")
+                    
+            elif 'before' in expr_lower:
+                # Extract time after 'before' (e.g., 'before 5pm' -> 17:00)
+                time_match = re.search(r'before\s+(\d{1,2})(?::?(\d{2}))?\s*(am|pm)?', expr_lower)
+                if time_match:
+                    hour = int(time_match.group(1))
+                    minute = int(time_match.group(2) or 0)
+                    if time_match.group(3) == 'pm' and hour != 12:
+                        hour += 12
+                    elif time_match.group(3) == 'am' and hour == 12:
+                        hour = 0
+                    time_constraints['before'] = time(hour, minute)
+                    self.logger.info(f"Parsed 'before' constraint: {time_constraints['before']}")
+        
+        # Filter slots based on constraints
+        for slot in available_slots:
+            slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+            slot_time = slot_dt.time()
+            slot_day = slot_dt.strftime('%A')
+            
+            # Check time constraints
+            if 'after' in time_constraints and slot_time < time_constraints['after']:
+                self.logger.debug(f"Filtering out slot at {slot_time} - before 'after' constraint {time_constraints['after']}")
+                continue
+                
+            if 'before' in time_constraints and slot_time > time_constraints['before']:
+                self.logger.debug(f"Filtering out slot at {slot_time} - after 'before' constraint {time_constraints['before']}")
+                continue
+            
+            # Check day exclusions
+            if slot_day in exclusions:
+                self.logger.debug(f"Filtering out slot on {slot_day} - in exclusions")
+                continue
+                
+            # Check preferred days if specified
+            if preferred_days and slot_day not in preferred_days:
+                self.logger.debug(f"Filtering out slot on {slot_day} - not in preferred days")
+                continue
+                
+            # If slot passes all filters, include it
+            filtered_slots.append(slot)
+            
+        self.logger.info(f"Filtered {len(available_slots)} slots to {len(filtered_slots)} based on preferences: {time_preferences}")
+        
+        # If no slots match preferences, return original list with warning
+        if not filtered_slots:
+            self.logger.warning("No slots match the specified preferences, returning all available slots")
+            return available_slots
+            
+        return filtered_slots
+    
     def _diversify_slot_selection(self, available_slots: List[Dict], max_slots: int = 3) -> List[Dict]:
         """
         Select diversified slots across different days and times.
@@ -831,8 +921,11 @@ You'll receive a calendar invitation with the meeting link and all details withi
             
             # Handle slot selection based on decision
             if decision == SchedulingDecision.SCHEDULE:
-                # When scheduling, always provide diversified available slots regardless of LLM suggestions
-                final_slots = self._diversify_slot_selection(available_slots, max_slots=3)
+                # Filter slots based on time preferences before diversifying
+                filtered_slots = self._filter_slots_by_preferences(available_slots, time_preferences)
+                # When scheduling, provide diversified available slots from filtered results
+                final_slots = self._diversify_slot_selection(filtered_slots, max_slots=3)
+                self.logger.info(f"Decision: SCHEDULE - filtered {len(available_slots)} to {len(filtered_slots)} slots based on preferences")
                 self.logger.info(f"Decision: SCHEDULE - providing {len(final_slots)} diversified slots")
             else:
                 # For non-scheduling decisions, validate LLM suggestions if any

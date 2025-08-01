@@ -1,0 +1,11 @@
+{
+  "session_id": "8a5057a1-d678-443a-8382-9ab5ee484d75",
+  "created_at": "2025-08-02T00:47:44.249845",
+  "last_activity": "2025-08-02T00:47:44.249845",
+  "timeout_minutes": 30,
+  "metadata": {
+    "conversation_id": "8a5057a1-d678-443a-8382-9ab5ee484d75"
+  },
+  "is_active": true,
+  "duration_minutes": 1.2166666666666667e-06
+}

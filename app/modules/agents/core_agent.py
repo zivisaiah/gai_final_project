@@ -680,7 +680,7 @@ Analyze this context and respond with the JSON decision format only.""")
 
             await conversation.add_message("assistant", response, agent=self)
             conversation.add_decision(decision, reasoning, response)
-            self.memory.chat_memory.add_ai_message(response)
+            self.chat_history.add_ai_message(response)
             self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
             return response, decision, reasoning
         except Exception as e:

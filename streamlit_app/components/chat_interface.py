@@ -131,14 +131,14 @@ class ChatInterface:
         """Display a single chat message with appropriate styling."""
         
         if message.role == 'user':
-            with st.chat_message("user", avatar="U"):
+            with st.chat_message("user"):
                 st.write(message.content)
                 if message.metadata:
                     with st.expander("[CLIPBOARD] Message Details", expanded=False):
                         st.json(message.metadata)
         
         elif message.role == 'assistant':
-            with st.chat_message("assistant", avatar="AI"):
+            with st.chat_message("assistant"):
                 st.write(message.content)
                 
                 # Display any special metadata
@@ -210,7 +210,7 @@ class ChatInterface:
                         st.info("[OK] **Conversation Complete** - No further action needed.")
         
         elif message.role == 'system':
-            with st.chat_message("assistant", avatar="ℹ️"):
+            with st.chat_message("assistant"):
                 st.info(message.content)
     
     def handle_user_input(self) -> Optional[str]:
