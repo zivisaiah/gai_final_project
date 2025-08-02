@@ -38,8 +38,7 @@ def initialize_app():
     
     # Initialize core agent
     core_agent = CoreAgent(
-        openai_api_key=settings.OPENAI_API_KEY,
-        sql_manager=sql_manager
+        openai_api_key=settings.OPENAI_API_KEY
     )
     print("[OK] Core Agent initialized")
     
