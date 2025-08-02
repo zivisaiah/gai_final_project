@@ -1150,16 +1150,19 @@ What specific Python projects or technologies have you worked with in your {actu
                         self.logger.info(f"[SLOT_CONFIRMATION] Booked with recruiter: {booked_recruiter}")
 
                     if booking_result.get("success"):
-                        # Successful booking - return confirmation message
+                        # Successful booking - return confirmation message and END decision
                         confirmation_msg = booking_result.get(
                             "confirmation_message",
                             "Your interview has been scheduled successfully!",
                         )
                         return (
-                            decision,
+                            AgentDecision.END,
                             f"Slot confirmed and booked. {schedule_reasoning}",
                             confirmation_msg,
-                            {},
+                            {
+                                "appointment_confirmed": True,
+                                "appointment_details": booking_result.get("appointment_details", {})
+                            },
                         )
                     else:
                         # Booking failed - ask for clarification
