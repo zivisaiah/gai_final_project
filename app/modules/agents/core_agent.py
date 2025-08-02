@@ -842,7 +842,7 @@ Analyze this context and respond with the JSON decision format only.""",
 
     async def process_message_async(
         self, user_message: str, conversation_id: str = None
-    ) -> Tuple[str, AgentDecision, str]:
+    ) -> Tuple[str, AgentDecision, str, Dict]:
         """
         Async version: Process a user message and return agent response, decision, and reasoning.
         """
@@ -906,10 +906,10 @@ Analyze this context and respond with the JSON decision format only.""",
                 conversation.add_decision(decision, reasoning, response)
                 self.chat_history.add_ai_message(response)
                 self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
-                return response, decision, reasoning
+                return response, decision, reasoning, {}
 
             # --- Otherwise, continue with normal decision logic ---
-            decision, reasoning, response = await self._make_decision(
+            decision, reasoning, response, additional_metadata = await self._make_decision(
                 user_message, conversation
             )
 
@@ -917,28 +917,32 @@ Analyze this context and respond with the JSON decision format only.""",
             conversation.add_decision(decision, reasoning, response)
             self.chat_history.add_ai_message(response)
             self.logger.info(f"Decision: {decision.value}, Reasoning: {reasoning}")
-            return response, decision, reasoning
+            
+            # Include additional metadata in the response
+            return response, decision, reasoning, additional_metadata
         except Exception as e:
             self.logger.error(f"Error processing message: {e}", exc_info=True)
             return (
                 "I apologize, but I'm having technical difficulties. Could you please try again?",
                 AgentDecision.CONTINUE,
                 f"Error occurred: {e}",
+                {},
             )
 
     # Optionally, keep the sync process_message for backward compatibility
     def process_message(
         self, user_message: str, conversation_id: str = None
-    ) -> Tuple[str, AgentDecision, str]:
+    ) -> Tuple[str, AgentDecision, str, Dict]:
         import asyncio
 
         return asyncio.run(self.process_message_async(user_message, conversation_id))
 
     async def _make_decision(
         self, user_message: str, conversation: ConversationState
-    ) -> Tuple[AgentDecision, str, str]:
+    ) -> Tuple[AgentDecision, str, str, Dict]:
         """
         Make a decision, and if scheduling, proactively fetch and format time slots.
+        Returns: (decision, reasoning, response, additional_metadata)
         """
         # TIMING DEBUG: Track method entry
         method_start = time.time()
@@ -1026,6 +1030,7 @@ What specific Python projects or technologies have you worked with in your {actu
                     AgentDecision.CONTINUE,
                     "Proactively addressing qualification gap while remaining encouraging",
                     proactive_response,
+                    {},
                 )
 
             # Prepare input for the LangChain chain
@@ -1073,7 +1078,7 @@ What specific Python projects or technologies have you worked with in your {actu
 
                     # Return Info Advisor's response
                     final_reasoning = f"Info request handled. Question type: {info_response.question_type}, Confidence: {info_response.confidence:.2f}, Has context: {info_response.has_context}"
-                    return decision, final_reasoning, info_response.answer
+                    return decision, final_reasoning, info_response.answer, {}
 
                 except Exception as e:
                     self.logger.error(f"Error consulting Info Advisor: {e}")
@@ -1083,6 +1088,7 @@ What specific Python projects or technologies have you worked with in your {actu
                         AgentDecision.CONTINUE,
                         f"Info Advisor error, fallback response: {str(e)}",
                         fallback_response,
+                        {},
                     )
 
             # --- Proactive Scheduling Logic ---
@@ -1153,6 +1159,7 @@ What specific Python projects or technologies have you worked with in your {actu
                             decision,
                             f"Slot confirmed and booked. {schedule_reasoning}",
                             confirmation_msg,
+                            {},
                         )
                     else:
                         # Booking failed - ask for clarification
@@ -1161,6 +1168,7 @@ What specific Python projects or technologies have you worked with in your {actu
                             AgentDecision.CONTINUE,
                             f"Slot confirmation failed: {booking_result.get('error', 'unclear slot')}",
                             error_msg,
+                            {},
                         )
 
                 elif (
@@ -1251,7 +1259,15 @@ What specific Python projects or technologies have you worked with in your {actu
                         },
                     )
 
-                    return decision, final_reasoning, enhanced_response
+                    # CRITICAL FIX: Return slots directly in metadata
+                    slots_metadata = {
+                        "suggested_slots": available_slots,
+                        "scheduling_decision": "SCHEDULE",
+                        "slots_count": len(available_slots)
+                    }
+                    
+                    self.logger.info(f"[DIRECT_METADATA] Returning {len(available_slots)} slots in response metadata")
+                    return decision, final_reasoning, enhanced_response, slots_metadata
 
                 elif (
                     schedule_decision == SchedulingDecision.SCHEDULE
@@ -1262,7 +1278,7 @@ What specific Python projects or technologies have you worked with in your {actu
                         conversation, user_message, schedule_reasoning
                     )
                     final_reasoning = f"No slots match preferences, asking for flexibility. Advisor reason: {schedule_reasoning}"
-                    return decision, final_reasoning, flexibility_response
+                    return decision, final_reasoning, flexibility_response, {}
 
                 elif schedule_decision == SchedulingDecision.NOT_SCHEDULE:
                     # Check if this is due to no available slots vs low intent
@@ -1275,7 +1291,7 @@ What specific Python projects or technologies have you worked with in your {actu
                             conversation, user_message, schedule_reasoning
                         )
                         final_reasoning = f"No slots match preferences, asking for flexibility. Advisor reason: {schedule_reasoning}"
-                        return decision, final_reasoning, flexibility_response
+                        return decision, final_reasoning, flexibility_response, {}
                     else:
                         # Low scheduling intent - OVERRIDE response to avoid scheduling promises
                         override_response = await self._generate_continue_response(
@@ -1286,6 +1302,7 @@ What specific Python projects or technologies have you worked with in your {actu
                             AgentDecision.CONTINUE,
                             final_reasoning,
                             override_response,
+                            {},
                         )
 
                 else:
@@ -1294,7 +1311,7 @@ What specific Python projects or technologies have you worked with in your {actu
                         conversation, user_message, schedule_reasoning
                     )
                     final_reasoning = f"Unhandled scheduling case, continuing conversation. Advisor reason: {schedule_reasoning}"
-                    return AgentDecision.CONTINUE, final_reasoning, override_response
+                    return AgentDecision.CONTINUE, final_reasoning, override_response, {}
 
             # NEW: Handle contact information requests
             if decision == AgentDecision.CONTINUE and conversation.candidate_info.get(
@@ -1308,7 +1325,7 @@ What specific Python projects or technologies have you worked with in your {actu
                 final_reasoning = (
                     "Requesting contact information before scheduling interview"
                 )
-                return decision, final_reasoning, contact_request_response
+                return decision, final_reasoning, contact_request_response, {}
 
             # TIMING DEBUG: Log method completion
             method_end = time.time()
@@ -1327,7 +1344,7 @@ What specific Python projects or technologies have you worked with in your {actu
             )
 
             # For CONTINUE or END, return the original parsed response
-            return decision, reasoning, agent_response
+            return decision, reasoning, agent_response, {}
 
         except Exception as e:
             self.logger.error(f"Critical error in decision making: {e}", exc_info=True)

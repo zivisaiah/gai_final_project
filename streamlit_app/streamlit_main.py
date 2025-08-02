@@ -160,7 +160,7 @@ class RecruitmentChatbot:
             # Check if registration is not complete - let LLM handle intent detection
             if not st.session_state.get("registration_completed", False):
                 # Process message through Core Agent to detect intent via LLM
-                agent_response, decision, reasoning = self.core_agent.process_message(
+                agent_response, decision, reasoning, additional_metadata = self.core_agent.process_message(
                     user_message, conversation_id="streamlit_session"
                 )
 
@@ -174,6 +174,7 @@ class RecruitmentChatbot:
                     "reasoning": reasoning,
                     "agent_type": "core_agent",
                     "response_time": response_time,
+                    **additional_metadata  # Merge additional metadata from Core Agent
                 }
 
                 return {
@@ -186,7 +187,7 @@ class RecruitmentChatbot:
             # Core Agent handles ALL business logic including exit decisions
             self.logger.info(f"CALLING CORE AGENT with user_message='{user_message}'")
 
-            agent_response, decision, reasoning = self.core_agent.process_message(
+            agent_response, decision, reasoning, additional_metadata = self.core_agent.process_message(
                 user_message, conversation_id="streamlit_session"
             )
 
@@ -223,6 +224,7 @@ class RecruitmentChatbot:
                 "reasoning": reasoning,
                 "agent_type": "core_agent",
                 "response_time": response_time,
+                **additional_metadata  # Merge additional metadata from Core Agent
             }
 
             # Enhanced INFO decision handling with source references
@@ -239,169 +241,33 @@ class RecruitmentChatbot:
                 }
                 response_metadata.update(info_metadata)
 
-            # Handle scheduling if needed
+            # Handle scheduling if needed - use slots from Core Agent metadata
             if decision == AgentDecision.SCHEDULE:
-                # Core Agent already consulted SchedulingAdvisor and stored slots in candidate_info
+                # NEW APPROACH: Use slots directly from Core Agent metadata (no separate retrieval)
                 try:
-                    # CRITICAL FIX: Wait for Core Agent to complete slot storage
-                    from datetime import datetime
-
-                    # TIMING DEBUG: Log when Streamlit starts slot retrieval
-                    retrieval_start = time.time()
-                    start_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                    self.logger.info(
-                        f"[TIMING] Streamlit slot retrieval START at {start_timestamp}"
-                    )
-
-                    # Try multiple times to get slots with small delays
-                    available_slots = []
-                    for attempt in range(3):
-                        attempt_start = time.time()
-                        attempt_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-
-                        candidate_info = self.core_agent.get_candidate_info(
-                            "streamlit_session"
-                        )
-                        available_slots = candidate_info.get("available_slots", [])
-
-                        attempt_duration = (time.time() - attempt_start) * 1000  # ms
-
-                        if available_slots:
-                            self.logger.info(
-                                f"[TIMING] SUCCESS at {attempt_timestamp}: Got {len(available_slots)} slots on attempt {attempt + 1} (took {attempt_duration:.2f}ms)"
-                            )
-                            # CRITICAL DEBUG: Log retrieved slots
-                            for i, slot in enumerate(available_slots):
-                                self.logger.info(f"[STREAMLIT_SLOTS] Retrieved slot {i}: {slot.get('recruiter', 'Unknown')}")
-                            break
-                        else:
-                            self.logger.warning(
-                                f"[TIMING] RETRY at {attempt_timestamp}: Attempt {attempt + 1} found no slots (took {attempt_duration:.2f}ms)"
-                            )
-                            if attempt < 2:  # Don't sleep on last attempt
-                                time.sleep(0.1)  # Wait 100ms
-
-                    # CRITICAL DEBUG: Check if get_candidate_info is working properly
-                    self.logger.info(
-                        f"[SEARCH] CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}"
-                    )
-                    if candidate_info and "available_slots" in candidate_info:
-                        self.logger.info(
-                            f"[SEARCH] CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots"
-                        )
-                    else:
-                        self.logger.error(
-                            f"[X] CRITICAL DEBUG: available_slots key missing from candidate_info!"
-                        )
-
-                    # DEBUG: Comprehensive slot tracking
-                    self.logger.info(
-                        f"[SEARCH] SLOT DEBUG: Core Agent decision = SCHEDULE"
-                    )
-                    self.logger.info(
-                        f"[SEARCH] SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}"
-                    )
-                    self.logger.info(
-                        f"[SEARCH] SLOT DEBUG: Found {len(available_slots)} slots in candidate_info"
-                    )
+                    available_slots = response_metadata.get("suggested_slots", [])
+                    
+                    self.logger.info(f"[DIRECT_METADATA] Core Agent provided {len(available_slots)} slots in metadata")
+                    
                     if available_slots:
-                        self.logger.info(
-                            f"[SEARCH] SLOT DEBUG: First slot sample: {available_slots[0]}"
-                        )
-
-                    # CRITICAL FIX: Always ensure we have slots for SCHEDULE decision
-                    if not available_slots:
-                        # Fallback: Get slots directly if none were stored
-                        self.logger.warning(
-                            "[FALLBACK] SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval"
-                        )
-                        self.logger.info(
-                            f"[FALLBACK] SLOT DEBUG: candidate_info contents: {candidate_info}"
-                        )
-
-                        reference_datetime = datetime.now()
-                        all_slots = self.scheduling_advisor._get_all_available_slots(
-                            reference_datetime, days_ahead=14
-                        )
-
-                        # Apply diversification to get 3 varied slots
-                        available_slots = (
-                            self.scheduling_advisor._diversify_slot_selection(
-                                all_slots, max_slots=3
-                            )
-                        )
-
-                        self.logger.info(
-                            f"[FALLBACK] SLOT DEBUG: Generated {len(available_slots)} slots"
-                        )
-
-                        # Store the fallback slots in Core Agent for consistency
-                        try:
-                            conversation = self.core_agent.conversations.get(
-                                "streamlit_session"
-                            )
-                            if conversation:
-                                conversation.candidate_info[
-                                    "available_slots"
-                                ] = available_slots
-                                self.logger.info(
-                                    f"[FALLBACK] SLOT DEBUG: Stored fallback slots in Core Agent"
-                                )
-                        except Exception as e:
-                            self.logger.error(
-                                f"[FALLBACK] SLOT DEBUG: Failed to store fallback slots: {e}"
-                            )
-
-                    # Log slot offering (for both primary and fallback paths)
-                    if available_slots:
+                        # Log slot offering
                         self.debug_logger.log_slot_offering(
                             slots=available_slots,
                             metadata={
-                                "source": "core_agent_or_fallback",
+                                "source": "core_agent_metadata",
                                 "total_slots": len(available_slots),
                             },
                         )
-
-                        scheduling_metadata = {
-                            "scheduling_decision": "SCHEDULE",
-                            "scheduling_reasoning": "Core Agent decided to schedule based on conversation flow",
-                            "suggested_slots": available_slots,
-                        }
-                        
-                        # CRITICAL DEBUG: Log metadata construction
-                        self.logger.info(f"[METADATA_CONSTRUCTION] Created suggested_slots with {len(available_slots)} slots")
-                        self.logger.info(f"[METADATA_CONSTRUCTION] Metadata keys: {list(scheduling_metadata.keys())}")
 
                         # Update scheduling context for UI
                         self.chat_interface.update_scheduling_context(
                             {"slots_offered": available_slots}
                         )
 
-                        response_metadata.update(scheduling_metadata)
-                        
-                        # CRITICAL DEBUG: Log final metadata after update
-                        self.logger.info(f"[FINAL_METADATA] Updated response_metadata with scheduling info")
-                        self.logger.info(f"[FINAL_METADATA] Final metadata keys: {list(response_metadata.keys())}")
-                        if "suggested_slots" in response_metadata:
-                            self.logger.info(f"[FINAL_METADATA] suggested_slots count: {len(response_metadata['suggested_slots'])}")
-                        else:
-                            self.logger.error(f"[FINAL_METADATA] NO suggested_slots in final metadata!")
-
-                        # TIMING DEBUG: Log metadata completion
-                        metadata_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                        total_duration = (time.time() - retrieval_start) * 1000  # ms
-
-                        self.logger.info(
-                            f"[TIMING] Metadata UPDATE at {metadata_timestamp}: Successfully passed {len(available_slots)} slots to UI (total time: {total_duration:.2f}ms)"
-                        )
-                        self.logger.info(
-                            f"[TIMING] Final metadata keys: {list(response_metadata.keys())}"
-                        )
+                        self.logger.info(f"[DIRECT_METADATA] Successfully passed {len(available_slots)} slots to UI")
                     else:
-                        # This should not happen, but handle gracefully
-                        self.logger.error(
-                            "[ERROR] SLOT DEBUG: No slots available even after fallback!"
-                        )
+                        # This should not happen with new approach, but handle gracefully
+                        self.logger.error("[ERROR] DIRECT_METADATA: No suggested_slots in Core Agent metadata!")
                         response_metadata.update(
                             {
                                 "scheduling_error": "No available slots found",
@@ -410,7 +276,7 @@ class RecruitmentChatbot:
                         )
 
                 except Exception as e:
-                    self.logger.error(f"Error getting slots for UI display: {e}")
+                    self.logger.error(f"Error processing slots from Core Agent metadata: {e}")
                     response_metadata.update(
                         {"scheduling_error": str(e), "suggested_slots": []}
                     )
