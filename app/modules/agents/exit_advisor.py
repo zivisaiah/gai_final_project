@@ -112,7 +112,7 @@ Your task is to analyze whether a recruitment conversation should END or CONTINU
 
 **IMPORTANT: ENCOURAGE EARLY ENGAGEMENT**
 - For initial interactions (greetings like "hi", "hello") → ALWAYS CONTINUE to encourage engagement
-- For conversations with <3 exchanges → STRONGLY PREFER CONTINUE unless explicit disinterest
+- For conversations with <2 exchanges → STRONGLY PREFER CONTINUE unless explicit disinterest
 - Give candidates opportunity to share their background before making qualification decisions
 - Focus on building rapport and understanding candidate needs first
 
@@ -148,7 +148,7 @@ DO **CONTINUE** the conversation when you detect:
 
 **QUALIFICATION ASSESSMENT APPROACH:**
 - **RULE**: If qualification_status is "unknown" → CONTINUE (need more information)
-- **RULE**: If conversation has <3 exchanges → CONTINUE (too early to assess)
+- **RULE**: If conversation has <2 exchanges → CONTINUE (too early to assess)
 - Only consider qualification-based exits AFTER we have concrete experience information
 - If candidate clearly doesn't meet requirements AND shows no compensating factors AND conversation has progressed sufficiently → consider END
 - Always give candidates opportunity to explain their background before ending
