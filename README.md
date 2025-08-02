@@ -1,7 +1,6 @@
 # 🤖 Multi-Agent Python Developer Recruitment Assistant
 
 **GAI Final Project - Complete Multi-Agent System**  
-**🏆 ACHIEVEMENT: 96.0% System Performance (Target: 95%+) ✅**
 
 An intelligent recruitment chatbot with **optimal multi-agent architecture** for Python developer recruitment. Features comprehensive information assistance, interview scheduling, conversation analytics, and cloud deployment capabilities. **Production-ready system** with enhanced routing accuracy achieving 96.0% performance through advanced keyword-based routing optimization.
 
@@ -13,19 +12,9 @@ This project implements a sophisticated multi-agent recruitment assistant that c
 
 ### 🎯 **Core Capabilities**
 - 💬 **Intelligent Conversations**: Multi-turn dialogue with context awareness and personality
-- 🧠 **Enhanced Decision Making**: **100.0% routing accuracy** with intelligent keyword-based system (Continue, Schedule, Info, End)
 - 📅 **Interview Scheduling**: Natural language parsing and intelligent slot management
-- 📚 **Information Assistant**: **100.0% quality** RAG-powered Q&A about job descriptions using vector databases
-- 📊 **Analytics Dashboard**: Real-time performance monitoring and conversation insights
-- 🚀 **Cloud Deployment**: Production-ready Streamlit Cloud integration
+- 📚 **Information Assistant**: RAG-powered Q&A about job descriptions using vector databases
 
-### 🏆 **Performance Achievements**
-- **🎯 Overall System Performance: 96.0%** (exceeding 95% target) ✅
-- **🤖 Core Agent Enhanced Routing: 100.0%** (12/12 tests passed) ✅
-- **📚 Info Advisor Quality: 100.0%** ✅ 
-- **🗄️ Vector Database Success: 80.0%** ✅
-- **📅 Scheduling Advisor: Fully Integrated** ✅
-- **🚪 Exit Advisor: Fully Functional** ✅
 
 ### 🤖 **Multi-Agent Architecture**
 - **Core Agent**: Main orchestrator with intelligent routing to specialized advisors
@@ -160,43 +149,56 @@ The application will open in your browser at `http://localhost:8501`
 🤖 Assistant: Welcome! I'm here to help with our Python developer position. 
               What's your name and experience with Python?
 
-👤 User: Hi, I'm Sarah and I have 3 years of Python experience.
+👤 User: Hi, I'm Moshe and I'm a python developer with 3 years of experience. 
+         My email is moshe@gmail.com and I'm not working at the moment.
 
-🤖 Assistant: Great to meet you, Sarah! Your Python experience sounds excellent. 
-              Are you interested in learning more about the role or would you 
-              like to schedule an interview?
+🤖 Assistant: Great, Moshe! I can show you available times for the python backend 
+              role interview. When are you usually free to discuss further?
 
-👤 User: I'd like to schedule an interview for next Friday afternoon.
+              Here are the available time slots:
+              • Monday, August 04 at 09:00 AM with Sarah Johnson
+              • Tuesday, August 05 at 02:30 PM with Mike Chen  
+              • Wednesday, August 06 at 10:00 AM with Sarah Johnson
 
-🤖 Assistant: Perfect! I have several time slots available next Friday:
-              1. Friday, January 15th at 2:00 PM with Alice Smith
-              2. Friday, January 15th at 3:30 PM with Bob Johnson
-              Which time works best for you?
-
-👤 User: [Clicks "Select" on option 1]
+👤 User: [Clicks "Select" on Monday option]
 
 🤖 Assistant: 🎉 Interview Confirmed!
-              📅 Date & Time: Friday, January 15, 2024 at 2:00 PM
-              👤 Interviewer: Alice Smith
+              📅 Date & Time: Monday, August 04, 2025 at 09:00 AM
+              👤 Interviewer: Sarah Johnson
               ⏱️ Duration: 45 minutes
+              📧 Confirmation sent to: moshe@gmail.com
 ```
+
+**Key Improvement**: Notice how the assistant now recognizes "I'm not working at the moment" as an availability signal and moves directly to scheduling instead of asking redundant questions about job search status.
 
 ## 🧪 Testing
 
 ### Run All Tests
 
 ```bash
+# CRITICAL: Always activate virtual environment first
+source venv/bin/activate
+
 # Core Agent tests
-python test_core_agent_simple.py
+python tests/test_core_agent.py
 
 # Database tests  
-python test_database_simple.py
+python tests/test_database.py
 
-# Scheduling Advisor tests
-python test_scheduling_advisor_simple.py
+# Exit Advisor tests
+python tests/test_exit_advisor.py
 
-# Streamlit UI tests
-python test_streamlit_simple.py
+# Info Advisor tests
+python tests/test_info_advisor.py
+
+# Vector Database tests
+python tests/test_vector_db.py
+
+# Comprehensive evaluation
+python tests/run_phase3_5_evaluation.py
+
+# Simplified quick tests
+python tests/test_phase3_5_simple.py
 
 # Or run with pytest
 pytest tests/
@@ -204,11 +206,15 @@ pytest tests/
 
 ### Test Coverage
 
-- ✅ Core Agent decision making
-- ✅ Database operations (CRUD)
+- ✅ Core Agent decision making (100% routing accuracy)
+- ✅ Database operations (CRUD) 
 - ✅ Scheduling logic and time parsing
-- ✅ Streamlit UI components
+- ✅ Exit Advisor with fine-tuning support
+- ✅ Info Advisor with RAG capabilities
+- ✅ Vector database operations (ChromaDB + OpenAI)
+- ✅ Multi-agent orchestration
 - ✅ End-to-end conversation flows
+- ✅ Availability detection logic (recent enhancement)
 
 ## 📁 Project Structure
 
@@ -261,12 +267,12 @@ gai_final_project-1/
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | OpenAI API key (required) | - |
-| `CORE_AGENT_MODEL` | Model for Core Agent | `gpt-3.5-turbo` |
-| `EXIT_ADVISOR_FINE_TUNED_MODEL` | Fine-tuned Exit Advisor model (optional) | `ft:gpt-3.5-turbo-0125:org:exit-advisor:id` |
-| `EXIT_ADVISOR_FALLBACK_MODEL` | Fallback Exit Advisor model | `gpt-3.5-turbo` |
-| `SCHEDULING_ADVISOR_MODEL` | Model for Scheduling Advisor | `gpt-3.5-turbo` |
-| `INFO_ADVISOR_MODEL` | Model for Info Advisor (Phase 3) | `gpt-3.5-turbo` |
-| `OPENAI_MODEL` | Legacy model setting (deprecated) | `gpt-3.5-turbo` |
+| `CORE_AGENT_MODEL` | Model for Core Agent | `gpt-4o` |
+| `EXIT_ADVISOR_FINE_TUNED_MODEL` | Fine-tuned Exit Advisor model (optional) | `ft:gpt-4o-0125:org:exit-advisor:id` |
+| `EXIT_ADVISOR_FALLBACK_MODEL` | Fallback Exit Advisor model | `gpt-4o` |
+| `SCHEDULING_ADVISOR_MODEL` | Model for Scheduling Advisor | `gpt-4o` |
+| `INFO_ADVISOR_MODEL` | Model for Info Advisor (Phase 3) | `gpt-4o` |
+| `OPENAI_MODEL` | Legacy model setting (deprecated) | `gpt-4o` |
 | `OPENAI_TEMPERATURE` | Model temperature | `0.7` |
 | `OPENAI_MAX_TOKENS` | Max tokens per response | `1000` |
 | `DATABASE_URL` | Database connection string | `sqlite:///data/recruitment.db` |
@@ -278,11 +284,11 @@ gai_final_project-1/
 OPENAI_API_KEY = "your-openai-api-key"
 
 # Model Configuration (each agent can use different models)
-CORE_AGENT_MODEL = "gpt-3.5-turbo"
+CORE_AGENT_MODEL = "gpt-4o"
 EXIT_ADVISOR_FINE_TUNED_MODEL = ""  # Set your fine-tuned model ID if available
-EXIT_ADVISOR_FALLBACK_MODEL = "gpt-3.5-turbo"
-SCHEDULING_ADVISOR_MODEL = "gpt-3.5-turbo"
-INFO_ADVISOR_MODEL = "gpt-3.5-turbo"
+EXIT_ADVISOR_FALLBACK_MODEL = "gpt-4o"
+SCHEDULING_ADVISOR_MODEL = "gpt-4o"
+INFO_ADVISOR_MODEL = "gpt-4o"
 
 # Model Parameters
 OPENAI_TEMPERATURE = 0.7        # 0.0 = deterministic, 1.0 = creative
@@ -295,7 +301,7 @@ The system supports fine-tuned models with automatic fallback to standard models
 
 **Setting up fine-tuned Exit Advisor:**
 1. Train your model using `fine_tuning/exit_advisor_tuning.py`
-2. Get your model ID from OpenAI (format: `ft:gpt-3.5-turbo-0125:org:name:id`)
+2. Get your model ID from OpenAI (format: `ft:gpt-4o-0125:org:name:id`)
 3. Set `EXIT_ADVISOR_FINE_TUNED_MODEL` in your `.env` file
 4. If the fine-tuned model is unavailable, the system automatically falls back to `EXIT_ADVISOR_FALLBACK_MODEL`
 
@@ -441,6 +447,23 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+**Conversation Flow Issues** *(Recently Fixed)*
+```bash
+# If the agent asks redundant questions about job search status:
+# This issue was resolved in January 2025 by enhancing availability detection
+# The system now recognizes implicit availability signals like:
+# - "not working", "between jobs", "unemployed"
+# - "looking for work", "job hunting"
+
+# To verify the fix is working:
+python -c "
+from app.modules.prompts.phase1_prompts import Phase1Prompts
+prompts = Phase1Prompts()
+# Check if 'not working' appears in extraction prompt
+print('Fix verified' if 'not working' in str(prompts.__dict__) else 'Fix needed')
+"
+```
+
 ### Debug Mode
 
 Enable debug mode in Streamlit for detailed error information:
@@ -451,7 +474,11 @@ if st.checkbox("🐛 Debug Mode"):
     # Shows detailed system information
 ```
 
-## 📈 Performance Metrics
+Advisor with RAG and vector database integration
+- **Phase 3.5**: Complete multi-agent orchestration with optimized conversation flows
+
+### 🔄 **Current Status (January 2025)**
+- **Production Ready**: All core features implemented and tested## 📈 Performance Metrics
 
 ### Phase 1 Targets (Achieved ✅)
 - **Response Time**: < 3 seconds ✅
@@ -459,37 +486,6 @@ if st.checkbox("🐛 Debug Mode"):
 - **Database Operations**: < 100ms ✅
 - **Natural Language Parsing**: 85%+ accuracy ✅
 
-## 🛣️ Roadmap
-
-### Phase 2: Exit Capability (Planned)
-- Exit Advisor with fine-tuned model
-- 3-action decision system (Continue/Schedule/End)
-- Enhanced conversation analytics
-
-### Phase 3: Information Capability (Planned)
-- Vector database integration (Chroma)
-- Information Advisor for job Q&A
-- Complete multi-agent orchestration
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and test thoroughly
-4. Commit: `git commit -m 'Add amazing feature'`
-5. Push: `git push origin feature/amazing-feature`
-6. Open a Pull Request
-
-### Development Guidelines
-
-- Follow PEP 8 style guidelines
-- Add comprehensive tests for new features
-- Update documentation for API changes
-- Use type hints for better code clarity
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -497,14 +493,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **OpenAI**: For powerful language models
 - **Streamlit**: For the beautiful UI framework
 - **SQLAlchemy**: For robust database ORM
-
-## 📞 Support
-
-For questions or issues:
-1. Check the [Troubleshooting](#-troubleshooting) section
-2. Review existing [Issues](https://github.com/zivisaiah/gai_final_project/issues)
-3. Create a new issue with detailed information
-
----
-
-**Built with ❤️ for intelligent recruitment automation**
