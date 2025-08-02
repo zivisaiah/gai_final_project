@@ -14,6 +14,8 @@ import logging
 from dotenv import load_dotenv
 import traceback
 
+# Debug logging removed after bug fix
+
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -21,6 +23,7 @@ sys.path.insert(0, str(project_root))
 # Import console encoding handler for Windows compatibility
 try:
     from app.modules.utils.console_encoding import setup_console_encoding
+
     setup_console_encoding()
 except ImportError:
     # Fallback if module doesn't exist yet
@@ -33,22 +36,24 @@ from streamlit_app.components.registration_form import create_registration_form
 from app.modules.agents.core_agent import CoreAgent, AgentDecision
 from app.modules.agents.scheduling_advisor import SchedulingAdvisor, SchedulingDecision
 from app.modules.utils.conversation import ConversationContext
+from app.modules.utils.session_debug_logger import SessionDebugLogger
 from config.phase1_settings import get_settings
 import time
 
 # Load environment variables
 load_dotenv()
 
+
 class RecruitmentChatbot:
     """Main recruitment chatbot application."""
-    
+
     def __init__(self):
         """Initialize the chatbot with all components."""
         self.settings = get_settings()
         self.setup_logging()
-        
+
         # Initialize agents only once using session state
-        if 'agents_initialized' not in st.session_state:
+        if "agents_initialized" not in st.session_state:
             self.initialize_agents()
             st.session_state.agents_initialized = True
             st.session_state.core_agent = self.core_agent
@@ -60,126 +65,166 @@ class RecruitmentChatbot:
             self.scheduling_advisor = st.session_state.scheduling_advisor
             self.conversation_context = st.session_state.conversation_context
             
+            # Ensure debug logger is connected when reusing agents
+            if hasattr(self, "debug_logger") and self.debug_logger:
+                self.core_agent.set_debug_logger(self.debug_logger)
+
         self.chat_interface = create_chat_interface()
         self.admin_panel = create_admin_panel()
         self.registration_form = create_registration_form()
-        
+
         # Initialize session tracking
-        if 'session_start_time' not in st.session_state:
+        if "session_start_time" not in st.session_state:
             st.session_state.session_start_time = datetime.now()
-        if 'session_id' not in st.session_state:
+        if "session_id" not in st.session_state:
             st.session_state.session_id = f"session_{int(time.time())}"
-    
+
+        # Initialize debug logger
+        if "debug_logger" not in st.session_state:
+            st.session_state.debug_logger = SessionDebugLogger(
+                st.session_state.session_id
+            )
+
+        self.debug_logger = st.session_state.debug_logger
+
     def setup_logging(self):
         """Set up logging for the application."""
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         )
         self.logger = logging.getLogger(__name__)
-    
+
     def initialize_agents(self):
         """Initialize the AI agents."""
         try:
             # Check if OpenAI API key is available
             if not self.settings.OPENAI_API_KEY:
-                st.error("[!] OpenAI API key not found. Please set OPENAI_API_KEY in your environment.")
+                st.error(
+                    "[!] OpenAI API key not found. Please set OPENAI_API_KEY in your environment."
+                )
                 st.stop()
-            
+
             # Initialize Core Agent with vector store type for INFO capabilities
             self.core_agent = CoreAgent(
                 openai_api_key=self.settings.OPENAI_API_KEY,
                 model_name=self.settings.OPENAI_MODEL,
-                vector_store_type="local"  # Use local ChromaDB vector store
+                vector_store_type="local",  # Use local ChromaDB vector store
             )
-            
+
+            # Connect debug logger to Core Agent if available
+            if hasattr(self, "debug_logger"):
+                self.core_agent.set_debug_logger(self.debug_logger)
+
             # Initialize Scheduling Advisor
             self.scheduling_advisor = SchedulingAdvisor(
                 openai_api_key=self.settings.OPENAI_API_KEY,
-                model_name=self.settings.OPENAI_MODEL
+                model_name=self.settings.OPENAI_MODEL,
             )
-            
+
             # Exit Advisor is now handled entirely within Core Agent (clean MVC architecture)
-            
+
             # Initialize Conversation Context
             self.conversation_context = ConversationContext()
-            
+
             self.logger.info("All agents initialized successfully")
-            
+
         except Exception as e:
             self.logger.error(f"Error initializing agents: {e}")
             st.error(f"[X] Error initializing AI agents: {e}")
             st.stop()
-    
+
     def process_user_message(self, user_message: str) -> Dict:
         """Process user message through the agent system."""
         start_time = time.time()
+
+        # Log user input
+        self.debug_logger.log_user_input(user_message)
+
         try:
             # CRITICAL FIX: Smart sync - only update Core Agent with NON-NULL session state data
             # This preserves extracted data while allowing registration form data to flow through
-            conversation_state = self.core_agent.get_or_create_conversation("streamlit_session")
-            
+            conversation_state = self.core_agent.get_or_create_conversation(
+                "streamlit_session"
+            )
+
             # Smart merge: only update fields that have actual values in session state
             if st.session_state.candidate_info:
                 for key, value in st.session_state.candidate_info.items():
                     if value is not None and value != "" and value != "unknown":
                         conversation_state.candidate_info[key] = value
-                self.logger.info(f"Smart synced candidate info to Core Agent: {conversation_state.candidate_info}")
-            
+                self.logger.info(
+                    f"Smart synced candidate info to Core Agent: {conversation_state.candidate_info}"
+                )
+
             # Check if registration is not complete - let LLM handle intent detection
-            if not st.session_state.get('registration_completed', False):
+            if not st.session_state.get("registration_completed", False):
                 # Process message through Core Agent to detect intent via LLM
                 agent_response, decision, reasoning = self.core_agent.process_message(
-                    user_message,
-                    conversation_id="streamlit_session"
+                    user_message, conversation_id="streamlit_session"
                 )
-                
+
                 # Agent continues conversation naturally - no registration form enforcement
                 # Registration form is USER-initiated, not agent-enforced
-                
+
                 # Otherwise, continue with the normal response
                 response_time = time.time() - start_time
                 response_metadata = {
-                    'decision': decision.value,
-                    'reasoning': reasoning,
-                    'agent_type': 'core_agent',
-                    'response_time': response_time
+                    "decision": decision.value,
+                    "reasoning": reasoning,
+                    "agent_type": "core_agent",
+                    "response_time": response_time,
                 }
-                
+
                 return {
-                    'response': agent_response,
-                    'metadata': response_metadata,
-                    'success': True
+                    "response": agent_response,
+                    "metadata": response_metadata,
+                    "success": True,
                 }
-            
+
             # CLEAN MVC ARCHITECTURE: Only call Core Agent (Controller)
             # Core Agent handles ALL business logic including exit decisions
             self.logger.info(f"CALLING CORE AGENT with user_message='{user_message}'")
-            
+
             agent_response, decision, reasoning = self.core_agent.process_message(
-                user_message,
-                conversation_id="streamlit_session"
+                user_message, conversation_id="streamlit_session"
             )
-            
+
+            # Log agent decision
+            self.debug_logger.log_agent_decision(
+                decision=decision.value,
+                reasoning=reasoning,
+                metadata={
+                    "response_preview": agent_response[:100] + "..."
+                    if len(agent_response) > 100
+                    else agent_response
+                },
+            )
+
             # Calculate response time
             response_time = time.time() - start_time
-            
+
             # CRITICAL FIX: Bidirectional sync - update session state with Core Agent's extracted data
             if conversation_state.candidate_info:
                 # Only update session state with non-null values to preserve existing data
-                extracted_data = {k: v for k, v in conversation_state.candidate_info.items() 
-                                if v is not None and v != "" and v != "unknown"}
+                extracted_data = {
+                    k: v
+                    for k, v in conversation_state.candidate_info.items()
+                    if v is not None and v != "" and v != "unknown"
+                }
                 if extracted_data:
                     self.chat_interface.update_candidate_info(extracted_data)
-                    self.logger.info(f"Updated session state with extracted data: {list(extracted_data.keys())}")
-            
+                    self.logger.info(
+                        f"Updated session state with extracted data: {list(extracted_data.keys())}"
+                    )
+
             response_metadata = {
-                'decision': decision.value,
-                'reasoning': reasoning,
-                'agent_type': 'core_agent',
-                'response_time': response_time
+                "decision": decision.value,
+                "reasoning": reasoning,
+                "agent_type": "core_agent",
+                "response_time": response_time,
             }
-            
+
             # Enhanced INFO decision handling with source references
             info_metadata = {}
             if decision == AgentDecision.INFO:
@@ -187,213 +232,406 @@ class RecruitmentChatbot:
                 # This is a simplified approach - in a full implementation,
                 # we'd get this directly from the Info Advisor
                 info_metadata = {
-                    'info_type': 'job_related',
-                    'sources_used': ['job_description_docs'],
-                    'has_context': True,
-                    'confidence': 0.8  # Estimated confidence
+                    "info_type": "job_related",
+                    "sources_used": ["job_description_docs"],
+                    "has_context": True,
+                    "confidence": 0.8,  # Estimated confidence
                 }
                 response_metadata.update(info_metadata)
-            
+
             # Handle scheduling if needed
             if decision == AgentDecision.SCHEDULE:
                 # Core Agent already consulted SchedulingAdvisor and stored slots in candidate_info
                 try:
-                    # Get the slots that were already computed by Core Agent
-                    candidate_info = self.core_agent.get_candidate_info('streamlit_session')
-                    available_slots = candidate_info.get('available_slots', [])
-                    
+                    # CRITICAL FIX: Wait for Core Agent to complete slot storage
+                    from datetime import datetime
+
+                    # TIMING DEBUG: Log when Streamlit starts slot retrieval
+                    retrieval_start = time.time()
+                    start_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                    self.logger.info(
+                        f"[TIMING] Streamlit slot retrieval START at {start_timestamp}"
+                    )
+
+                    # Try multiple times to get slots with small delays
+                    available_slots = []
+                    for attempt in range(3):
+                        attempt_start = time.time()
+                        attempt_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+
+                        candidate_info = self.core_agent.get_candidate_info(
+                            "streamlit_session"
+                        )
+                        available_slots = candidate_info.get("available_slots", [])
+
+                        attempt_duration = (time.time() - attempt_start) * 1000  # ms
+
+                        if available_slots:
+                            self.logger.info(
+                                f"[TIMING] SUCCESS at {attempt_timestamp}: Got {len(available_slots)} slots on attempt {attempt + 1} (took {attempt_duration:.2f}ms)"
+                            )
+                            # CRITICAL DEBUG: Log retrieved slots
+                            for i, slot in enumerate(available_slots):
+                                self.logger.info(f"[STREAMLIT_SLOTS] Retrieved slot {i}: {slot.get('recruiter', 'Unknown')}")
+                            break
+                        else:
+                            self.logger.warning(
+                                f"[TIMING] RETRY at {attempt_timestamp}: Attempt {attempt + 1} found no slots (took {attempt_duration:.2f}ms)"
+                            )
+                            if attempt < 2:  # Don't sleep on last attempt
+                                time.sleep(0.1)  # Wait 100ms
+
                     # CRITICAL DEBUG: Check if get_candidate_info is working properly
-                    self.logger.info(f"[SEARCH] CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}")
-                    if candidate_info and 'available_slots' in candidate_info:
-                        self.logger.info(f"[SEARCH] CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots")
+                    self.logger.info(
+                        f"[SEARCH] CRITICAL DEBUG: get_candidate_info returned: {list(candidate_info.keys()) if candidate_info else 'None'}"
+                    )
+                    if candidate_info and "available_slots" in candidate_info:
+                        self.logger.info(
+                            f"[SEARCH] CRITICAL DEBUG: available_slots key exists with {len(candidate_info['available_slots'])} slots"
+                        )
                     else:
-                        self.logger.error(f"[X] CRITICAL DEBUG: available_slots key missing from candidate_info!")
-                    
+                        self.logger.error(
+                            f"[X] CRITICAL DEBUG: available_slots key missing from candidate_info!"
+                        )
+
                     # DEBUG: Comprehensive slot tracking
-                    self.logger.info(f"[SEARCH] SLOT DEBUG: Core Agent decision = SCHEDULE")
-                    self.logger.info(f"[SEARCH] SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}")
-                    self.logger.info(f"[SEARCH] SLOT DEBUG: Found {len(available_slots)} slots in candidate_info")
+                    self.logger.info(
+                        f"[SEARCH] SLOT DEBUG: Core Agent decision = SCHEDULE"
+                    )
+                    self.logger.info(
+                        f"[SEARCH] SLOT DEBUG: Retrieved candidate_info keys: {list(candidate_info.keys())}"
+                    )
+                    self.logger.info(
+                        f"[SEARCH] SLOT DEBUG: Found {len(available_slots)} slots in candidate_info"
+                    )
                     if available_slots:
-                        self.logger.info(f"[SEARCH] SLOT DEBUG: First slot sample: {available_slots[0]}")
-                    
-                    if available_slots:
-                        scheduling_metadata = {
-                            'scheduling_decision': 'SCHEDULE',
-                            'scheduling_reasoning': 'Core Agent decided to schedule based on conversation flow',
-                            'suggested_slots': available_slots
-                        }
-                        
-                        # Update scheduling context for UI
-                        self.chat_interface.update_scheduling_context({
-                            'slots_offered': available_slots
-                        })
-                        
-                        response_metadata.update(scheduling_metadata)
-                        
-                        # DEBUG: Confirm metadata update
-                        self.logger.info(f"[OK] SLOT DEBUG: Successfully passed {len(available_slots)} slots to UI metadata")
-                        self.logger.info(f"[OK] SLOT DEBUG: response_metadata now contains: {list(response_metadata.keys())}")
-                    else:
+                        self.logger.info(
+                            f"[SEARCH] SLOT DEBUG: First slot sample: {available_slots[0]}"
+                        )
+
+                    # CRITICAL FIX: Always ensure we have slots for SCHEDULE decision
+                    if not available_slots:
                         # Fallback: Get slots directly if none were stored
-                        self.logger.warning("[X] SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval")
-                        self.logger.info(f"[X] SLOT DEBUG: candidate_info contents: {candidate_info}")
-                        
+                        self.logger.warning(
+                            "[FALLBACK] SLOT DEBUG: No slots found in candidate_info, falling back to direct retrieval"
+                        )
+                        self.logger.info(
+                            f"[FALLBACK] SLOT DEBUG: candidate_info contents: {candidate_info}"
+                        )
+
                         reference_datetime = datetime.now()
-                        all_slots = self.scheduling_advisor._get_all_available_slots(reference_datetime, days_ahead=14)
-                        
+                        all_slots = self.scheduling_advisor._get_all_available_slots(
+                            reference_datetime, days_ahead=14
+                        )
+
                         # Apply diversification to get 3 varied slots
-                        diversified_slots = self.scheduling_advisor._diversify_slot_selection(all_slots, max_slots=3)
-                        
-                        self.logger.info(f"🔄 SLOT DEBUG: Fallback generated {len(diversified_slots)} slots")
-                        
+                        available_slots = (
+                            self.scheduling_advisor._diversify_slot_selection(
+                                all_slots, max_slots=3
+                            )
+                        )
+
+                        self.logger.info(
+                            f"[FALLBACK] SLOT DEBUG: Generated {len(available_slots)} slots"
+                        )
+
+                        # Store the fallback slots in Core Agent for consistency
+                        try:
+                            conversation = self.core_agent.conversations.get(
+                                "streamlit_session"
+                            )
+                            if conversation:
+                                conversation.candidate_info[
+                                    "available_slots"
+                                ] = available_slots
+                                self.logger.info(
+                                    f"[FALLBACK] SLOT DEBUG: Stored fallback slots in Core Agent"
+                                )
+                        except Exception as e:
+                            self.logger.error(
+                                f"[FALLBACK] SLOT DEBUG: Failed to store fallback slots: {e}"
+                            )
+
+                    # Log slot offering (for both primary and fallback paths)
+                    if available_slots:
+                        self.debug_logger.log_slot_offering(
+                            slots=available_slots,
+                            metadata={
+                                "source": "core_agent_or_fallback",
+                                "total_slots": len(available_slots),
+                            },
+                        )
+
                         scheduling_metadata = {
-                            'scheduling_decision': 'SCHEDULE',
-                            'scheduling_reasoning': 'Fallback slot retrieval',
-                            'suggested_slots': diversified_slots
+                            "scheduling_decision": "SCHEDULE",
+                            "scheduling_reasoning": "Core Agent decided to schedule based on conversation flow",
+                            "suggested_slots": available_slots,
                         }
                         
-                        # Update scheduling context
-                        if diversified_slots:
-                            self.chat_interface.update_scheduling_context({
-                                'slots_offered': diversified_slots
-                            })
-                            self.logger.info(f"[OK] SLOT DEBUG: Fallback slots passed to UI context")
-                        
+                        # CRITICAL DEBUG: Log metadata construction
+                        self.logger.info(f"[METADATA_CONSTRUCTION] Created suggested_slots with {len(available_slots)} slots")
+                        self.logger.info(f"[METADATA_CONSTRUCTION] Metadata keys: {list(scheduling_metadata.keys())}")
+
+                        # Update scheduling context for UI
+                        self.chat_interface.update_scheduling_context(
+                            {"slots_offered": available_slots}
+                        )
+
                         response_metadata.update(scheduling_metadata)
-                    
+                        
+                        # CRITICAL DEBUG: Log final metadata after update
+                        self.logger.info(f"[FINAL_METADATA] Updated response_metadata with scheduling info")
+                        self.logger.info(f"[FINAL_METADATA] Final metadata keys: {list(response_metadata.keys())}")
+                        if "suggested_slots" in response_metadata:
+                            self.logger.info(f"[FINAL_METADATA] suggested_slots count: {len(response_metadata['suggested_slots'])}")
+                        else:
+                            self.logger.error(f"[FINAL_METADATA] NO suggested_slots in final metadata!")
+
+                        # TIMING DEBUG: Log metadata completion
+                        metadata_timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                        total_duration = (time.time() - retrieval_start) * 1000  # ms
+
+                        self.logger.info(
+                            f"[TIMING] Metadata UPDATE at {metadata_timestamp}: Successfully passed {len(available_slots)} slots to UI (total time: {total_duration:.2f}ms)"
+                        )
+                        self.logger.info(
+                            f"[TIMING] Final metadata keys: {list(response_metadata.keys())}"
+                        )
+                    else:
+                        # This should not happen, but handle gracefully
+                        self.logger.error(
+                            "[ERROR] SLOT DEBUG: No slots available even after fallback!"
+                        )
+                        response_metadata.update(
+                            {
+                                "scheduling_error": "No available slots found",
+                                "suggested_slots": [],
+                            }
+                        )
+
                 except Exception as e:
                     self.logger.error(f"Error getting slots for UI display: {e}")
-                    response_metadata.update({
-                        'scheduling_error': str(e),
-                        'suggested_slots': []
-                    })
-            
+                    response_metadata.update(
+                        {"scheduling_error": str(e), "suggested_slots": []}
+                    )
+
             return {
-                'response': agent_response,
-                'metadata': response_metadata,
-                'success': True
+                "response": agent_response,
+                "metadata": response_metadata,
+                "success": True,
             }
-            
+
         except Exception as e:
             # Log error to admin panel
-            error_data = {'error': str(e), 'user_message': user_message}
-            self.admin_panel.log_conversation_event('error', error_data)
-            st.session_state.admin_analytics['error_logs'].append({
-                'timestamp': datetime.now(),
-                'error': str(e),
-                'context': user_message
-            })
-            
+            error_data = {"error": str(e), "user_message": user_message}
+            self.admin_panel.log_conversation_event("error", error_data)
+            st.session_state.admin_analytics["error_logs"].append(
+                {"timestamp": datetime.now(), "error": str(e), "context": user_message}
+            )
+
             self.logger.error(f"Error processing user message: {e}")
             print(traceback.format_exc())
             if st.sidebar.checkbox("Show Error Details", value=True):
                 st.sidebar.error(f"Exception: {e}")
                 st.sidebar.code(traceback.format_exc())
             return {
-                'response': "I apologize, but I encountered an error processing your message. Please try again.",
-                'metadata': {'error': str(e), 'agent_type': 'error'},
-                'success': False
+                "response": "I apologize, but I encountered an error processing your message. Please try again.",
+                "metadata": {"error": str(e), "agent_type": "error"},
+                "success": False,
             }
-    
 
-    
-    def handle_scheduling_decision(self, conversation_messages: List[Dict], user_message: str) -> Dict:
+    def handle_scheduling_decision(
+        self, conversation_messages: List[Dict], user_message: str
+    ) -> Dict:
         """Handle scheduling through the Scheduling Advisor."""
         try:
             # Get candidate info from session state
             candidate_info = st.session_state.candidate_info
-            
+
             # Make scheduling decision
-            scheduling_decision, reasoning, suggested_slots, scheduling_response = \
-                self.scheduling_advisor.make_scheduling_decision(
-                    candidate_info,
-                    conversation_messages,
-                    user_message
-                )
-            
+            (
+                scheduling_decision,
+                reasoning,
+                suggested_slots,
+                scheduling_response,
+            ) = self.scheduling_advisor.make_scheduling_decision(
+                candidate_info, conversation_messages, user_message
+            )
+
             scheduling_metadata = {
-                'scheduling_decision': scheduling_decision.value,
-                'scheduling_reasoning': reasoning,
-                'suggested_slots': suggested_slots
+                "scheduling_decision": scheduling_decision.value,
+                "scheduling_reasoning": reasoning,
+                "suggested_slots": suggested_slots,
             }
-            
+
             # Update scheduling context
             if suggested_slots:
-                self.chat_interface.update_scheduling_context({
-                    'slots_offered': suggested_slots
-                })
-            
+                self.chat_interface.update_scheduling_context(
+                    {"slots_offered": suggested_slots}
+                )
+
             return scheduling_metadata
-            
+
         except Exception as e:
             self.logger.error(f"Error in scheduling decision: {e}")
-            return {
-                'scheduling_error': str(e),
-                'suggested_slots': []
-            }
-    
+            return {"scheduling_error": str(e), "suggested_slots": []}
+
     def handle_slot_selection(self, selected_slot: Dict) -> Dict:
         """Handle when user selects a time slot for booking."""
         try:
-            # Get candidate info
-            candidate_info = st.session_state.candidate_info
-            
-            # Book the appointment
-            slot_datetime = datetime.fromisoformat(selected_slot['datetime'].replace('Z', '+00:00'))
-            recruiter_id = selected_slot.get('recruiter_id', 1)
-            slot_id = selected_slot.get('id')  # Get the slot ID
-            
-            booking_result = self.scheduling_advisor.book_appointment(
-                candidate_info,
-                slot_datetime,
-                recruiter_id,
-                45,  # 45 minutes duration
-                slot_id  # Pass the slot ID
+            # Log slot selection
+            self.debug_logger.log_slot_selection(
+                selected_slot=selected_slot,
+                user_action="button_click",
+                metadata={
+                    "session_state_scheduling_context": st.session_state.scheduling_context
+                },
             )
-            
-            if booking_result['success']:
+
+            # CRITICAL FIX: Route slot selection through Core Agent instead of direct booking
+            # This ensures slot confirmation goes through the proper _handle_slot_confirmation flow
+
+            # Get the available slots that were offered to the user
+            candidate_info = self.core_agent.get_candidate_info("streamlit_session")
+            available_slots = candidate_info.get("available_slots", [])
+
+            # If no slots in candidate_info, try to reconstruct from scheduling context
+            if not available_slots:
+                available_slots = st.session_state.scheduling_context.get(
+                    "slots_offered", []
+                )
+
+            self.debug_logger.log_slot_confirmation_flow(
+                stage="slot_retrieval",
+                data={
+                    "available_slots_count": len(available_slots),
+                    "source": "candidate_info"
+                    if candidate_info.get("available_slots")
+                    else "session_state",
+                    "selected_slot": selected_slot,
+                },
+            )
+
+            self.logger.info(
+                f"SLOT SELECTION: Processing selection with {len(available_slots)} available slots"
+            )
+            self.logger.info(f"SLOT SELECTION: Selected slot data: {selected_slot}")
+
+            # Create slot confirmation message that matches user's selection
+            slot_dt = datetime.fromisoformat(
+                selected_slot["datetime"].replace("Z", "+00:00")
+            )
+            formatted_time = slot_dt.strftime("%A, %B %d at %I:%M %p")
+            recruiter_name = selected_slot.get("recruiter", "the interviewer")
+            confirmation_message = f"{formatted_time} with {recruiter_name}"
+
+            # Get conversation context
+            conversation = self.core_agent.get_or_create_conversation(
+                "streamlit_session"
+            )
+
+            self.debug_logger.log_slot_confirmation_flow(
+                stage="core_agent_call",
+                data={
+                    "confirmation_message": confirmation_message,
+                    "available_slots_passed": len(available_slots),
+                    "conversation_id": "streamlit_session",
+                },
+            )
+
+            # Use Core Agent's slot confirmation method (this works correctly!)
+            booking_result = asyncio.run(
+                self.core_agent._handle_slot_confirmation(
+                    conversation=conversation,
+                    user_message=confirmation_message,
+                    available_slots=available_slots,
+                )
+            )
+
+            self.debug_logger.log_slot_confirmation_flow(
+                stage="core_agent_result",
+                data={
+                    "booking_result": booking_result,
+                    "success": booking_result.get("success"),
+                    "appointment_details": booking_result.get(
+                        "appointment_details", {}
+                    ),
+                },
+            )
+
+            if booking_result.get("success"):
+                # Extract appointment details from Core Agent result
+                appointment_details = booking_result.get("appointment_details", {})
+
                 # Update scheduling context
-                self.chat_interface.update_scheduling_context({
-                    'appointment_confirmed': True,
-                    'selected_slot': selected_slot
-                })
-                
+                self.chat_interface.update_scheduling_context(
+                    {"appointment_confirmed": True, "selected_slot": selected_slot}
+                )
+
                 # Update conversation stage
-                self.chat_interface.update_conversation_stage('completed')
-                
+                self.chat_interface.update_conversation_stage("completed")
+
+                self.logger.info(f"SLOT SELECTION SUCCESS: {appointment_details}")
+
+                # Log successful booking
+                self.debug_logger.log_booking_result(
+                    booking_result={
+                        "success": True,
+                        "appointment_details": appointment_details,
+                        "confirmation_message": booking_result.get(
+                            "confirmation_message",
+                            "Your interview has been scheduled successfully!",
+                        ),
+                    }
+                )
+
                 return {
-                    'appointment_confirmed': True,
-                    'appointment_details': {
-                        'datetime': slot_datetime.strftime("%A, %B %d, %Y at %I:%M %p"),
-                        'recruiter': booking_result.get('recruiter', {}).get('name', 'Our recruiter'),
-                        'duration': 45,
-                        'appointment_id': booking_result.get('appointment_id')
-                    },
-                    'confirmation_message': booking_result.get('confirmation_message', '')
+                    "appointment_confirmed": True,
+                    "appointment_details": appointment_details,
+                    "confirmation_message": booking_result.get(
+                        "confirmation_message",
+                        "Your interview has been scheduled successfully!",
+                    ),
                 }
             else:
-                return {
-                    'appointment_error': booking_result.get('error', 'Unknown error'),
-                    'appointment_confirmed': False
-                }
-                
+                error_msg = booking_result.get(
+                    "error", "Unknown error occurred during booking"
+                )
+                self.logger.error(f"SLOT SELECTION FAILED: {error_msg}")
+
+                # Log failed booking
+                self.debug_logger.log_booking_result(
+                    booking_result={"success": False, "error": error_msg}
+                )
+
+                return {"appointment_error": error_msg, "appointment_confirmed": False}
+
         except Exception as e:
             self.logger.error(f"Error booking appointment: {e}")
-            return {
-                'appointment_error': str(e),
-                'appointment_confirmed': False
-            }
-    
+
+            # Log exception
+            self.debug_logger.log_error(
+                component="slot_selection",
+                error=f"Exception during slot selection: {str(e)}",
+                context={
+                    "selected_slot": selected_slot,
+                    "exception_type": type(e).__name__,
+                },
+                exception=e,
+            )
+
+            return {"appointment_error": str(e), "appointment_confirmed": False}
+
     def display_system_status(self):
         """Display system status in the sidebar."""
         with st.sidebar:
             st.subheader("[WRENCH] System Status")
-            
+
             # Agent status
             st.write("**Core Agent:** [OK] Ready")
             st.write("**Scheduling Advisor:** [OK] Ready")
             st.write("**Exit Advisor:** [OK] Ready")
-            
+
             # Database status
             try:
                 stats = self.scheduling_advisor.get_scheduling_statistics()
@@ -403,50 +641,53 @@ class RecruitmentChatbot:
             except Exception as e:
                 st.write("**Database:** [X] Error")
                 st.write(f"Error: {str(e)[:50]}...")
-            
+
             # API status
             if self.settings.OPENAI_API_KEY:
                 st.write("**OpenAI API:** [OK] Configured")
                 st.write(f"**Model:** {self.settings.OPENAI_MODEL}")
             else:
                 st.write("**OpenAI API:** [X] Not configured")
-    
+
     def display_debug_info(self):
         """Display debug information if enabled."""
         if st.sidebar.checkbox("🐛 Debug Mode", value=False):
             with st.sidebar:
                 st.subheader("[SEARCH] Debug Info")
-                
+
                 # Conversation state
-                if hasattr(self.core_agent, 'conversation_state'):
+                if hasattr(self.core_agent, "conversation_state"):
                     state = self.core_agent.conversation_state
                     st.write(f"**Messages:** {len(state.messages)}")
-                    st.write(f"**Candidate Info:** {len([k for k, v in state.candidate_info.items() if v])}/5")
-                
+                    st.write(
+                        f"**Candidate Info:** {len([k for k, v in state.candidate_info.items() if v])}/5"
+                    )
+
                 # Session state
                 st.write("**Session State Keys:**")
                 for key in st.session_state.keys():
                     st.write(f"• {key}")
-                
+
                 # Settings
                 with st.expander("[GEAR] Settings"):
                     st.write(f"**Model:** {self.settings.OPENAI_MODEL}")
                     st.write(f"**Temperature:** {self.settings.OPENAI_TEMPERATURE}")
                     st.write(f"**Max Tokens:** {self.settings.OPENAI_MAX_TOKENS}")
-    
+
     def run(self):
         """Run the main Streamlit application."""
-        
+
         # Configure Streamlit page
         st.set_page_config(
             page_title="AI Recruitment Assistant",
             page_icon="[BOT]",
             layout="wide",
-            initial_sidebar_state="expanded"
+            initial_sidebar_state="expanded",
         )
-        
+
         # Add custom CSS for better styling
-        st.markdown("""
+        st.markdown(
+            """
         <style>
         .main {
             padding-top: 1rem;
@@ -470,201 +711,226 @@ class RecruitmentChatbot:
             font-size: 0.9em;
         }
         </style>
-        """, unsafe_allow_html=True)
-        
+        """,
+            unsafe_allow_html=True,
+        )
+
         # Main navigation tabs
         tab1, tab2 = st.tabs(["[CHAT] Chat Interface", "[TOOLS] Admin Panel"])
-        
+
         with tab1:
             self.display_chat_interface()
-            
+
         with tab2:
             self.admin_panel.display_admin_panel()
-    
+
     def display_chat_interface(self):
         """Display the main chat interface."""
         # Main title
         st.title("[BOT] AI Recruitment Assistant")
-        st.markdown("*Intelligent conversations for Python developer positions with multi-agent orchestration*")
-        
+        st.markdown(
+            "*Intelligent conversations for Python developer positions with multi-agent orchestration*"
+        )
+
         # Display system status and debug info in sidebar
         self.display_system_status()
         self.display_debug_info()
-        
+
         # USER-INITIATED REGISTRATION SECTION
         # Show registration option if not completed (user can choose to fill it or skip)
-        if not st.session_state.get('registration_completed', False):
-            with st.expander("[MEMO] Optional: Quick Registration Form", expanded=False):
-                st.info("""
+        if not st.session_state.get("registration_completed", False):
+            with st.expander(
+                "[MEMO] Optional: Quick Registration Form", expanded=False
+            ):
+                st.info(
+                    """
                 **[IDEA] You can fill out this form to speed up the process, or simply continue chatting!**
                 
                 This form is completely optional. You can:
                 - Fill it out now for faster interview scheduling
                 - Skip it and provide information through our conversation
                 - Come back to it later if you change your mind
-                """)
-                
+                """
+                )
+
                 # Add a user choice
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("[MEMO] Fill Registration Form", use_container_width=True):
+                    if st.button(
+                        "[MEMO] Fill Registration Form", use_container_width=True
+                    ):
                         st.session_state.user_wants_registration = True
                         st.rerun()
                 with col2:
                     if st.button("[CHAT] Continue Chatting", use_container_width=True):
                         st.session_state.user_wants_registration = False
                         st.success("Great! Let's continue our conversation naturally.")
-                
+
                 # Show form if user explicitly requested it
-                if st.session_state.get('user_wants_registration', False):
+                if st.session_state.get("user_wants_registration", False):
                     st.markdown("---")
-                    registration_complete = self.registration_form.display_registration_form()
-                    
+                    registration_complete = (
+                        self.registration_form.display_registration_form()
+                    )
+
                     if registration_complete:
-                        st.success("[OK] Registration completed! This will help speed up our conversation.")
+                        st.success(
+                            "[OK] Registration completed! This will help speed up our conversation."
+                        )
                         st.session_state.user_wants_registration = False
                         st.balloons()
                         st.rerun()
-        
+
         # If registration is complete, show a summary
-        elif st.session_state.get('registration_completed', False):
+        elif st.session_state.get("registration_completed", False):
             with st.expander("[USER] Registration Summary", expanded=False):
                 self.registration_form.display_registration_summary()
-        
+
         # Render chat interface
         user_input = self.chat_interface.render()
-        
+
         # Check if this is a slot selection (PRIORITY: Handle slot selection regardless of user input)
-        if (st.session_state.scheduling_context.get('selected_slot') and 
-            not st.session_state.scheduling_context.get('appointment_confirmed') and
-            not st.session_state.get('slot_booking_completed', False)):
-            
+        if (
+            st.session_state.scheduling_context.get("selected_slot")
+            and not st.session_state.scheduling_context.get("appointment_confirmed")
+            and not st.session_state.get("slot_booking_completed", False)
+        ):
             # Note: Registration is optional - users can book with information gathered conversationally
-            
+
             # Handle slot selection
-            selected_slot = st.session_state.scheduling_context['selected_slot']
+            selected_slot = st.session_state.scheduling_context["selected_slot"]
             booking_result = self.handle_slot_selection(selected_slot)
-            
+
             # Add confirmation message
-            if booking_result.get('appointment_confirmed'):
-                confirmation_msg = booking_result.get('confirmation_message', 
-                                                    'Your interview has been scheduled successfully!')
+            if booking_result.get("appointment_confirmed"):
+                confirmation_msg = booking_result.get(
+                    "confirmation_message",
+                    "Your interview has been scheduled successfully!",
+                )
                 self.chat_interface.add_assistant_message(
-                    confirmation_msg,
-                    booking_result
+                    confirmation_msg, booking_result
                 )
                 # Mark booking as completed to prevent rerun loops
                 st.session_state.slot_booking_completed = True
             else:
                 error_msg = f"Sorry, there was an error booking your appointment: {booking_result.get('appointment_error', 'Unknown error')}"
                 self.chat_interface.add_assistant_message(error_msg)
-            
+
             # Clear the selected slot and prevent further processing
-            st.session_state.scheduling_context['selected_slot'] = None
+            st.session_state.scheduling_context["selected_slot"] = None
             st.session_state.slot_selection_in_progress = False
-            
+
             # Only rerun if booking was successful to show confirmation
-            if booking_result.get('appointment_confirmed'):
+            if booking_result.get("appointment_confirmed"):
                 st.rerun()
             return
-        
+
         # Process user input if provided
         elif user_input:
             # Process regular user message
             with st.spinner("[BOT] Thinking..."):
                 result = self.process_user_message(user_input)
-            
+
             # Registration form is user-initiated only - no automatic prompting
-            
+
             # Enhanced display for INFO responses with source references
-            if result['metadata'].get('decision') == 'INFO':
-                self.display_info_response_enhanced(result['response'], result['metadata'])
+            if result["metadata"].get("decision") == "INFO":
+                self.display_info_response_enhanced(
+                    result["response"], result["metadata"]
+                )
             else:
                 # Check if this is a successful booking confirmation
-                if ('booked' in result['metadata'].get('reasoning', '').lower() and 
-                    'successfully' in result['response'].lower()):
+                if (
+                    "booked" in result["metadata"].get("reasoning", "").lower()
+                    and "successfully" in result["response"].lower()
+                ):
                     # This is a booking confirmation - mark as completed
-                    self.chat_interface.update_conversation_stage('completed')
-                    self.chat_interface.update_scheduling_context({
-                        'appointment_confirmed': True
-                    })
-                
+                    self.chat_interface.update_conversation_stage("completed")
+                    self.chat_interface.update_scheduling_context(
+                        {"appointment_confirmed": True}
+                    )
+
                 # Add regular assistant response
                 self.chat_interface.add_assistant_message(
-                    result['response'],
-                    result['metadata']
+                    result["response"], result["metadata"]
                 )
-            
+
             # Update conversation stage based on decision
-            if result['metadata'].get('decision') == 'SCHEDULE':
-                self.chat_interface.update_conversation_stage('scheduling')
-            elif result['metadata'].get('appointment_confirmed'):
-                self.chat_interface.update_conversation_stage('completed')
-            elif result['metadata'].get('decision') == 'END':
-                self.chat_interface.update_conversation_stage('ended')
-            
+            if result["metadata"].get("decision") == "SCHEDULE":
+                self.chat_interface.update_conversation_stage("scheduling")
+            elif result["metadata"].get("appointment_confirmed"):
+                self.chat_interface.update_conversation_stage("completed")
+            elif result["metadata"].get("decision") == "END":
+                self.chat_interface.update_conversation_stage("ended")
+
             # Rerun to display new message
             st.rerun()
-            
+
         # Display enhanced session statistics in sidebar
         self.display_session_stats()
-    
+
     def display_info_response_enhanced(self, response: str, metadata: Dict):
         """Display INFO responses with enhanced formatting and source references."""
         # Add the response to chat first
         self.chat_interface.add_assistant_message(response, metadata)
-        
+
         # Display enhanced info panel in sidebar
         with st.sidebar:
             st.markdown("---")
             st.subheader("📚 Information Response Details")
-            
+
             # Show confidence and sources
-            confidence = metadata.get('confidence', 0.8)
+            confidence = metadata.get("confidence", 0.8)
             st.progress(confidence, f"Confidence: {confidence:.0%}")
-            
-            has_context = metadata.get('has_context', True)
+
+            has_context = metadata.get("has_context", True)
             st.write(f"**Context Available:** {'[OK]' if has_context else '[X]'}")
-            
+
             # Show sources used
-            if metadata.get('sources_used'):
+            if metadata.get("sources_used"):
                 st.write("**[FOLDER] Sources Referenced:**")
-                for source in metadata['sources_used']:
+                for source in metadata["sources_used"]:
                     st.write(f"• {source}")
-            
+
             # Show response time
-            if 'response_time' in metadata:
+            if "response_time" in metadata:
                 st.write(f"**[TIMER] Response Time:** {metadata['response_time']:.2f}s")
-    
+
     def display_session_stats(self):
         """Display session statistics in sidebar."""
         with st.sidebar:
             st.markdown("---")
             st.subheader("[CHART] Session Statistics")
-            
-            if st.session_state.admin_analytics['conversation_logs']:
-                total_interactions = len(st.session_state.admin_analytics['conversation_logs'])
+
+            if st.session_state.admin_analytics["conversation_logs"]:
+                total_interactions = len(
+                    st.session_state.admin_analytics["conversation_logs"]
+                )
                 st.metric("Total Interactions", total_interactions)
-                
+
                 # Count decision types
                 from collections import Counter
+
                 decision_counts = Counter(
-                    log['data'].get('decision', 'unknown') 
-                    for log in st.session_state.admin_analytics['conversation_logs']
-                    if log['event_type'] == 'agent_decision'
+                    log["data"].get("decision", "unknown")
+                    for log in st.session_state.admin_analytics["conversation_logs"]
+                    if log["event_type"] == "agent_decision"
                 )
-                
+
                 if decision_counts:
                     st.write("**Decision Breakdown:**")
                     for decision, count in decision_counts.most_common():
                         st.write(f"• {decision}: {count}")
-                        
+
                 # Show recent activity
                 recent_threshold = datetime.now() - timedelta(minutes=5)
-                recent_activity = len([
-                    log for log in st.session_state.admin_analytics['conversation_logs']
-                    if log['timestamp'] > recent_threshold
-                ])
+                recent_activity = len(
+                    [
+                        log
+                        for log in st.session_state.admin_analytics["conversation_logs"]
+                        if log["timestamp"] > recent_threshold
+                    ]
+                )
                 st.metric("Recent Activity (5m)", recent_activity)
             else:
                 st.info("No session data yet. Start chatting to see statistics!")
@@ -676,16 +942,17 @@ def main():
         # Create and run the chatbot
         chatbot = RecruitmentChatbot()
         chatbot.run()
-        
+
     except Exception as e:
         st.error(f"[X] Application Error: {e}")
         st.write("Please check your configuration and try again.")
-        
+
         # Display error details in debug mode
         if st.checkbox("Show Error Details"):
             import traceback
+
             st.code(traceback.format_exc())
 
 
 if __name__ == "__main__":
-    main() 
+    main()
