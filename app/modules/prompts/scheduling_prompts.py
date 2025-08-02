@@ -107,6 +107,7 @@ Your response must be structured JSON with this exact format:
   "reasoning": "comprehensive decision explanation",
   "suggested_slots": [
     {{
+      "id": 123,
       "datetime": "2024-12-16T09:00:00",
       "recruiter": "Sarah Johnson",
       "match_reason": "why this slot matches preferences"
@@ -338,7 +339,7 @@ IMPORTANT: Respond with valid JSON only, no other text."""
         # Format available slots for prompt
         if available_slots:
             slots_text = "[\n" + ",\n".join([
-                f'  {{"datetime": "{slot.get("datetime", "")}", "recruiter": "{slot.get("recruiter", "")}", "duration": {slot.get("duration", 45)}}}'
+                f'  {{"id": {slot.get("id", "null")}, "datetime": "{slot.get("datetime", "")}", "recruiter": "{slot.get("recruiter", "")}", "duration": {slot.get("duration", 45)}}}'
                 for slot in available_slots[:10]  # Limit to 10 slots for prompt size
             ]) + "\n]"
         else:
