@@ -15,7 +15,14 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(./run_app.sh)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pkill:*)",
+      "Bash(mkdir:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }

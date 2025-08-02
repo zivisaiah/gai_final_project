@@ -192,3 +192,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Project-specific debug files
+data/debug_logs/
+conversation_debug.json
+*_test.py
+debug_*.py
+automated_conversation_test.py
