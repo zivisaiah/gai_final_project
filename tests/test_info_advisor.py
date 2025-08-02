@@ -267,17 +267,17 @@ if __name__ == "__main__":
         
         # Test initialization
         info_advisor = InfoAdvisor(temperature=0.3)
-        print("✅ Info Advisor initialized")
+        print("[OK] Info Advisor initialized")
         
         # Test vector store status
         status = info_advisor.get_vector_store_status()
-        print(f"✅ Vector Store Status: {status['available']}")
+        print(f"[OK] Vector Store Status: {status['available']}")
         
         # Test a simple question
         response = await info_advisor.answer_question("What programming languages are required?")
-        print(f"✅ Question answered with confidence: {response.confidence:.2f}")
-        print(f"📝 Answer preview: {response.answer[:100]}...")
+        print(f"[OK] Question answered with confidence: {response.confidence:.2f}")
+        print(f"[MEMO] Answer preview: {response.answer[:100]}...")
         
-        print("\n🎉 Quick tests passed! Run 'pytest tests/test_info_advisor.py' for full test suite.")
+        print("\n[PARTY] Quick tests passed! Run 'pytest tests/test_info_advisor.py' for full test suite.")
     
     asyncio.run(quick_test()) 

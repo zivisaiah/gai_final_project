@@ -6,9 +6,11 @@ Specialized agent for handling interview scheduling decisions and time slot mana
 import re
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
+
+# Debug logging removed after bug fix
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -173,8 +175,12 @@ class SchedulingAdvisor:
             start_date = reference_datetime.date()
             end_date = start_date + timedelta(days=days_ahead)
             
-            # Get available slots from database
-            all_slots_raw = self.sql_manager.get_available_slots(start_date, end_date)
+            # Get available slots from database (explicitly ensure only available slots)
+            all_slots_raw = self.sql_manager.get_available_slots(
+                start_date=start_date, 
+                end_date=end_date, 
+                available_only=True
+            )
             
             # Convert AvailableSlotResponse objects to dictionaries for compatibility
             all_slots = []
@@ -270,6 +276,122 @@ class SchedulingAdvisor:
             self.logger.error(f"Error getting available slots: {e}")
             return []
 
+    def _filter_slots_by_preferences(self, available_slots: List[Dict], time_preferences: Dict) -> List[Dict]:
+        """
+        Filter available slots based on parsed time preferences from conversation.
+        
+        Args:
+            available_slots: List of all available slots
+            time_preferences: Parsed time preferences including constraints like 'after 10am'
+            
+        Returns:
+            List of slots that match the preferences
+        """
+        if not time_preferences or not available_slots:
+            return available_slots
+            
+        filtered_slots = []
+        
+        # Extract constraint information
+        parsed_expressions = time_preferences.get('parsed_expressions', [])
+        preferred_times = time_preferences.get('preferred_times', [])
+        preferred_days = time_preferences.get('preferred_days', [])
+        exclusions = time_preferences.get('exclusions', [])
+        
+        # Parse time constraints from expressions
+        time_constraints = {}
+        for expr in parsed_expressions:
+            expr_lower = expr.lower()
+            if 'after' in expr_lower:
+                # Extract time after 'after' (e.g., 'after 10am' -> 10:00)
+                import re
+                time_match = re.search(r'after\s+(\d{1,2})(?::?(\d{2}))?\s*(am|pm)?', expr_lower)
+                if time_match:
+                    hour = int(time_match.group(1))
+                    minute = int(time_match.group(2) or 0)
+                    if time_match.group(3) == 'pm' and hour != 12:
+                        hour += 12
+                    elif time_match.group(3) == 'am' and hour == 12:
+                        hour = 0
+                    time_constraints['after'] = time(hour, minute)
+                    self.logger.info(f"Parsed 'after' constraint: {time_constraints['after']}")
+                    
+            elif 'before' in expr_lower:
+                # Extract time after 'before' (e.g., 'before 5pm' -> 17:00)
+                time_match = re.search(r'before\s+(\d{1,2})(?::?(\d{2}))?\s*(am|pm)?', expr_lower)
+                if time_match:
+                    hour = int(time_match.group(1))
+                    minute = int(time_match.group(2) or 0)
+                    if time_match.group(3) == 'pm' and hour != 12:
+                        hour += 12
+                    elif time_match.group(3) == 'am' and hour == 12:
+                        hour = 0
+                    time_constraints['before'] = time(hour, minute)
+                    self.logger.info(f"Parsed 'before' constraint: {time_constraints['before']}")
+        
+        # Phase 1: Check for exact time matches if preferred_times is specified
+        exact_time_slots = []
+        if preferred_times:
+            for slot in available_slots:
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                slot_time_str = slot_dt.strftime('%I:%M %p').lstrip('0')  # Format as "10:00 AM"
+                slot_day = slot_dt.strftime('%A')
+                
+                # Check if this slot matches any preferred time
+                for pref_time in preferred_times:
+                    # Normalize both times for comparison
+                    normalized_pref = pref_time.strip().lstrip('0')
+                    if slot_time_str == normalized_pref:
+                        # Also check day preference if specified
+                        if not preferred_days or slot_day in preferred_days:
+                            # Check exclusions
+                            if slot_day not in exclusions:
+                                exact_time_slots.append(slot)
+                                self.logger.debug(f"Found exact time match: {slot_time_str} on {slot_day}")
+                                break
+        
+        # If we found exact time matches, prioritize them
+        if exact_time_slots:
+            self.logger.info(f"Found {len(exact_time_slots)} exact time matches for preferred times: {preferred_times}")
+            filtered_slots = exact_time_slots
+        else:
+            # Phase 2: Apply general constraints if no exact matches
+            for slot in available_slots:
+                slot_dt = datetime.fromisoformat(slot['datetime'].replace('Z', '+00:00'))
+                slot_time = slot_dt.time()
+                slot_day = slot_dt.strftime('%A')
+                
+                # Check time constraints
+                if 'after' in time_constraints and slot_time < time_constraints['after']:
+                    self.logger.debug(f"Filtering out slot at {slot_time} - before 'after' constraint {time_constraints['after']}")
+                    continue
+                    
+                if 'before' in time_constraints and slot_time > time_constraints['before']:
+                    self.logger.debug(f"Filtering out slot at {slot_time} - after 'before' constraint {time_constraints['before']}")
+                    continue
+                
+                # Check day exclusions
+                if slot_day in exclusions:
+                    self.logger.debug(f"Filtering out slot on {slot_day} - in exclusions")
+                    continue
+                    
+                # Check preferred days if specified
+                if preferred_days and slot_day not in preferred_days:
+                    self.logger.debug(f"Filtering out slot on {slot_day} - not in preferred days")
+                    continue
+                    
+                # If slot passes all filters, include it
+                filtered_slots.append(slot)
+            
+        self.logger.info(f"Filtered {len(available_slots)} slots to {len(filtered_slots)} based on preferences: {time_preferences}")
+        
+        # If no slots match preferences, return original list with warning
+        if not filtered_slots:
+            self.logger.warning("No slots match the specified preferences, returning all available slots")
+            return available_slots
+            
+        return filtered_slots
+    
     def _diversify_slot_selection(self, available_slots: List[Dict], max_slots: int = 3) -> List[Dict]:
         """
         Select diversified slots across different days and times.
@@ -697,16 +819,16 @@ class SchedulingAdvisor:
         formatted_datetime = slot_datetime.strftime("%A, %B %d, %Y at %I:%M %p")
         recruiter_name = recruiter.get('name', 'Our recruiter') if recruiter else 'Our recruiter'
         
-        return f"""🎉 **Interview Successfully Scheduled!**
+        return f"""[PARTY] **Interview Successfully Scheduled!**
 
-📅 **Date & Time:** {formatted_datetime}
-👤 **Interviewer:** {recruiter_name}
-⏱️ **Duration:** {duration_minutes} minutes
-📧 **Format:** Video call (link will be sent via email)
+[CALENDAR] **Date & Time:** {formatted_datetime}
+[USER] **Interviewer:** {recruiter_name}
+[TIMER] **Duration:** {duration_minutes} minutes
+[EMAIL] **Format:** Video call (link will be sent via email)
 
 You'll receive a calendar invitation with the meeting link and all details within the next few minutes.
 
-✅ **All set!** Thank you for your interest in our Python developer position. We look forward to speaking with you soon!
+**All set!** Thank you for your interest in our Python developer position. We look forward to speaking with you soon!
 
 ---
 *This conversation is now complete. If you need to reschedule or have any questions, please contact our HR team directly.*"""
@@ -753,8 +875,12 @@ You'll receive a calendar invitation with the meeting link and all details withi
             start_date = reference_datetime.date()
             end_date = start_date + timedelta(days=days_ahead)
             
-            # Get available slots from database
-            all_slots_raw = self.sql_manager.get_available_slots(start_date, end_date)
+            # Get available slots from database (explicitly ensure only available slots)
+            all_slots_raw = self.sql_manager.get_available_slots(
+                start_date=start_date, 
+                end_date=end_date, 
+                available_only=True
+            )
             
             # Convert AvailableSlotResponse objects to dictionaries for LLM analysis
             all_slots = []
@@ -831,8 +957,11 @@ You'll receive a calendar invitation with the meeting link and all details withi
             
             # Handle slot selection based on decision
             if decision == SchedulingDecision.SCHEDULE:
-                # When scheduling, always provide diversified available slots regardless of LLM suggestions
-                final_slots = self._diversify_slot_selection(available_slots, max_slots=3)
+                # Filter slots based on time preferences before diversifying
+                filtered_slots = self._filter_slots_by_preferences(available_slots, time_preferences)
+                # When scheduling, provide diversified available slots from filtered results
+                final_slots = self._diversify_slot_selection(filtered_slots, max_slots=3)
+                self.logger.info(f"Decision: SCHEDULE - filtered {len(available_slots)} to {len(filtered_slots)} slots based on preferences")
                 self.logger.info(f"Decision: SCHEDULE - providing {len(final_slots)} diversified slots")
             else:
                 # For non-scheduling decisions, validate LLM suggestions if any
@@ -869,25 +998,57 @@ You'll receive a calendar invitation with the meeting link and all details withi
         """
         validated = []
         
-        # Create lookup for available slots
-        available_lookup = {slot['datetime']: slot for slot in available_slots}
+        self.logger.info(f"[VALIDATE_SLOTS] Validating {len(suggested_slots)} suggested slots against {len(available_slots)} available slots")
         
         for suggested in suggested_slots:
+            suggested_id = suggested.get('id')
             suggested_dt = suggested.get('datetime', '')
+            suggested_recruiter = suggested.get('recruiter', '')
             
-            # Check if suggested slot exists in available slots
-            if suggested_dt in available_lookup:
-                available_slot = available_lookup[suggested_dt]
+            self.logger.info(f"[VALIDATE_SLOTS] Looking for: id={suggested_id}, datetime='{suggested_dt}', recruiter='{suggested_recruiter}'")
+            
+            # First try to match by slot ID if provided (most reliable)
+            matched_slot = None
+            if suggested_id:
+                for available_slot in available_slots:
+                    if available_slot.get('id') == suggested_id:
+                        matched_slot = available_slot
+                        self.logger.info(f"[VALIDATE_SLOTS] ✅ ID MATCH: ID={available_slot.get('id')}, datetime={available_slot.get('datetime')}, recruiter={available_slot.get('recruiter')}")
+                        break
+            
+            # Fallback: Find exact match by BOTH datetime AND recruiter name
+            if not matched_slot:
+                for available_slot in available_slots:
+                    available_dt = available_slot.get('datetime', '')
+                    available_recruiter = available_slot.get('recruiter', '')
+                    
+                    # Match by both datetime and recruiter name (case-insensitive)
+                    if (available_dt == suggested_dt and 
+                        available_recruiter.lower() == suggested_recruiter.lower()):
+                        matched_slot = available_slot
+                        self.logger.info(f"[VALIDATE_SLOTS] ✅ DATETIME+RECRUITER MATCH: ID={available_slot.get('id')}, datetime={available_dt}, recruiter={available_recruiter}")
+                        break
+            
+            if matched_slot:
                 validated_slot = {
-                    'id': available_slot['id'],
+                    'id': matched_slot['id'],
                     'datetime': suggested_dt,
-                    'recruiter': suggested.get('recruiter', available_slot['recruiter']),
-                    'recruiter_id': available_slot['recruiter_id'],
-                    'duration': available_slot.get('duration', 45),
+                    'recruiter': suggested_recruiter,  # Use the suggested recruiter name (preserves user selection)
+                    'recruiter_id': matched_slot['recruiter_id'],
+                    'duration': matched_slot.get('duration', 45),
                     'match_reason': suggested.get('match_reason', 'Selected for you'),
                     'is_available': True
                 }
                 validated.append(validated_slot)
+                self.logger.info(f"[VALIDATE_SLOTS] ✅ VALIDATED: ID={validated_slot['id']}, recruiter={validated_slot['recruiter']}")
+            else:
+                self.logger.warning(f"[VALIDATE_SLOTS] ❌ NO MATCH FOUND for datetime='{suggested_dt}', recruiter='{suggested_recruiter}'")
+                # Log available options for debugging
+                for slot in available_slots:
+                    if slot.get('datetime') == suggested_dt:
+                        self.logger.warning(f"[VALIDATE_SLOTS]   Available at same time: recruiter='{slot.get('recruiter')}' (ID={slot.get('id')})")
+        
+        self.logger.info(f"[VALIDATE_SLOTS] Final result: {len(validated)} validated slots")
         
         # Apply diversification to validated slots as well
         return self._diversify_slot_selection(validated, max_slots=3)
@@ -1011,8 +1172,9 @@ Respond with only: SCHEDULE or NOT_SCHEDULE"""
         try:
             target_datetime = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
             available_slots = self.sql_manager.get_available_slots(
-                target_datetime.date(),
-                target_datetime.date()
+                start_date=target_datetime.date(),
+                end_date=target_datetime.date(),
+                available_only=True
             )
             
             # Check if any slot matches the requested time

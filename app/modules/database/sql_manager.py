@@ -44,9 +44,9 @@ class SQLManager:
         """Create database tables."""
         try:
             Base.metadata.create_all(bind=self.engine)
-            print("✅ Database tables created successfully")
+            print("[OK] Database tables created successfully")
         except Exception as e:
-            print(f"❌ Error creating tables: {e}")
+            print(f"[X] Error creating tables: {e}")
             raise
     
     def _initialize_sample_data(self):
@@ -75,10 +75,10 @@ class SQLManager:
                                     print(f"Warning: SQL command failed: {e}")
                     
                     session.commit()
-                    print("✅ Sample data initialized")
+                    print("[OK] Sample data initialized")
                 
         except Exception as e:
-            print(f"❌ Error initializing sample data: {e}")
+            print(f"[X] Error initializing sample data: {e}")
     
     def get_session(self) -> Session:
         """Get a database session."""
@@ -293,7 +293,7 @@ class SQLManager:
                 result = session.execute("SELECT 1").fetchone()
                 return result[0] == 1
         except Exception as e:
-            print(f"❌ Database connection test failed: {e}")
+            print(f"[X] Database connection test failed: {e}")
             return False
     
     def get_database_stats(self) -> Dict[str, Any]:

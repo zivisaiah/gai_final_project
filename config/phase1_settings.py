@@ -183,30 +183,30 @@ def get_settings() -> Settings:
 
 def print_settings_summary():
     """Print a summary of current settings."""
-    print("\n🔧 Phase 1 Configuration Summary:")
+    print("\n[WRENCH] Phase 1 Configuration Summary:")
     print(f"   Environment: {settings.ENVIRONMENT}")
     print(f"   Debug Mode: {settings.DEBUG}")
     
-    print(f"\n📝 Model Configuration:")
+    print(f"\n[MEMO] Model Configuration:")
     print(f"   Core Agent: {settings.get_core_agent_model()}")
     print(f"   Exit Advisor: {settings.get_exit_advisor_model()}")
     if settings.is_using_fine_tuned_exit_advisor():
-        print(f"   ✅ Using fine-tuned Exit Advisor model")
+        print(f"   [OK] Using fine-tuned Exit Advisor model")
     else:
-        print(f"   ⚠️  Using fallback Exit Advisor model (set EXIT_ADVISOR_FINE_TUNED_MODEL for fine-tuned)")
+        print(f"   [!]  Using fallback Exit Advisor model (set EXIT_ADVISOR_FINE_TUNED_MODEL for fine-tuned)")
     print(f"   Scheduling Advisor: {settings.get_scheduling_advisor_model()}")
     print(f"   Info Advisor: {settings.get_info_advisor_model()}")
     
-    print(f"\n🗄️ Infrastructure:")
+    print(f"\n[CABINET] Infrastructure:")
     print(f"   Database: {settings.DATABASE_URL}")
     print(f"   Streamlit Port: {settings.STREAMLIT_SERVER_PORT}")
     print(f"   Max Conversation History: {settings.MAX_CONVERSATION_HISTORY}")
     print(f"   Scheduling Days Ahead: {settings.SCHEDULING_DAYS_AHEAD}")
     
     if not settings.OPENAI_API_KEY:
-        print("\n   ⚠️  WARNING: OPENAI_API_KEY not set!")
+        print("\n   [!]  WARNING: OPENAI_API_KEY not set!")
     else:
-        print(f"\n   ✅ OpenAI API Key: ...{settings.OPENAI_API_KEY[-4:]}")
+        print(f"\n   [OK] OpenAI API Key: ...{settings.OPENAI_API_KEY[-4:]}")
 
 
 if __name__ == "__main__":

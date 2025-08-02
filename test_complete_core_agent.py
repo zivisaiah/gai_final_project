@@ -24,19 +24,19 @@ from app.modules.agents.core_agent import CoreAgent, AgentDecision
 async def test_complete_core_agent():
     """Test the complete Core Agent with all advisors"""
     
-    print("🤖 TESTING COMPLETE CORE AGENT - PHASE 3.3")
+    print("[BOT] TESTING COMPLETE CORE AGENT - PHASE 3.3")
     print("=" * 60)
     
     # Test with OpenAI Vector Store for production-ready setup
-    print("1. 🔧 Initializing Core Agent with OpenAI Vector Store...")
+    print("1. [WRENCH] Initializing Core Agent with OpenAI Vector Store...")
     try:
         core_agent = CoreAgent(vector_store_type="openai")
-        print("✅ Core Agent initialized successfully!")
+        print("[OK] Core Agent initialized successfully!")
         print(f"   - Exit Advisor: Ready")
         print(f"   - Scheduling Advisor: Ready")
         print(f"   - Info Advisor: Ready (OpenAI Vector Store)")
     except Exception as e:
-        print(f"❌ Failed to initialize Core Agent: {e}")
+        print(f"[X] Failed to initialize Core Agent: {e}")
         return
     
     # Test scenarios
@@ -85,13 +85,13 @@ async def test_complete_core_agent():
         }
     ]
     
-    print(f"\n2. 🧪 Running {len(test_scenarios)} Test Scenarios...")
+    print(f"\n2. [TEST_TUBE] Running {len(test_scenarios)} Test Scenarios...")
     print("-" * 60)
     
     results = []
     
     for i, scenario in enumerate(test_scenarios, 1):
-        print(f"\n🔍 Test {i}: {scenario['name']}")
+        print(f"\n[SEARCH] Test {i}: {scenario['name']}")
         print(f"Message: \"{scenario['message']}\"")
         print(f"Expected: {scenario['expected_decision'].value}")
         
@@ -108,7 +108,7 @@ async def test_complete_core_agent():
             print(f"Actual Decision: {decision.value}")
             print(f"Reasoning: {reasoning}")
             print(f"Response Preview: {response[:100]}...")
-            print(f"✅ PASS" if decision_match else f"❌ FAIL")
+            print(f"[OK] PASS" if decision_match else f"[X] FAIL")
             
             results.append({
                 "scenario": scenario['name'],
@@ -120,7 +120,7 @@ async def test_complete_core_agent():
             })
             
         except Exception as e:
-            print(f"❌ ERROR: {e}")
+            print(f"[X] ERROR: {e}")
             results.append({
                 "scenario": scenario['name'],
                 "expected": scenario['expected_decision'].value,
@@ -132,19 +132,19 @@ async def test_complete_core_agent():
         print("-" * 40)
     
     # Results Summary
-    print(f"\n3. 📊 TEST RESULTS SUMMARY")
+    print(f"\n3. [CHART] TEST RESULTS SUMMARY")
     print("=" * 60)
     
     passed_tests = sum(1 for r in results if r['passed'])
     total_tests = len(results)
     success_rate = (passed_tests / total_tests) * 100
     
-    print(f"✅ Passed: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+    print(f"[OK] Passed: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
     
     # Detailed results
-    print(f"\n📋 Detailed Results:")
+    print(f"\n[CLIPBOARD] Detailed Results:")
     for result in results:
-        status = "✅ PASS" if result['passed'] else "❌ FAIL"
+        status = "[OK] PASS" if result['passed'] else "[X] FAIL"
         print(f"  {status} {result['scenario']}")
         print(f"      Expected: {result['expected']} | Actual: {result['actual']}")
         if not result['passed'] and 'error' in result:
@@ -167,7 +167,7 @@ async def test_complete_core_agent():
     
     print("Simulating complete conversation flow:")
     for i, msg in enumerate(flow_messages, 1):
-        print(f"\n👤 User: {msg}")
+        print(f"\n[USER] User: {msg}")
         
         try:
             response, decision, reasoning = await core_agent.process_message_async(
@@ -175,23 +175,23 @@ async def test_complete_core_agent():
                 conversation_id=conversation_id
             )
             
-            print(f"🤖 Agent Decision: {decision.value}")
-            print(f"🤖 Response: {response[:150]}{'...' if len(response) > 150 else ''}")
+            print(f"[BOT] Agent Decision: {decision.value}")
+            print(f"[BOT] Response: {response[:150]}{'...' if len(response) > 150 else ''}")
             
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"[X] Error: {e}")
     
     # Get conversation summary
     conversation_state = core_agent.get_conversation_state(conversation_id)
     if conversation_state:
         summary = conversation_state.get_conversation_summary()
-        print(f"\n📈 Conversation Summary:")
+        print(f"\n[CHART_UP] Conversation Summary:")
         print(f"   Messages: {summary['message_count']}")
         print(f"   Duration: {summary['duration_minutes']:.1f} minutes")
         print(f"   Last Decision: {summary['last_decision']}")
         print(f"   Candidate Info: {summary['candidate_info']}")
     
-    print(f"\n🎉 COMPLETE CORE AGENT TESTING FINISHED!")
+    print(f"\n[PARTY] COMPLETE CORE AGENT TESTING FINISHED!")
     print("=" * 60)
     
     return success_rate >= 80  # 80% pass rate required
@@ -199,7 +199,7 @@ async def test_complete_core_agent():
 
 async def test_advisor_integration():
     """Test individual advisor integration"""
-    print(f"\n🔧 TESTING ADVISOR INTEGRATION")
+    print(f"\n[WRENCH] TESTING ADVISOR INTEGRATION")
     print("-" * 40)
     
     core_agent = CoreAgent(vector_store_type="openai")
@@ -223,7 +223,7 @@ async def test_advisor_integration():
     # Test Exit Advisor
     print(f"Exit Advisor: Ready")
     
-    print("✅ All advisors integrated successfully!")
+    print("[OK] All advisors integrated successfully!")
 
 
 if __name__ == "__main__":
@@ -239,8 +239,8 @@ if __name__ == "__main__":
         success = await test_complete_core_agent()
         
         if success:
-            print("✅ Phase 3.3 testing completed successfully!")
+            print("[OK] Phase 3.3 testing completed successfully!")
         else:
-            print("⚠️ Some tests failed. Review results above.")
+            print("[!] Some tests failed. Review results above.")
     
     asyncio.run(main()) 

@@ -264,7 +264,7 @@ REQUIRED JSON RESPONSE FORMAT:
   "phone": "Extract phone number if mentioned, otherwise null",
   "current_status": "Extract employment/job status if mentioned, otherwise null",
   "interest_level": "high/medium/low based on enthusiasm shown, or unknown",
-  "availability_mentioned": true if any availability discussed, false otherwise,
+  "availability_mentioned": true if ANY time/schedule/availability mentioned (like "any day after 10am", "I'm free", "available", "flexible", specific days/times), false otherwise,
   "availability_details": "Extract specific availability info, otherwise null",
   "position_interest": "Extract role interest (backend/frontend/etc.), otherwise null",
   "experience": "Extract years/level of experience as stated, otherwise null",

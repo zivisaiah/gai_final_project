@@ -54,7 +54,7 @@ class SystemEvaluator:
     
     def initialize_agents(self):
         """Initialize all agents for testing"""
-        print("🤖 Initializing agents for evaluation...")
+        print("[BOT] Initializing agents for evaluation...")
         
         try:
             # Core Agent with INFO capability
@@ -62,29 +62,29 @@ class SystemEvaluator:
                 model_name=self.settings.OPENAI_MODEL,
                 vector_store_type="openai"
             )
-            print("✅ Core Agent initialized")
+            print("[OK] Core Agent initialized")
             
             # Info Advisor
             self.info_advisor = InfoAdvisor(
                 model_name=self.settings.OPENAI_MODEL,
                 vector_store_type="openai"
             )
-            print("✅ Info Advisor initialized")
+            print("[OK] Info Advisor initialized")
             
             # Scheduling Advisor
             self.scheduling_advisor = SchedulingAdvisor(
                 model_name=self.settings.OPENAI_MODEL
             )
-            print("✅ Scheduling Advisor initialized")
+            print("[OK] Scheduling Advisor initialized")
             
             # Exit Advisor
             self.exit_advisor = ExitAdvisor(
                 model_name=self.settings.OPENAI_MODEL
             )
-            print("✅ Exit Advisor initialized")
+            print("[OK] Exit Advisor initialized")
             
         except Exception as e:
-            print(f"❌ Error initializing agents: {e}")
+            print(f"[X] Error initializing agents: {e}")
             raise
     
     def setup_test_cases(self):
@@ -146,13 +146,13 @@ class SystemEvaluator:
             {"question": "What are the benefits?", "category": "unknown", "expected_confidence": 0.3}
         ]
         
-        print(f"📊 Test cases prepared:")
+        print(f"[CHART] Test cases prepared:")
         print(f"   Core Agent: {len(self.core_agent_test_cases)} cases")
         print(f"   Info Advisor: {len(self.info_advisor_test_cases)} cases")
     
     async def evaluate_core_agent(self):
         """Evaluate Core Agent decision making"""
-        print("🎯 Evaluating Core Agent decision making...")
+        print("[TARGET] Evaluating Core Agent decision making...")
         
         results = []
         y_true = []
@@ -184,7 +184,7 @@ class SystemEvaluator:
                 y_true.append(expected)
                 y_pred.append(predicted)
                 
-                status = "✓" if correct else "✗"
+                status = "[v]" if correct else "[x]"
                 print(f"  Test {i+1:2d}: {expected:8s} -> {predicted:8s} {status}")
                 
             except Exception as e:
@@ -202,7 +202,7 @@ class SystemEvaluator:
         
         # Calculate metrics
         accuracy = sum(r['correct'] for r in results) / len(results)
-        print(f"🎯 Core Agent Accuracy: {accuracy:.1%}")
+        print(f"[TARGET] Core Agent Accuracy: {accuracy:.1%}")
         
         return results, y_true, y_pred, accuracy
     
@@ -356,33 +356,33 @@ class SystemEvaluator:
         with open(latest_file, 'w', encoding='utf-8') as f:
             json.dump(evaluation_report, f, indent=2, default=str)
         
-        print(f"💾 Results saved to: {report_file}")
+        print(f"[FLOPPY] Results saved to: {report_file}")
         return evaluation_report
     
     def print_summary(self, core_accuracy, info_quality, system_score):
         """Print evaluation summary"""
         print("\n" + "="*60)
-        print("📋 PHASE 3.5 EVALUATION SUMMARY")
+        print("[CLIPBOARD] PHASE 3.5 EVALUATION SUMMARY")
         print("="*60)
         
-        print(f"\n🎯 PERFORMANCE METRICS:")
+        print(f"\n[TARGET] PERFORMANCE METRICS:")
         print(f"   Core Agent Accuracy:  {core_accuracy:.1%}")
         print(f"   Info Advisor Quality: {info_quality:.1%}")
         print(f"   Overall System Score: {system_score:.1%}")
         
         # Check target achievement
         target_met = system_score >= 0.85
-        print(f"\n🎯 TARGET (85%): {'✅ ACHIEVED' if target_met else '❌ NOT MET'}")
+        print(f"\n[TARGET] TARGET (85%): {'[OK] ACHIEVED' if target_met else '[X] NOT MET'}")
         
         if target_met:
-            print("🎉 EXCELLENT! System exceeds performance targets.")
-            print("✅ Ready for Phase 3.6: Deployment Preparation")
+            print("[PARTY] EXCELLENT! System exceeds performance targets.")
+            print("[OK] Ready for Phase 3.6: Deployment Preparation")
         else:
             gap = 0.85 - system_score
-            print(f"⚠️  Improvement needed: {gap:.1%} points below target")
-            print("💡 Consider fine-tuning before deployment")
+            print(f"[!]  Improvement needed: {gap:.1%} points below target")
+            print("[IDEA] Consider fine-tuning before deployment")
         
-        print(f"\n📊 Detailed results saved to: tests/evaluation_results/")
+        print(f"\n[CHART] Detailed results saved to: tests/evaluation_results/")
         print("="*60)
     
     async def run_complete_evaluation(self):
@@ -417,13 +417,13 @@ class SystemEvaluator:
             # 7. Performance summary
             end_time = time.time()
             total_time = end_time - start_time
-            print(f"\n⏱️  Total evaluation time: {total_time:.2f}s")
-            print(f"📊 Tests completed: {len(core_results) + len(info_results)}")
+            print(f"\n[TIMER]  Total evaluation time: {total_time:.2f}s")
+            print(f"[CHART] Tests completed: {len(core_results) + len(info_results)}")
             
             return evaluation_report
             
         except Exception as e:
-            print(f"❌ Evaluation failed: {e}")
+            print(f"[X] Evaluation failed: {e}")
             raise
 
 
@@ -440,12 +440,12 @@ if __name__ == "__main__":
         
         # Check if we should proceed to next phase
         if evaluation_results["system_performance"]["target_met"]:
-            print("\n🎯 Phase 3.5 COMPLETE - Ready for Phase 3.6!")
+            print("\n[TARGET] Phase 3.5 COMPLETE - Ready for Phase 3.6!")
         else:
-            print("\n⚠️  Phase 3.5 needs improvement before proceeding")
+            print("\n[!]  Phase 3.5 needs improvement before proceeding")
             
     except KeyboardInterrupt:
         print("\n⏹️  Evaluation interrupted by user")
     except Exception as e:
-        print(f"\n❌ Evaluation error: {e}")
+        print(f"\n[X] Evaluation error: {e}")
         sys.exit(1) 

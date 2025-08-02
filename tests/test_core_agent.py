@@ -363,11 +363,11 @@ def test_integration_scenario():
 
 if __name__ == "__main__":
     # Run basic tests without pytest
-    print("🧪 Running Core Agent Tests...")
+    print("[TEST_TUBE] Running Core Agent Tests...")
     
     try:
         # Test ConversationState
-        print("\n✅ Testing ConversationState...")
+        print("\n[OK] Testing ConversationState...")
         conv_state = ConversationState("test")
         # Note: add_message now requires an agent parameter for LLM extraction
         # For basic testing, we'll just check the state structure
@@ -376,7 +376,7 @@ if __name__ == "__main__":
         print(f"   Message count: {len(conv_state.messages)}")
         
         # Test Prompts
-        print("\n✅ Testing Prompts...")
+        print("\n[OK] Testing Prompts...")
         prompts = Phase1Prompts()
         system_prompt = prompts.get_core_agent_prompt()
         print(f"   System prompt length: {len(system_prompt)} characters")
@@ -384,9 +384,9 @@ if __name__ == "__main__":
         examples = prompts.get_few_shot_examples()
         print(f"   Few-shot examples: {len(examples)} examples")
         
-        print("\n🎉 Basic tests completed successfully!")
+        print("\n[PARTY] Basic tests completed successfully!")
         
     except Exception as e:
-        print(f"❌ Error during testing: {e}")
+        print(f"[X] Error during testing: {e}")
         import traceback
         traceback.print_exc() 

@@ -51,7 +51,7 @@ class CandidateRegistrationForm:
         if st.session_state.registration_completed:
             return True
         
-        st.subheader("👤 Candidate Registration")
+        st.subheader("[USER] Candidate Registration")
         st.write("Please complete this quick registration before we schedule your interview:")
         
         with st.form("candidate_registration_form"):
@@ -184,7 +184,7 @@ class CandidateRegistrationForm:
                         'interest_level': 'high',  # They completed registration
                         'position': registration_data['position_interest'],
                         'current_status': registration_data['current_status'],
-                        # ✅ ENSURE HIGH ENGAGEMENT for form-submitted candidates
+                        # [OK] ENSURE HIGH ENGAGEMENT for form-submitted candidates
                         'conversation_sentiment': {
                             'overall_tone': 'positive',
                             'engagement_level': 'high',      # They took time to fill the form!
@@ -192,7 +192,7 @@ class CandidateRegistrationForm:
                         }
                     })
                     
-                    st.success("✅ Registration completed successfully! I'll now show you available interview slots below.")
+                    st.success("[OK] Registration completed successfully! I'll now show you available interview slots below.")
                     st.balloons()
                     st.rerun()
                     
@@ -200,7 +200,7 @@ class CandidateRegistrationForm:
                     # Show validation errors
                     st.session_state.registration_validation = validation_result
                     for error in validation_result['errors']:
-                        st.error(f"❌ {error}")
+                        st.error(f"[ERROR] {error}")
         
         return st.session_state.registration_completed
     
@@ -268,7 +268,7 @@ class CandidateRegistrationForm:
         
         data = st.session_state.registration_data
         
-        st.success("**✅ Registration Complete**")
+        st.success("**[COMPLETE] Registration Complete**")
         
         col1, col2 = st.columns(2)
         
