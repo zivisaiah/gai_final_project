@@ -1,0 +1,73 @@
+{
+  "id": "career_changer",
+  "name": "Michael Thompson",
+  "type": "Career Changer",
+  "profile": {
+    "experience_level": "1-2 years Python, 8 years other field",
+    "background": "Former marketing manager transitioning to Python development",
+    "current_status": "Career transition, some uncertainty",
+    "motivation": "Passionate about technology, seeking career change",
+    "communication_style": "Thoughtful, asks clarifying questions, somewhat uncertain"
+  },
+  "characteristics": {
+    "response_length": "medium",
+    "question_frequency": "high",
+    "information_sharing": "cautious",
+    "enthusiasm_level": "moderate",
+    "technical_confidence": "low_to_medium"
+  },
+  "conversation_patterns": {
+    "greeting_responses": [
+      "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile.",
+      "Hello! I'm in the process of changing careers from marketing to Python development. I've been learning for about 18 months and I'm eager to find the right opportunity to start my tech career.",
+      "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team."
+    ],
+    "experience_responses": [
+      "I have about 18 months of Python experience through self-study and a part-time bootcamp. Before this, I worked in marketing for 8 years, which gave me strong problem-solving and project management skills. I've built a few personal projects including a web scraper for market research and a small Django application.",
+      "I'm relatively new to Python - about a year and a half of focused learning. My background is in marketing management, but I've always been interested in technology. I've completed several online courses and built some projects to practice what I've learned.",
+      "I have marketing experience but I've been dedicating myself to learning Python for the past 18 months. I've worked with basic web development, some data analysis, and I'm comfortable with the fundamentals, though I know I have a lot more to learn."
+    ],
+    "motivation_responses": [
+      "I've always been fascinated by technology and how it can solve business problems. After years in marketing, I realized I wanted to be building the solutions rather than just using them. Python appealed to me because of its versatility and the strong community.",
+      "I decided to make this career change because I want work that's more technically challenging and creative. I chose Python because it seemed like a great entry point into development, and I love how logical and powerful it is.",
+      "Marketing taught me a lot about understanding user needs and solving problems, and I think those skills translate well to development. I'm excited about using Python to build solutions that can really make a difference."
+    ],
+    "question_examples": [
+      "How do you typically onboard developers who are new to the field?",
+      "What kind of support is available for someone still learning?",
+      "Are there opportunities to work on projects that might use my marketing background?",
+      "What does the learning curve look like for someone in my situation?",
+      "How important is formal computer science education versus practical experience?",
+      "What kind of projects would someone at my level typically start with?",
+      "Do you have other team members who made career transitions?"
+    ]
+  },
+  "decision_triggers": {
+    "likely_to_schedule": [
+      "supportive onboarding mentioned",
+      "career transition experience acknowledged",
+      "learning opportunities emphasized",
+      "transferable skills recognized"
+    ],
+    "likely_to_continue": [
+      "need more clarity on expectations",
+      "uncertain about technical requirements",
+      "want to understand team dynamics"
+    ],
+    "likely_to_end_early": [
+      "requirements seem too advanced",
+      "no support for career changers",
+      "unwelcoming attitude toward non-traditional backgrounds"
+    ]
+  },
+  "behavioral_flags": {
+    "provides_detailed_info": true,
+    "asks_follow_up_questions": true,
+    "shows_technical_curiosity": true,
+    "mentions_learning_goals": true,
+    "shares_project_examples": true,
+    "expresses_uncertainty": true,
+    "seeks_reassurance": true,
+    "highlights_transferable_skills": true
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "complete_registration_to_booking",
+  "name": "Complete Registration to Interview Booking Flow",
+  "description": "Tests the complete user journey from initial contact through successful interview scheduling",
+  "type": "complete_flow",
+  "target_personas": ["eager_junior", "experienced_senior", "career_changer"],
+  "expected_stages": [
+    "initial_greeting",
+    "information_gathering", 
+    "experience_discussion",
+    "motivation_assessment",
+    "scheduling_decision",
+    "slot_selection",
+    "booking_confirmation"
+  ],
+  "success_criteria": {
+    "completion_stage": "completed",
+    "agent_decisions_required": ["CONTINUE", "SCHEDULE"],
+    "min_conversation_length": 5,
+    "max_conversation_length": 15,
+    "user_acceptance_required": true
+  },
+  "validation_points": [
+    {
+      "stage": "information_gathering",
+      "requirement": "Agent asks about experience and background",
+      "validation": "Agent message contains keywords: experience, background, tell me"
+    },
+    {
+      "stage": "scheduling_decision", 
+      "requirement": "Agent makes SCHEDULE decision when appropriate",
+      "validation": "Agent decision equals SCHEDULE"
+    },
+    {
+      "stage": "booking_confirmation",
+      "requirement": "User accepts scheduling invitation",
+      "validation": "User response indicates acceptance"
+    }
+  ],
+  "edge_cases": [
+    {
+      "name": "minimal_information_provided",
+      "description": "User provides very little information",
+      "persona_modifications": {
+        "response_length": "very_short",
+        "information_sharing": "minimal"
+      }
+    },
+    {
+      "name": "excessive_questions",
+      "description": "User asks many questions",
+      "persona_modifications": {
+        "question_frequency": "very_high"
+      }
+    }
+  ],
+  "expected_outcomes": {
+    "eager_junior": {
+      "success_probability": 0.85,
+      "typical_completion_stage": "completed",
+      "expected_decisions": ["CONTINUE", "CONTINUE", "SCHEDULE"]
+    },
+    "experienced_senior": {
+      "success_probability": 0.70,
+      "typical_completion_stage": "completed", 
+      "expected_decisions": ["CONTINUE", "SCHEDULE"]
+    },
+    "career_changer": {
+      "success_probability": 0.75,
+      "typical_completion_stage": "completed",
+      "expected_decisions": ["CONTINUE", "CONTINUE", "SCHEDULE"]
+    }
+  }
+}

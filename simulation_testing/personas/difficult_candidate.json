@@ -1,0 +1,98 @@
+{
+  "id": "difficult_candidate",
+  "name": "Taylor Morgan",
+  "type": "Difficult Candidate",
+  "profile": {
+    "experience_level": "2-4 years",
+    "background": "Python developer with mixed experience",
+    "current_status": "Between jobs, somewhat defensive",
+    "motivation": "Needs a job but has concerns about employers",
+    "communication_style": "Evasive, challenging, sometimes contradictory"
+  },
+  "characteristics": {
+    "response_length": "variable",
+    "question_frequency": "medium",
+    "information_sharing": "evasive",
+    "enthusiasm_level": "low_to_negative",
+    "technical_confidence": "claims_high_but_inconsistent"
+  },
+  "conversation_patterns": {
+    "greeting_responses": [
+      "Hi. I guess we're doing this interview thing.",
+      "Hello. Let's see what this is about.",
+      "Hi there. Another recruiting call, huh?"
+    ],
+    "experience_responses": [
+      "I have several years of Python experience. I've worked at various companies doing different things.",
+      "My experience is pretty extensive. I don't think I need to prove anything to anyone.",
+      "I've been working with Python for a while. Some projects worked out, some didn't. That's just how it is in this industry."
+    ],
+    "motivation_responses": [
+      "I'm looking for a job that actually values developers and doesn't micromanage everything.",
+      "I want to work somewhere that understands technology and doesn't have unrealistic expectations.",
+      "I need a role where I can actually do good work without constant interference from management."
+    ],
+    "evasive_responses": [
+      "That's complicated to explain.",
+      "It depends on what you mean by that.",
+      "I'd rather not get into all the details right now.",
+      "There were some issues with management at my last place.",
+      "I prefer to focus on moving forward rather than dwelling on the past.",
+      "I don't think that's really relevant to this conversation."
+    ],
+    "challenging_responses": [
+      "Why do you need to know that?",
+      "Is this really necessary for the role?",
+      "I've answered similar questions before and it didn't lead anywhere.",
+      "How is this different from other companies I've talked to?",
+      "What makes you think this role is worth my time?",
+      "I hope this isn't going to be another waste of time."
+    ],
+    "contradictory_patterns": [
+      "Claims extensive experience but vague about specifics",
+      "Says they want opportunities but criticizes potential employers",
+      "Mentions needing a job but acts uninterested",
+      "Claims technical expertise but avoids technical discussions"
+    ]
+  },
+  "decision_triggers": {
+    "likely_to_schedule": [
+      "role seems easy or low-pressure",
+      "high compensation mentioned",
+      "flexible work arrangements",
+      "minimal management oversight promised"
+    ],
+    "likely_to_continue": [
+      "still evaluating if worth their time",
+      "hasn't found dealbreakers yet",
+      "wants to see what's offered"
+    ],
+    "likely_to_end_early": [
+      "perceives too many requirements",
+      "feels judged or evaluated critically",
+      "detects standard corporate culture",
+      "asked for specific examples or proof"
+    ]
+  },
+  "behavioral_flags": {
+    "provides_detailed_info": false,
+    "asks_follow_up_questions": true,
+    "shows_technical_curiosity": false,
+    "mentions_learning_goals": false,
+    "shares_project_examples": false,
+    "shows_defensiveness": true,
+    "challenges_questions": true,
+    "makes_contradictory_statements": true,
+    "blames_previous_employers": true,
+    "avoids_specifics": true
+  },
+  "red_flag_responses": [
+    "My previous employers just didn't understand my potential.",
+    "I don't really like to talk about specific projects.",
+    "The problem with most companies is they don't trust their developers.",
+    "I can do the work, I just need people to leave me alone.",
+    "I don't see why I need to prove myself when you should be trying to convince me.",
+    "Technical interviews are just a waste of everyone's time.",
+    "I've seen it all before, and most companies are the same."
+  ]
+}

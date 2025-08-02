@@ -1,0 +1,363 @@
+{
+  "analysis_timestamp": "2025-08-02T20:38:44.351893",
+  "data_summary": {
+    "total_conversations": 25,
+    "successful_conversations": 13,
+    "failed_conversations": 12,
+    "success_rate": 52.0
+  },
+  "failure_cases": [
+    {
+      "conversation_id": "unknown",
+      "persona_id": "eager_junior",
+      "failure_reason": "early_dropout",
+      "failure_stage": "early",
+      "message_count": 2,
+      "failure_indicators": [
+        "very_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "eager_junior",
+      "failure_reason": "early_dropout",
+      "failure_stage": "early",
+      "message_count": 2,
+      "failure_indicators": [
+        "very_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "career_changer",
+      "failure_reason": "unknown_failure",
+      "failure_stage": "middle",
+      "message_count": 3,
+      "failure_indicators": []
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "eager_junior",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "experienced_senior",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "career_changer",
+      "failure_reason": "unknown_failure",
+      "failure_stage": "middle",
+      "message_count": 3,
+      "failure_indicators": []
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "difficult_candidate",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "passive_candidate",
+      "failure_reason": "premature_agent_termination",
+      "failure_stage": "early",
+      "message_count": 2,
+      "failure_indicators": [
+        "very_short_conversation",
+        "agent_ended_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "eager_junior",
+      "failure_reason": "early_dropout",
+      "failure_stage": "early",
+      "message_count": 2,
+      "failure_indicators": [
+        "very_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "career_changer",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "eager_junior",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    },
+    {
+      "conversation_id": "unknown",
+      "persona_id": "passive_candidate",
+      "failure_reason": "immediate_dropout",
+      "failure_stage": "early",
+      "message_count": 1,
+      "failure_indicators": [
+        "extremely_short_conversation",
+        "inconsistent_decisions"
+      ]
+    }
+  ],
+  "failure_patterns": [
+    {
+      "pattern_id": "pattern_immediate_dropout",
+      "pattern_name": "Immediate Dropout",
+      "frequency": 6,
+      "affected_personas": [
+        "passive_candidate",
+        "eager_junior",
+        "difficult_candidate",
+        "career_changer",
+        "experienced_senior"
+      ],
+      "common_failure_stage": "early",
+      "typical_message_count": 1.0,
+      "root_cause_hypothesis": "Users or system are failing on the very first exchange, indicating fundamental initialization or greeting issues.",
+      "recommended_fixes": [
+        "Review initial greeting effectiveness",
+        "Check for technical initialization errors",
+        "Improve first-message persona responses",
+        "Add better error handling for conversation startup"
+      ]
+    },
+    {
+      "pattern_id": "pattern_early_dropout",
+      "pattern_name": "Early Dropout",
+      "frequency": 3,
+      "affected_personas": [
+        "eager_junior"
+      ],
+      "common_failure_stage": "early",
+      "typical_message_count": 2.0,
+      "root_cause_hypothesis": "Conversations are ending after 1-2 exchanges, suggesting engagement or relevance issues in early conversation.",
+      "recommended_fixes": [
+        "Improve conversation opening strategies",
+        "Make agent responses more engaging and personalized",
+        "Better persona-agent matching in early turns",
+        "Add conversation flow guidance for early stages"
+      ]
+    },
+    {
+      "pattern_id": "pattern_unknown_failure",
+      "pattern_name": "Unknown Failure",
+      "frequency": 2,
+      "affected_personas": [
+        "career_changer"
+      ],
+      "common_failure_stage": "middle",
+      "typical_message_count": 3.0,
+      "root_cause_hypothesis": "Unknown failure pattern - requires manual investigation",
+      "recommended_fixes": [
+        "Conduct detailed manual analysis",
+        "Review conversation logs",
+        "Identify specific issues"
+      ]
+    }
+  ],
+  "success_vs_failure_comparison": {
+    "message_count_comparison": {
+      "success_avg": 2.769230769230769,
+      "failure_avg": 1.6666666666666667,
+      "success_range": [
+        2,
+        4
+      ],
+      "failure_range": [
+        1,
+        3
+      ]
+    },
+    "duration_comparison": {
+      "success_avg": 0.0,
+      "failure_avg": 0.0
+    },
+    "decision_patterns": {
+      "success_decisions": {
+        "INFO": 15,
+        "SCHEDULE": 15,
+        "CONTINUE": 6
+      },
+      "failure_decisions": {
+        "CONTINUE": 8,
+        "SCHEDULE": 7,
+        "INFO": 4,
+        "END": 1
+      }
+    },
+    "persona_performance": {
+      "success_personas": {
+        "experienced_senior": 6,
+        "career_changer": 4,
+        "eager_junior": 3
+      },
+      "failure_personas": {
+        "eager_junior": 5,
+        "career_changer": 3,
+        "passive_candidate": 2,
+        "experienced_senior": 1,
+        "difficult_candidate": 1
+      }
+    }
+  },
+  "key_insights": [
+    "Most common failure: Immediate Dropout (6 cases)",
+    "Most failures occur in early conversation stage",
+    "Failed conversations have significantly more END decisions",
+    "Persona 'eager_junior' has the most failures (5 cases)"
+  ],
+  "priority_fixes": [
+    {
+      "fix_description": "Review initial greeting effectiveness",
+      "addresses_pattern": "Immediate Dropout",
+      "frequency": 6,
+      "severity": 9,
+      "priority_score": 54,
+      "affected_personas": [
+        "passive_candidate",
+        "eager_junior",
+        "difficult_candidate",
+        "career_changer",
+        "experienced_senior"
+      ]
+    },
+    {
+      "fix_description": "Check for technical initialization errors",
+      "addresses_pattern": "Immediate Dropout",
+      "frequency": 6,
+      "severity": 9,
+      "priority_score": 54,
+      "affected_personas": [
+        "passive_candidate",
+        "eager_junior",
+        "difficult_candidate",
+        "career_changer",
+        "experienced_senior"
+      ]
+    },
+    {
+      "fix_description": "Improve first-message persona responses",
+      "addresses_pattern": "Immediate Dropout",
+      "frequency": 6,
+      "severity": 9,
+      "priority_score": 54,
+      "affected_personas": [
+        "passive_candidate",
+        "eager_junior",
+        "difficult_candidate",
+        "career_changer",
+        "experienced_senior"
+      ]
+    },
+    {
+      "fix_description": "Add better error handling for conversation startup",
+      "addresses_pattern": "Immediate Dropout",
+      "frequency": 6,
+      "severity": 9,
+      "priority_score": 54,
+      "affected_personas": [
+        "passive_candidate",
+        "eager_junior",
+        "difficult_candidate",
+        "career_changer",
+        "experienced_senior"
+      ]
+    },
+    {
+      "fix_description": "Improve conversation opening strategies",
+      "addresses_pattern": "Early Dropout",
+      "frequency": 3,
+      "severity": 7,
+      "priority_score": 21,
+      "affected_personas": [
+        "eager_junior"
+      ]
+    },
+    {
+      "fix_description": "Make agent responses more engaging and personalized",
+      "addresses_pattern": "Early Dropout",
+      "frequency": 3,
+      "severity": 7,
+      "priority_score": 21,
+      "affected_personas": [
+        "eager_junior"
+      ]
+    },
+    {
+      "fix_description": "Better persona-agent matching in early turns",
+      "addresses_pattern": "Early Dropout",
+      "frequency": 3,
+      "severity": 7,
+      "priority_score": 21,
+      "affected_personas": [
+        "eager_junior"
+      ]
+    },
+    {
+      "fix_description": "Add conversation flow guidance for early stages",
+      "addresses_pattern": "Early Dropout",
+      "frequency": 3,
+      "severity": 7,
+      "priority_score": 21,
+      "affected_personas": [
+        "eager_junior"
+      ]
+    },
+    {
+      "fix_description": "Conduct detailed manual analysis",
+      "addresses_pattern": "Unknown Failure",
+      "frequency": 2,
+      "severity": 5,
+      "priority_score": 10,
+      "affected_personas": [
+        "career_changer"
+      ]
+    },
+    {
+      "fix_description": "Review conversation logs",
+      "addresses_pattern": "Unknown Failure",
+      "frequency": 2,
+      "severity": 5,
+      "priority_score": 10,
+      "affected_personas": [
+        "career_changer"
+      ]
+    }
+  ]
+}

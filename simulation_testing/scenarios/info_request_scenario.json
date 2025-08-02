@@ -1,0 +1,57 @@
+{
+  "id": "info_request_handling",
+  "name": "Information Request Handling", 
+  "description": "Tests how well the system handles INFO requests about job details and company information",
+  "type": "info_focused",
+  "target_personas": ["eager_junior", "experienced_senior", "career_changer"],
+  "expected_stages": [
+    "initial_greeting",
+    "info_request",
+    "info_response", 
+    "follow_up_questions",
+    "conversation_continuation"
+  ],
+  "success_criteria": {
+    "agent_decisions_required": ["INFO"],
+    "info_accuracy": "relevant_response",
+    "follow_up_handling": "appropriate_continuation"
+  },
+  "test_questions": [
+    "What kind of Python frameworks does the team use?",
+    "What does a typical day look like for a Python developer?", 
+    "Are there opportunities for career growth?",
+    "What's the company culture like?",
+    "Do you work with machine learning or data science?",
+    "What are the main technical challenges?",
+    "Is there remote work flexibility?"
+  ],
+  "validation_points": [
+    {
+      "stage": "info_response",
+      "requirement": "Agent provides relevant information", 
+      "validation": "Agent decision equals INFO and response addresses question"
+    },
+    {
+      "stage": "follow_up_handling",
+      "requirement": "Agent handles follow-up appropriately",
+      "validation": "Conversation continues naturally after INFO response"
+    }
+  ],
+  "expected_outcomes": {
+    "eager_junior": {
+      "info_requests_expected": 3,
+      "follow_up_probability": 0.8,
+      "satisfaction_with_info": "high"
+    },
+    "experienced_senior": {
+      "info_requests_expected": 2,
+      "follow_up_probability": 0.6, 
+      "satisfaction_with_info": "medium_to_high"
+    },
+    "career_changer": {
+      "info_requests_expected": 4,
+      "follow_up_probability": 0.9,
+      "satisfaction_with_info": "high"
+    }
+  }
+}

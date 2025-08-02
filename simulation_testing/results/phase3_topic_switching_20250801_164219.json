@@ -1,0 +1,1358 @@
+{
+  "phase": "Phase 3 - Topic Switching Edge Cases",
+  "timestamp": "2025-08-01T16:42:19.842483",
+  "difficulty_filter": "medium",
+  "summary": {
+    "total_scenarios": 4,
+    "total_tests": 9,
+    "successful_tests": 9,
+    "success_rate": 100.0
+  },
+  "individual_results": [
+    {
+      "scenario_id": "topic_exp_to_salary",
+      "scenario_name": "Experience to Salary Discussion",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "INFO"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "salary",
+            "trigger_message": "That's great! By the way, what's the salary range for this position?",
+            "turn_number": 1,
+            "timestamp": 1754055666.7029188
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.74
+      },
+      "validation_results": {
+        "scenario_id": "topic_exp_to_salary",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 6,
+            "actual": 4,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "salary",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 4,
+      "total_response_time": 4.260690450668335,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055664.7468975,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions! Do you work with any machine learning or data analysis projects?",
+          "timestamp": 1754055664.7468975,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.62",
+          "response_time": 0.9553847312927246,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055665.7022822
+        },
+        {
+          "type": "user",
+          "message": "That's great! By the way, what's the salary range for this position?",
+          "timestamp": 1754055666.7029188,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary packages with excellent benefits and growth opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 5 messages, high engagement, readiness: 0.70",
+          "response_time": 0.920097827911377,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055667.6230166
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions! What does a typical day look like for a Python developer on your team?",
+          "timestamp": 1754055668.623849,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 7 messages, high engagement, readiness: 0.80",
+          "response_time": 1.0355088710784912,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055669.6593578
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions!",
+          "timestamp": 1754055670.6602688,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 9 messages, high engagement, readiness: 0.80",
+          "response_time": 1.3496990203857422,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055672.0099678
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_exp_to_salary",
+      "scenario_name": "Experience to Salary Discussion",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "INFO",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "INFO"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "salary",
+            "trigger_message": "That's great! By the way, what's the salary range for this position?",
+            "turn_number": 1,
+            "timestamp": 1754055676.639559
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.675
+      },
+      "validation_results": {
+        "scenario_id": "topic_exp_to_salary",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 6,
+            "actual": 3,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "salary",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 3,
+      "total_response_time": 4.3686158657073975,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055674.0108693,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role. What's the technical architecture of your current systems?",
+          "timestamp": 1754055674.0108693,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 2 messages, high engagement, readiness: 0.68",
+          "response_time": 1.6280148029327393,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055675.638884
+        },
+        {
+          "type": "user",
+          "message": "That's great! By the way, what's the salary range for this position?",
+          "timestamp": 1754055676.639559,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary packages with excellent benefits and growth opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 0.8319580554962158,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055677.471517
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role.",
+          "timestamp": 1754055678.4721634,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 6 messages, high engagement, readiness: 0.80",
+          "response_time": 1.9086430072784424,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055680.3808064
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_circular_switch",
+      "scenario_name": "Circular Topic Switching",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "INFO"
+      ],
+      "topic_switches": {
+        "planned": 2,
+        "executed": 2,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "company_culture",
+            "trigger_message": "Actually, what's the company culture like?",
+            "turn_number": 1,
+            "timestamp": 1754055684.3510692
+          },
+          {
+            "switch_index": 1,
+            "from_topic": "company_culture",
+            "to_topic": "experience",
+            "trigger_message": "That sounds good. Going back to my experience - I should mention I also worked with Django.",
+            "turn_number": 2,
+            "timestamp": 1754055687.3841457
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.475
+      },
+      "validation_results": {
+        "scenario_id": "topic_circular_switch",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 8,
+            "actual": 3,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "company_culture",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          },
+          {
+            "switch_index": 1,
+            "from_topic": "company_culture",
+            "to_topic": "experience",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 3,
+      "total_response_time": 4.3703789710998535,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055682.3817072,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Hello! I'm in the process of changing careers from marketing to Python development. I've been learning for about 18 months and I'm eager to find the right opportunity to start my tech career.",
+          "timestamp": 1754055682.3817072,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 0.9687831401824951,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055683.3504903
+        },
+        {
+          "type": "user",
+          "message": "Actually, what's the company culture like?",
+          "timestamp": 1754055684.3510692,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 50.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 2.0323314666748047,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055686.3834007
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. Going back to my experience - I should mention I also worked with Django.",
+          "timestamp": 1754055687.3841457,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 2,
+            "current_topic_index": 2,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Your experience aligns well with what we're looking for. Can we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 7 messages, high engagement, readiness: 0.70",
+          "response_time": 1.3692643642425537,
+          "topic_handling_score": 0.2,
+          "context_indicators": [],
+          "timestamp": 1754055688.75341
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_circular_switch",
+      "scenario_name": "Circular Topic Switching",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "INFO"
+      ],
+      "topic_switches": {
+        "planned": 2,
+        "executed": 2,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "company_culture",
+            "trigger_message": "Actually, what's the company culture like?",
+            "turn_number": 1,
+            "timestamp": 1754055692.9238741
+          },
+          {
+            "switch_index": 1,
+            "from_topic": "company_culture",
+            "to_topic": "experience",
+            "trigger_message": "That sounds good. Going back to my experience - I should mention I also worked with Django.",
+            "turn_number": 2,
+            "timestamp": 1754055696.0211542
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.475
+      },
+      "validation_results": {
+        "scenario_id": "topic_circular_switch",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 8,
+            "actual": 3,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "company_culture",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          },
+          {
+            "switch_index": 1,
+            "from_topic": "company_culture",
+            "to_topic": "experience",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 3,
+      "total_response_time": 5.69216513633728,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055690.7543466,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm looking to understand if this position aligns with my experience in Python development and team leadership.",
+          "timestamp": 1754055690.7543466,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.50",
+          "response_time": 1.1688497066497803,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055691.9231963
+        },
+        {
+          "type": "user",
+          "message": "Actually, what's the company culture like?",
+          "timestamp": 1754055692.9238741,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 50.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 5 messages, medium engagement, readiness: 0.58",
+          "response_time": 2.096860408782959,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055695.0207345
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. Going back to my experience - I should mention I also worked with Django.",
+          "timestamp": 1754055696.0211542,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 2,
+            "switches_completed": 2,
+            "current_topic_index": 2,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to continue this conversation in a formal interview. Are you interested?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 7 messages, medium engagement, readiness: 0.58",
+          "response_time": 2.426455020904541,
+          "topic_handling_score": 0.2,
+          "context_indicators": [],
+          "timestamp": 1754055698.4476092
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_technical_deep_dive",
+      "scenario_name": "Technical Deep Dive Interruption",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "CONTINUE"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "technical_questions",
+            "trigger_message": "I see you need Python experience. Do you use async/await patterns? What about type hints and mypy? Are you using FastAPI or Django?",
+            "turn_number": 1,
+            "timestamp": 1754055703.2817304
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 0.0,
+        "topic_handling_average": 0.55
+      },
+      "validation_results": {
+        "scenario_id": "topic_technical_deep_dive",
+        "overall_success": false,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 6,
+            "actual": 3,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "technical_questions",
+            "handled_appropriately": false,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 0.0
+      },
+      "conversation_length": 3,
+      "total_response_time": 4.957530975341797,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055700.4480295,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Good day. I have extensive Python experience and I'm evaluating opportunities that offer technical growth.",
+          "timestamp": 1754055700.4480295,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.50",
+          "response_time": 1.8331866264343262,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055702.2812161
+        },
+        {
+          "type": "user",
+          "message": "I see you need Python experience. Do you use async/await patterns? What about type hints and mypy? Are you using FastAPI or Django?",
+          "timestamp": 1754055703.2817304,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 5 messages, high engagement, readiness: 0.70",
+          "response_time": 1.7056641578674316,
+          "topic_handling_score": 0.2,
+          "context_indicators": [],
+          "timestamp": 1754055704.9873946
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role. What are the main technical challenges the team is facing?",
+          "timestamp": 1754055705.9878743,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to continue this conversation in a formal interview. Are you interested?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 7 messages, high engagement, readiness: 0.80",
+          "response_time": 1.418680191040039,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055707.4065545
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_technical_deep_dive",
+      "scenario_name": "Technical Deep Dive Interruption",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "INFO",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "CONTINUE"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "technical_questions",
+            "trigger_message": "I see you need Python experience. Do you use async/await patterns? What about type hints and mypy? Are you using FastAPI or Django?",
+            "turn_number": 1,
+            "timestamp": 1754055712.5150478
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 0.0,
+        "topic_handling_average": 0.675
+      },
+      "validation_results": {
+        "scenario_id": "topic_technical_deep_dive",
+        "overall_success": false,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 6,
+            "actual": 3,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "experience",
+            "to_topic": "technical_questions",
+            "handled_appropriately": false,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 0.0
+      },
+      "conversation_length": 3,
+      "total_response_time": 5.62925386428833,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me about your experience with Python development?",
+          "timestamp": 1754055709.4069328,
+          "topic_context": "experience"
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile.",
+          "timestamp": 1754055709.4069328,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.56",
+          "response_time": 2.1077773571014404,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055711.5147102
+        },
+        {
+          "type": "user",
+          "message": "I see you need Python experience. Do you use async/await patterns? What about type hints and mypy? Are you using FastAPI or Django?",
+          "timestamp": 1754055712.5150478,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 4 messages, high engagement, readiness: 0.86",
+          "response_time": 1.8200514316558838,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055714.3350992
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile.",
+          "timestamp": 1754055715.3353598,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 6 messages, high engagement, readiness: 0.90",
+          "response_time": 1.7014250755310059,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055717.036785
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_scheduling_interrupt",
+      "scenario_name": "Scheduling Topic Interruption",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "SCHEDULE"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "trigger_message": "Actually, can we schedule an interview? I'm available this week.",
+            "turn_number": 1,
+            "timestamp": 1754055721.5178165
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.5666666666666667
+      },
+      "validation_results": {
+        "scenario_id": "topic_scheduling_interrupt",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 5,
+            "actual": 2,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 2,
+      "total_response_time": 3.292936086654663,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. I'd love to learn about your technical background.",
+          "timestamp": 1754055719.03764,
+          "topic_context": "technical_questions"
+        },
+        {
+          "type": "user",
+          "message": "Hi! I'm so excited to be here! I've been learning Python for the past year and I'm really passionate about joining a development team! Are there opportunities to contribute to open source projects?",
+          "timestamp": 1754055719.03764,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart TopicSwitchingAgent decision: INFO based on 2 messages, high engagement, readiness: 0.78",
+          "response_time": 1.4794986248016357,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055720.5171387
+        },
+        {
+          "type": "user",
+          "message": "Actually, can we schedule an interview? I'm available this week.",
+          "timestamp": 1754055721.5178165,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Your experience aligns well with what we're looking for. Can we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.86",
+          "response_time": 1.8134374618530273,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055723.331254
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_scheduling_interrupt",
+      "scenario_name": "Scheduling Topic Interruption",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "SCHEDULE"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "trigger_message": "Actually, can we schedule an interview? I'm available this week.",
+            "turn_number": 1,
+            "timestamp": 1754055728.5502772
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.5666666666666667
+      },
+      "validation_results": {
+        "scenario_id": "topic_scheduling_interrupt",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 5,
+            "actual": 2,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 2,
+      "total_response_time": 4.006805181503296,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. I'd love to learn about your technical background.",
+          "timestamp": 1754055725.3315432,
+          "topic_context": "technical_questions"
+        },
+        {
+          "type": "user",
+          "message": "Good day. I have extensive Python experience and I'm evaluating opportunities that offer technical growth.",
+          "timestamp": 1754055725.3315432,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.50",
+          "response_time": 2.2182183265686035,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055727.5497615
+        },
+        {
+          "type": "user",
+          "message": "Actually, can we schedule an interview? I'm available this week.",
+          "timestamp": 1754055728.5502772,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 5 messages, medium engagement, readiness: 0.58",
+          "response_time": 1.7885868549346924,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055730.338864
+        }
+      ]
+    },
+    {
+      "scenario_id": "topic_scheduling_interrupt",
+      "scenario_name": "Scheduling Topic Interruption",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": true,
+      "difficulty_level": "medium",
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "SCHEDULE"
+      ],
+      "topic_switches": {
+        "planned": 1,
+        "executed": 1,
+        "success_rate": 1.0,
+        "details": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "trigger_message": "Actually, can we schedule an interview? I'm available this week.",
+            "turn_number": 1,
+            "timestamp": 1754055735.5783584
+          }
+        ]
+      },
+      "context_retention": {
+        "events_detected": 0,
+        "retention_score": 0.0,
+        "details": []
+      },
+      "agent_adaptability": {
+        "score": 1.0,
+        "topic_handling_average": 0.5666666666666667
+      },
+      "validation_results": {
+        "scenario_id": "topic_scheduling_interrupt",
+        "overall_success": true,
+        "validations": [
+          {
+            "criteria": "max_messages",
+            "expected": 5,
+            "actual": 2,
+            "passed": true
+          }
+        ],
+        "topic_switch_handling": [
+          {
+            "switch_index": 0,
+            "from_topic": "technical_questions",
+            "to_topic": "availability",
+            "handled_appropriately": true,
+            "maintained_context": false,
+            "response_quality": "unknown"
+          }
+        ],
+        "context_retention_score": 0.0,
+        "agent_adaptability_score": 1.0
+      },
+      "conversation_length": 2,
+      "total_response_time": 4.501958608627319,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. I'd love to learn about your technical background.",
+          "timestamp": 1754055732.3393445,
+          "topic_context": "technical_questions"
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team.",
+          "timestamp": 1754055732.3393445,
+          "topic_switch": false,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 0,
+            "current_topic_index": 0,
+            "progress_percentage": 0.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart TopicSwitchingAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 2.238708019256592,
+          "topic_handling_score": 1.0,
+          "context_indicators": [],
+          "timestamp": 1754055734.5780525
+        },
+        {
+          "type": "user",
+          "message": "Actually, can we schedule an interview? I'm available this week.",
+          "timestamp": 1754055735.5783584,
+          "topic_switch": true,
+          "switching_progress": {
+            "total_switches_planned": 1,
+            "switches_completed": 1,
+            "current_topic_index": 1,
+            "progress_percentage": 100.0
+          }
+        },
+        {
+          "type": "agent",
+          "message": "I'm impressed with your background. Let's schedule a technical interview.",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart TopicSwitchingAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 2.2632505893707275,
+          "topic_handling_score": 0.7,
+          "context_indicators": [],
+          "timestamp": 1754055737.841609
+        }
+      ]
+    }
+  ],
+  "comprehensive_analysis": {
+    "scenario_performance": {
+      "topic_exp_to_salary": {
+        "success_rate": 100.0,
+        "total_tests": 2,
+        "avg_switch_success": 1.0,
+        "avg_context_retention": 0.0,
+        "avg_adaptability": 1.0
+      },
+      "topic_circular_switch": {
+        "success_rate": 100.0,
+        "total_tests": 2,
+        "avg_switch_success": 1.0,
+        "avg_context_retention": 0.0,
+        "avg_adaptability": 1.0
+      },
+      "topic_technical_deep_dive": {
+        "success_rate": 100.0,
+        "total_tests": 2,
+        "avg_switch_success": 1.0,
+        "avg_context_retention": 0.0,
+        "avg_adaptability": 0.0
+      },
+      "topic_scheduling_interrupt": {
+        "success_rate": 100.0,
+        "total_tests": 3,
+        "avg_switch_success": 1.0,
+        "avg_context_retention": 0.0,
+        "avg_adaptability": 1.0
+      }
+    },
+    "persona_adaptability": {
+      "eager_junior": {
+        "success_rate": 100.0,
+        "total_scenarios": 2,
+        "avg_adaptability_score": 1.0,
+        "avg_context_events": 0.0,
+        "strengths": [
+          "High success rate with topic switching",
+          "Excellent agent adaptability",
+          "Smooth topic transitions"
+        ],
+        "challenges": [
+          "Difficulty maintaining context across topics"
+        ]
+      },
+      "experienced_senior": {
+        "success_rate": 100.0,
+        "total_scenarios": 4,
+        "avg_adaptability_score": 0.75,
+        "avg_context_events": 0.0,
+        "strengths": [
+          "High success rate with topic switching",
+          "Smooth topic transitions"
+        ],
+        "challenges": [
+          "Difficulty maintaining context across topics"
+        ]
+      },
+      "career_changer": {
+        "success_rate": 100.0,
+        "total_scenarios": 3,
+        "avg_adaptability_score": 0.6666666666666666,
+        "avg_context_events": 0.0,
+        "strengths": [
+          "High success rate with topic switching",
+          "Smooth topic transitions"
+        ],
+        "challenges": [
+          "Difficulty maintaining context across topics"
+        ]
+      }
+    },
+    "difficulty_analysis": {
+      "medium": {
+        "success_rate": 100.0,
+        "total_tests": 9,
+        "avg_response_time": 4.564481682247585,
+        "complexity_indicators": {
+          "avg_switches_per_scenario": 1.2222222222222223,
+          "avg_conversation_length": 2.7777777777777777,
+          "context_retention_events": 0
+        }
+      }
+    },
+    "topic_switching_insights": [
+      "Good topic switching handling (100.0%)",
+      "Medium scenarios performing well (100.0%)",
+      "Context retention needs significant improvement"
+    ],
+    "context_retention_analysis": {},
+    "agent_adaptability_metrics": {}
+  }
+}

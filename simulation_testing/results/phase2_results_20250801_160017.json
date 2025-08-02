@@ -1,0 +1,1280 @@
+{
+  "phase": "Phase 2 - Basic Scenarios",
+  "timestamp": "2025-08-01T16:00:17.424613",
+  "summary": {
+    "total_scenarios": 10,
+    "total_tests": 16,
+    "successful_tests": 4,
+    "success_rate": 25.0
+  },
+  "individual_results": [
+    {
+      "scenario_id": "happy_path_junior",
+      "scenario_name": "Happy Path - Junior Developer",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "min_messages",
+          "passed": false,
+          "expected": 4,
+          "actual": 2
+        },
+        {
+          "validation": "max_messages",
+          "passed": true,
+          "expected": 8,
+          "actual": 2
+        },
+        {
+          "validation": "must_schedule",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "score": 1.0
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 3.1044681072235107,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053117.1632798
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer!",
+          "timestamp": 1754053117.1632798
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.70",
+          "response_time": 1.078129768371582,
+          "timestamp": 1754053118.2414095
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. Are there opportunities for mentorship and learning from senior developers?",
+          "timestamp": 1754053119.2422197
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.90",
+          "response_time": 2.0263383388519287,
+          "timestamp": 1754053121.268558
+        }
+      ]
+    },
+    {
+      "scenario_id": "happy_path_senior",
+      "scenario_name": "Happy Path - Senior Developer",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "min_messages",
+          "passed": true,
+          "expected": 3,
+          "actual": 3
+        },
+        {
+          "validation": "max_messages",
+          "passed": true,
+          "expected": 6,
+          "actual": 3
+        },
+        {
+          "validation": "must_schedule",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE",
+            "SCHEDULE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 3,
+      "total_response_time": 5.6979358196258545,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053123.2694838
+        },
+        {
+          "type": "user",
+          "message": "Good day. I have extensive Python experience and I'm evaluating opportunities that offer technical growth. What level of autonomy do senior developers have in technical decisions?",
+          "timestamp": 1754053123.2694838
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 2.1666016578674316,
+          "timestamp": 1754053125.4360855
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754053126.4366438
+        },
+        {
+          "type": "agent",
+          "message": "Your experience aligns well with what we're looking for. Can we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 1.4599382877349854,
+          "timestamp": 1754053127.8965821
+        },
+        {
+          "type": "user",
+          "message": "8 years Python, currently leading a development team. Experience with Django, Flask, FastAPI, PostgreSQL, Redis, Docker, and Kubernetes. I've designed and implemented several large-scale systems.",
+          "timestamp": 1754053128.8974917
+        },
+        {
+          "type": "agent",
+          "message": "Your experience aligns well with what we're looking for. Can we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 6 messages, high engagement, readiness: 0.90",
+          "response_time": 2.0713958740234375,
+          "timestamp": 1754053130.9688876
+        }
+      ]
+    },
+    {
+      "scenario_id": "happy_path_career_change",
+      "scenario_name": "Happy Path - Career Changer",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": true,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "min_messages",
+          "passed": false,
+          "expected": 5,
+          "actual": 2
+        },
+        {
+          "validation": "max_messages",
+          "passed": true,
+          "expected": 10,
+          "actual": 2
+        },
+        {
+          "validation": "must_schedule",
+          "passed": true,
+          "expected": true,
+          "actual": true
+        },
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "INFO",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE"
+          ],
+          "score": 0.6666666666666666
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 3.189032554626465,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053132.9697611
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile. Do you have other team members who made career transitions?",
+          "timestamp": 1754053132.9697611
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.68",
+          "response_time": 1.9074680805206299,
+          "timestamp": 1754053134.8772292
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. What kind of projects would someone at my level typically start with?",
+          "timestamp": 1754053135.8777106
+        },
+        {
+          "type": "agent",
+          "message": "I'm impressed with your background. Let's schedule a technical interview.",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.86",
+          "response_time": 1.281564474105835,
+          "timestamp": 1754053137.159275
+        }
+      ]
+    },
+    {
+      "scenario_id": "continue_decision_accuracy",
+      "scenario_name": "CONTINUE Decision Accuracy",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "score": 1.0
+        },
+        {
+          "validation": "continue_count",
+          "passed": false,
+          "expected": "2-4",
+          "actual": 1
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 3.0154330730438232,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053139.1596892
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer!",
+          "timestamp": 1754053139.1603022
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.70",
+          "response_time": 0.8861105442047119,
+          "timestamp": 1754053140.0464127
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. Do you work with any machine learning or data analysis projects?",
+          "timestamp": 1754053141.0470839
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 1.00",
+          "response_time": 2.1293225288391113,
+          "timestamp": 1754053143.1764064
+        }
+      ]
+    },
+    {
+      "scenario_id": "continue_decision_accuracy",
+      "scenario_name": "CONTINUE Decision Accuracy",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "CONTINUE",
+            "SCHEDULE",
+            "SCHEDULE"
+          ],
+          "score": 1.0
+        },
+        {
+          "validation": "continue_count",
+          "passed": false,
+          "expected": "2-4",
+          "actual": 1
+        }
+      ],
+      "conversation_length": 3,
+      "total_response_time": 5.768295049667358,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053145.1778758
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team.",
+          "timestamp": 1754053145.1778758
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 1.8697571754455566,
+          "timestamp": 1754053147.047633
+        },
+        {
+          "type": "user",
+          "message": "I'm relatively new to Python - about a year and a half of focused learning. My background is in marketing management, but I've always been interested in technology. I've completed several online courses and built some projects to practice what I've learned. What kind of support is available for someone still learning?",
+          "timestamp": 1754053148.0481613
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.90",
+          "response_time": 1.5973148345947266,
+          "timestamp": 1754053149.645476
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754053150.6462455
+        },
+        {
+          "type": "agent",
+          "message": "Based on what you've shared, I think you'd be a good candidate. Shall we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 7 messages, high engagement, readiness: 0.90",
+          "response_time": 2.301223039627075,
+          "timestamp": 1754053152.9474685
+        }
+      ]
+    },
+    {
+      "scenario_id": "schedule_decision_timing",
+      "scenario_name": "SCHEDULE Decision Timing",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "CONTINUE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 2.1744589805603027,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053154.9484916
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions!",
+          "timestamp": 1754053154.9484916
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 2.1744589805603027,
+          "timestamp": 1754053157.1229506
+        }
+      ]
+    },
+    {
+      "scenario_id": "schedule_decision_timing",
+      "scenario_name": "SCHEDULE Decision Timing",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": false,
+      "decisions_made": [
+        "INFO"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": false,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "INFO"
+          ],
+          "score": 0.0
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 0.9456112384796143,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053159.1235487
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm looking to understand if this position aligns with my experience in Python development and team leadership. What are the main technical challenges the team is facing?",
+          "timestamp": 1754053159.1235487
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 0.9456112384796143,
+          "timestamp": 1754053160.06916
+        }
+      ]
+    },
+    {
+      "scenario_id": "info_decision_handling",
+      "scenario_name": "INFO Decision Handling",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": false,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "CONTINUE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "INFO",
+            "CONTINUE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE",
+            "SCHEDULE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 3,
+      "total_response_time": 6.492056608200073,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053162.0702953
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team. What does the learning curve look like for someone in my situation?",
+          "timestamp": 1754053162.0702953
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 2.1823489665985107,
+          "timestamp": 1754053164.2526443
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. How do you typically onboard developers who are new to the field?",
+          "timestamp": 1754053165.2536783
+        },
+        {
+          "type": "agent",
+          "message": "Based on what you've shared, I think you'd be a good candidate. Shall we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 2.33404278755188,
+          "timestamp": 1754053167.587721
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. What kind of support is available for someone still learning?",
+          "timestamp": 1754053168.5886881
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 6 messages, high engagement, readiness: 0.80",
+          "response_time": 1.9756648540496826,
+          "timestamp": 1754053170.564353
+        }
+      ]
+    },
+    {
+      "scenario_id": "info_decision_handling",
+      "scenario_name": "INFO Decision Handling",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": true,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE",
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "CONTINUE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "INFO",
+            "CONTINUE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE",
+            "INFO",
+            "SCHEDULE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 4,
+      "total_response_time": 5.450289726257324,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053172.565371
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer! Are there opportunities to contribute to open source projects?",
+          "timestamp": 1754053172.565371
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.88",
+          "response_time": 0.8800358772277832,
+          "timestamp": 1754053173.445407
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. What's the code review process like? I'm eager to learn best practices!",
+          "timestamp": 1754053174.4459765
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.96",
+          "response_time": 1.0065782070159912,
+          "timestamp": 1754053175.4525547
+        },
+        {
+          "type": "user",
+          "message": "I have about 1.5 years of Python experience. I started with a computer science degree where I learned the fundamentals, then did a 6-month intensive bootcamp focused on web development with Django and Flask. I've built several personal projects including a task management web app and a data analysis tool for tracking personal expenses. What does a typical day look like for a Python developer on your team?",
+          "timestamp": 1754053176.4534564
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 6 messages, high engagement, readiness: 1.00",
+          "response_time": 1.1523635387420654,
+          "timestamp": 1754053177.60582
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754053178.6065571
+        },
+        {
+          "type": "agent",
+          "message": "Based on what you've shared, I think you'd be a good candidate. Shall we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 8 messages, high engagement, readiness: 1.00",
+          "response_time": 2.4113121032714844,
+          "timestamp": 1754053181.0178692
+        }
+      ]
+    },
+    {
+      "scenario_id": "end_decision_appropriate",
+      "scenario_name": "END Decision Appropriateness",
+      "persona_id": "difficult_candidate",
+      "persona_type": "Difficult Candidate",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "END"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "END"
+          ],
+          "actual": [
+            "CONTINUE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 2.1196868419647217,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053183.018193
+        },
+        {
+          "type": "user",
+          "message": "Hi. I guess we're doing this interview thing.",
+          "timestamp": 1754053183.018193
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 2.1196868419647217,
+          "timestamp": 1754053185.1378798
+        }
+      ]
+    },
+    {
+      "scenario_id": "end_decision_appropriate",
+      "scenario_name": "END Decision Appropriateness",
+      "persona_id": "passive_candidate",
+      "persona_type": "Passive Candidate",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE",
+        "END"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "END"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "END"
+          ],
+          "actual": [
+            "CONTINUE",
+            "END"
+          ],
+          "score": 1.0
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 2.926345109939575,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053187.138719
+        },
+        {
+          "type": "user",
+          "message": "Hi.",
+          "timestamp": 1754053187.138719
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 1.471313714981079,
+          "timestamp": 1754053188.6100328
+        },
+        {
+          "type": "user",
+          "message": "4 years Python development. Working with Django mostly.",
+          "timestamp": 1754053189.610815
+        },
+        {
+          "type": "agent",
+          "message": "I appreciate you sharing your background with me. We'll be in touch regarding next steps.",
+          "decision": "END",
+          "reasoning": "Smart SmartCoreAgent decision: END based on 5 messages, low engagement, readiness: 0.56",
+          "response_time": 1.455031394958496,
+          "timestamp": 1754053191.0658464
+        }
+      ]
+    },
+    {
+      "scenario_id": "scheduling_workflow",
+      "scenario_name": "Scheduling Workflow",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": false,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 2.757580041885376,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053193.0662992
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions! Are there opportunities to contribute to open source projects?",
+          "timestamp": 1754053193.0662992
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 0.917686939239502,
+          "timestamp": 1754053193.9839861
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754053194.9842114
+        },
+        {
+          "type": "agent",
+          "message": "Your experience aligns well with what we're looking for. Can we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 1.839893102645874,
+          "timestamp": 1754053196.8241045
+        }
+      ]
+    },
+    {
+      "scenario_id": "scheduling_workflow",
+      "scenario_name": "Scheduling Workflow",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "success": true,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "SCHEDULE"
+          ],
+          "actual": [
+            "INFO",
+            "SCHEDULE"
+          ],
+          "score": 0.5
+        }
+      ],
+      "conversation_length": 2,
+      "total_response_time": 3.9328038692474365,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053198.8247616
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role. What's the team's approach to system scalability?",
+          "timestamp": 1754053198.8247616
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.68",
+          "response_time": 1.797203779220581,
+          "timestamp": 1754053200.6219654
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754053201.622852
+        },
+        {
+          "type": "agent",
+          "message": "Based on our conversation, I'd like to schedule an interview. Are you available this week?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart SmartCoreAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 2.1356000900268555,
+          "timestamp": 1754053203.7584522
+        }
+      ]
+    },
+    {
+      "scenario_id": "information_provision",
+      "scenario_name": "Information Provision",
+      "persona_id": "career_changer",
+      "persona_type": "Career Changer",
+      "success": false,
+      "decisions_made": [
+        "INFO"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "INFO",
+        "CONTINUE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "INFO",
+            "INFO",
+            "CONTINUE"
+          ],
+          "actual": [
+            "INFO"
+          ],
+          "score": 0.6666666666666666
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 1.7019133567810059,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053205.7645295
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team. What kind of projects would someone at my level typically start with?",
+          "timestamp": 1754053205.7645295
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart SmartCoreAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 1.7019133567810059,
+          "timestamp": 1754053207.4664428
+        }
+      ]
+    },
+    {
+      "scenario_id": "information_provision",
+      "scenario_name": "Information Provision",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "expected_decisions": [
+        "INFO",
+        "INFO",
+        "CONTINUE"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": false,
+          "expected": [
+            "INFO",
+            "INFO",
+            "CONTINUE"
+          ],
+          "actual": [
+            "CONTINUE"
+          ],
+          "score": 0.3333333333333333
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 2.147749900817871,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053209.4674408
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer!",
+          "timestamp": 1754053209.4674408
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.70",
+          "response_time": 2.147749900817871,
+          "timestamp": 1754053211.6151907
+        }
+      ]
+    },
+    {
+      "scenario_id": "passive_engagement",
+      "scenario_name": "Passive Candidate Engagement",
+      "persona_id": "passive_candidate",
+      "persona_type": "Passive Candidate",
+      "success": false,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "expected_decisions": [
+        "CONTINUE",
+        "CONTINUE",
+        "END"
+      ],
+      "validation_results": [
+        {
+          "validation": "decision_alignment",
+          "passed": true,
+          "expected": [
+            "CONTINUE",
+            "CONTINUE",
+            "END"
+          ],
+          "actual": [
+            "CONTINUE"
+          ],
+          "score": 0.6666666666666666
+        }
+      ],
+      "conversation_length": 1,
+      "total_response_time": 1.8071413040161133,
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754053213.6164217
+        },
+        {
+          "type": "user",
+          "message": "Hi.",
+          "timestamp": 1754053213.6164217
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart SmartCoreAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 1.8071413040161133,
+          "timestamp": 1754053215.423563
+        }
+      ]
+    }
+  ],
+  "comparative_analysis": {
+    "scenario_performance": {
+      "happy_path_junior": {
+        "success_rate": 0.0,
+        "total_tests": 1,
+        "avg_conversation_length": 2.0,
+        "common_decisions": [
+          "CONTINUE",
+          "SCHEDULE"
+        ]
+      },
+      "happy_path_senior": {
+        "success_rate": 100.0,
+        "total_tests": 1,
+        "avg_conversation_length": 3.0,
+        "common_decisions": [
+          "INFO",
+          "SCHEDULE",
+          "SCHEDULE"
+        ]
+      },
+      "happy_path_career_change": {
+        "success_rate": 100.0,
+        "total_tests": 1,
+        "avg_conversation_length": 2.0,
+        "common_decisions": [
+          "INFO",
+          "SCHEDULE"
+        ]
+      },
+      "continue_decision_accuracy": {
+        "success_rate": 0.0,
+        "total_tests": 2,
+        "avg_conversation_length": 2.5,
+        "common_decisions": [
+          "CONTINUE",
+          "SCHEDULE"
+        ]
+      },
+      "schedule_decision_timing": {
+        "success_rate": 0.0,
+        "total_tests": 2,
+        "avg_conversation_length": 1.0,
+        "common_decisions": [
+          "CONTINUE"
+        ]
+      },
+      "info_decision_handling": {
+        "success_rate": 50.0,
+        "total_tests": 2,
+        "avg_conversation_length": 3.5,
+        "common_decisions": [
+          "INFO",
+          "SCHEDULE",
+          "SCHEDULE"
+        ]
+      },
+      "end_decision_appropriate": {
+        "success_rate": 0.0,
+        "total_tests": 2,
+        "avg_conversation_length": 1.5,
+        "common_decisions": [
+          "CONTINUE"
+        ]
+      },
+      "scheduling_workflow": {
+        "success_rate": 50.0,
+        "total_tests": 2,
+        "avg_conversation_length": 2.0,
+        "common_decisions": [
+          "INFO",
+          "SCHEDULE"
+        ]
+      },
+      "information_provision": {
+        "success_rate": 0.0,
+        "total_tests": 2,
+        "avg_conversation_length": 1.0,
+        "common_decisions": [
+          "INFO"
+        ]
+      },
+      "passive_engagement": {
+        "success_rate": 0.0,
+        "total_tests": 1,
+        "avg_conversation_length": 1.0,
+        "common_decisions": [
+          "CONTINUE"
+        ]
+      }
+    },
+    "persona_performance": {
+      "eager_junior": {
+        "success_rate": 16.666666666666664,
+        "total_scenarios": 6,
+        "avg_response_time": 3.11,
+        "strengths": [
+          "Frequently reaches scheduling"
+        ],
+        "challenges": [
+          "Low success rate",
+          "Conversations end too early"
+        ]
+      },
+      "experienced_senior": {
+        "success_rate": 66.66666666666666,
+        "total_scenarios": 3,
+        "avg_response_time": 3.53,
+        "strengths": [
+          "Frequently reaches scheduling"
+        ],
+        "challenges": [
+          "Conversations end too early"
+        ]
+      },
+      "career_changer": {
+        "success_rate": 25.0,
+        "total_scenarios": 4,
+        "avg_response_time": 4.29,
+        "strengths": [
+          "Frequently reaches scheduling"
+        ],
+        "challenges": [
+          "Low success rate"
+        ]
+      },
+      "difficult_candidate": {
+        "success_rate": 0.0,
+        "total_scenarios": 1,
+        "avg_response_time": 2.12,
+        "strengths": [
+          "Consistent performance"
+        ],
+        "challenges": [
+          "Low success rate",
+          "Conversations end too early"
+        ]
+      },
+      "passive_candidate": {
+        "success_rate": 0.0,
+        "total_scenarios": 2,
+        "avg_response_time": 2.37,
+        "strengths": [
+          "Consistent performance"
+        ],
+        "challenges": [
+          "Low success rate",
+          "Conversations end too early"
+        ]
+      }
+    },
+    "decision_accuracy": {
+      "CONTINUE": 8,
+      "SCHEDULE": 13,
+      "INFO": 9,
+      "END": 1
+    },
+    "performance_insights": [
+      "Overall success rate (25.0%) needs improvement",
+      "Best performing scenario: happy_path_senior (100.0%)",
+      "Needs attention: happy_path_junior (0.0%)",
+      "Most successful persona: experienced_senior (66.7%)",
+      "Most challenging persona: difficult_candidate (0.0%)"
+    ]
+  }
+}

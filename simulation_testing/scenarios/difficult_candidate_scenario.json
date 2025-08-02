@@ -1,0 +1,80 @@
+{
+  "id": "difficult_candidate_handling",
+  "name": "Difficult Candidate Interaction",
+  "description": "Tests system resilience with challenging, evasive, or uncooperative candidates",
+  "type": "stress_test",
+  "target_personas": ["difficult_candidate", "passive_candidate"],
+  "expected_stages": [
+    "initial_resistance",
+    "information_extraction_attempts",
+    "patience_testing", 
+    "decision_making_under_pressure",
+    "graceful_handling"
+  ],
+  "success_criteria": {
+    "maintains_professionalism": true,
+    "extracts_minimum_info": true,
+    "makes_appropriate_decisions": true,
+    "handles_evasiveness": "gracefully",
+    "no_system_failures": true
+  },
+  "challenge_types": [
+    {
+      "name": "evasive_responses",
+      "description": "User avoids direct answers to questions",
+      "test_pattern": "indirect_answers"
+    },
+    {
+      "name": "minimal_engagement", 
+      "description": "User provides very short, unhelpful responses",
+      "test_pattern": "short_responses"
+    },
+    {
+      "name": "challenging_questions",
+      "description": "User challenges the process or asks difficult questions",
+      "test_pattern": "system_challenges"
+    },
+    {
+      "name": "contradictory_information",
+      "description": "User provides conflicting information",
+      "test_pattern": "inconsistent_responses"
+    }
+  ],
+  "validation_points": [
+    {
+      "stage": "information_extraction",
+      "requirement": "Agent attempts multiple approaches to gather information",
+      "validation": "Multiple CONTINUE decisions with varied questioning"
+    },
+    {
+      "stage": "decision_making",
+      "requirement": "Agent makes appropriate END decision when necessary", 
+      "validation": "END decision when insufficient progress"
+    },
+    {
+      "stage": "error_handling",
+      "requirement": "No system crashes or errors",
+      "validation": "Clean conversation completion"
+    }
+  ],
+  "expected_outcomes": {
+    "difficult_candidate": {
+      "success_probability": 0.30,
+      "typical_completion_stage": "ended",
+      "expected_decisions": ["CONTINUE", "CONTINUE", "END"],
+      "conversation_length": "shorter_than_average"
+    },
+    "passive_candidate": {
+      "success_probability": 0.45,
+      "typical_completion_stage": "scheduling_declined",
+      "expected_decisions": ["CONTINUE", "SCHEDULE"],
+      "requires_prompting": true
+    }
+  },
+  "stress_indicators": [
+    "repeated_non_responses",
+    "circular_conversation_patterns", 
+    "agent_decision_uncertainty",
+    "extended_conversation_without_progress"
+  ]
+}

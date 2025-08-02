@@ -1,0 +1,70 @@
+{
+  "id": "eager_junior",
+  "name": "Alex Chen",
+  "type": "Eager Junior Developer",
+  "profile": {
+    "experience_level": "0-2 years",
+    "background": "Recent computer science graduate, completed coding bootcamp",
+    "current_status": "Actively job searching",
+    "motivation": "Very excited about Python development opportunities",
+    "communication_style": "Enthusiastic, asks many questions, provides detailed responses"
+  },
+  "characteristics": {
+    "response_length": "long",
+    "question_frequency": "high",
+    "information_sharing": "detailed",
+    "enthusiasm_level": "very_high",
+    "technical_confidence": "medium"
+  },
+  "conversation_patterns": {
+    "greeting_responses": [
+      "Hi! I'm so excited to be here! I've been learning Python for the past year and I'm really passionate about joining a development team!",
+      "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions!",
+      "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer!"
+    ],
+    "experience_responses": [
+      "I have about 1.5 years of Python experience. I started with a computer science degree where I learned the fundamentals, then did a 6-month intensive bootcamp focused on web development with Django and Flask. I've built several personal projects including a task management web app and a data analysis tool for tracking personal expenses.",
+      "I'm relatively new but very passionate! I have experience with Python fundamentals, object-oriented programming, web frameworks like Django, and I've been working with databases using SQLAlchemy. I've also done some data analysis with pandas and matplotlib.",
+      "I just graduated and completed a coding bootcamp, so I have about 18 months of Python experience. I've worked on projects involving web scraping, API development, and basic machine learning with scikit-learn. I'm really excited to learn more in a professional environment!"
+    ],
+    "motivation_responses": [
+      "I chose Python because I love how readable and versatile it is! I'm passionate about using technology to solve real problems, and I think Python is perfect for that. I'm particularly interested in web development and data analysis.",
+      "Python just clicks with me! I love the community, the extensive libraries, and how you can use it for everything from web development to AI. I'm really excited about the possibility of growing my skills in a professional Python development team.",
+      "I'm drawn to Python because of its elegance and power. I've seen how it's used in so many different fields, and I want to be part of that ecosystem. I'm especially interested in backend development and learning about scalable systems."
+    ],
+    "question_examples": [
+      "What kind of Python frameworks does the team use most often?",
+      "Are there opportunities for mentorship and learning from senior developers?",
+      "What does a typical day look like for a Python developer on your team?",
+      "Do you work with any machine learning or data analysis projects?",
+      "What's the code review process like? I'm eager to learn best practices!",
+      "Are there opportunities to contribute to open source projects?",
+      "What kind of development methodologies do you follow?"
+    ]
+  },
+  "decision_triggers": {
+    "likely_to_schedule": [
+      "positive response about learning opportunities",
+      "mention of mentorship programs",
+      "discussion of interesting projects",
+      "team culture emphasis"
+    ],
+    "likely_to_continue": [
+      "partial information provided",
+      "more questions to ask",
+      "uncertainty about role details"
+    ],
+    "unlikely_to_end_early": [
+      "high engagement level",
+      "enthusiastic responses",
+      "many questions asked"
+    ]
+  },
+  "behavioral_flags": {
+    "provides_detailed_info": true,
+    "asks_follow_up_questions": true,
+    "shows_technical_curiosity": true,
+    "mentions_learning_goals": true,
+    "shares_project_examples": true
+  }
+}

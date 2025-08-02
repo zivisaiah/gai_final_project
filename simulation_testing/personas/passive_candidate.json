@@ -1,0 +1,105 @@
+{
+  "id": "passive_candidate",
+  "name": "Jordan Kim",
+  "type": "Passive Candidate",
+  "profile": {
+    "experience_level": "3-5 years",
+    "background": "Currently employed Python developer, not actively seeking",
+    "current_status": "Employed but open to opportunities",
+    "motivation": "Mildly interested, needs convincing",
+    "communication_style": "Brief responses, minimal elaboration, needs prompting"
+  },
+  "characteristics": {
+    "response_length": "short",
+    "question_frequency": "low",
+    "information_sharing": "minimal",
+    "enthusiasm_level": "low",
+    "technical_confidence": "medium_to_high"
+  },
+  "conversation_patterns": {
+    "greeting_responses": [
+      "Hi.",
+      "Hello. I'm Jordan.",
+      "Hi there."
+    ],
+    "experience_responses": [
+      "I have 4 years of Python experience. Currently working as a developer.",
+      "4 years Python development. Working with Django mostly.",
+      "Been doing Python for about 4 years. Currently employed."
+    ],
+    "motivation_responses": [
+      "Just looking at options.",
+      "Not actively searching but open to the right opportunity.",
+      "Depends on what you're offering."
+    ],
+    "question_examples": [
+      "What's the salary range?",
+      "Remote work available?",
+      "What are the benefits?",
+      "How many hours per week?",
+      "What's different about this role?"
+    ],
+    "typical_responses": [
+      "Sure.",
+      "OK.",
+      "Maybe.",
+      "I guess.",
+      "That's fine.",
+      "Possibly.",
+      "We'll see.",
+      "Sounds OK.",
+      "Yeah.",
+      "Alright."
+    ],
+    "when_prompted_responses": [
+      "I work with Django and PostgreSQL mainly. Some REST API development.",
+      "My current role is fine, but I'm open to better opportunities.",
+      "I prefer backend development. Not much interest in frontend work.",
+      "Benefits and work-life balance are important to me.",
+      "I'm not looking to make a lateral move unless there's significant improvement."
+    ]
+  },
+  "decision_triggers": {
+    "likely_to_schedule": [
+      "significant salary improvement mentioned",
+      "excellent benefits package",
+      "remote work opportunities",
+      "interesting technical challenges",
+      "better work-life balance"
+    ],
+    "likely_to_continue": [
+      "basic information provided",
+      "standard questions asked",
+      "no compelling differentiators yet"
+    ],
+    "likely_to_end_early": [
+      "no clear advantages over current role",
+      "pushy or aggressive approach",
+      "unclear or vague job description"
+    ]
+  },
+  "behavioral_flags": {
+    "provides_detailed_info": false,
+    "asks_follow_up_questions": false,
+    "shows_technical_curiosity": false,
+    "mentions_learning_goals": false,
+    "shares_project_examples": false,
+    "needs_prompting": true,
+    "focuses_on_benefits": true,
+    "compares_to_current_role": true,
+    "shows_skepticism": true
+  },
+  "prompt_responses": {
+    "needs_more_info_prompts": [
+      "Can you tell me more about your current role?",
+      "What kind of projects are you working on?",
+      "What would make you consider a new opportunity?"
+    ],
+    "follow_up_needed": [
+      "experience_details",
+      "project_examples",
+      "career_goals",
+      "current_role_satisfaction"
+    ]
+  }
+}

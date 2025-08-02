@@ -1,0 +1,459 @@
+{
+  "phase": "Phase 3 - Concurrent User Testing",
+  "timestamp": "2025-08-02T20:27:45.372739",
+  "filters_applied": {
+    "difficulty": "medium",
+    "max_users": 5
+  },
+  "summary": {
+    "total_scenarios": 1,
+    "successful_scenarios": 0,
+    "total_simulated_users": 5,
+    "overall_success_rate": 0.4,
+    "avg_concurrent_users": 1.0
+  },
+  "individual_results": [
+    {
+      "scenario_id": "concurrent_simultaneous_start",
+      "scenario_name": "Simultaneous Startup Stress Test",
+      "test_completed": true,
+      "total_users": 5,
+      "successful_conversations": 2,
+      "failed_conversations": 3,
+      "success_rate": 0.4,
+      "timing_data": {
+        "test_start_time": 1754155640.9347832,
+        "baseline_response_time": 1.5,
+        "max_concurrent_active": 1,
+        "system_overload_detected": false,
+        "actual_test_duration": 19.436643362045288,
+        "first_conversation_start": 1754155640.936771,
+        "last_conversation_end": 1754155660.3704033,
+        "total_response_times": 11,
+        "avg_response_time": 1.7459628148512407,
+        "max_response_time": 2.3772974014282227,
+        "min_response_time": 0.9608054161071777
+      },
+      "resource_metrics": {
+        "cpu_usage": {
+          "error": "No data for metric cpu_usage"
+        },
+        "memory_usage": {
+          "error": "No data for metric memory_usage"
+        },
+        "active_connections": {
+          "count": 10,
+          "min": -1,
+          "max": 1,
+          "avg": 0.0,
+          "first": 1,
+          "last": -1
+        },
+        "response_times": {
+          "count": 11,
+          "min": 0.9608054161071777,
+          "max": 2.3772974014282227,
+          "avg": 1.7459628148512407,
+          "first": 1.4313404560089111,
+          "last": 1.233924150466919
+        },
+        "error_rates": {
+          "error": "No data for metric error_rates"
+        },
+        "database_connections": {
+          "error": "No data for metric database_connections"
+        }
+      },
+      "validation_results": {
+        "scenario_id": "concurrent_simultaneous_start",
+        "overall_success": false,
+        "validations": [
+          {
+            "criteria": "successful_completion_rate",
+            "expected": 0.8,
+            "actual": 0.4,
+            "passed": false
+          },
+          {
+            "criteria": "max_response_degradation",
+            "expected": 2.0,
+            "actual": 1.5848649342854817,
+            "passed": true
+          }
+        ],
+        "concurrency_analysis": {
+          "total_users": 5,
+          "successful_users": 2,
+          "failed_users": 3,
+          "completion_rate": 0.4,
+          "avg_conversation_duration": 7.271310949325562,
+          "max_concurrent_active": 1,
+          "overlap_period": 19.433632373809814
+        },
+        "performance_analysis": {
+          "total_messages": 11,
+          "avg_response_time": 1.7459628148512407,
+          "max_response_time": 2.3772974014282227,
+          "min_response_time": 0.9608054161071777,
+          "response_time_std": 0,
+          "throughput_per_second": 0.566029025784413
+        },
+        "resource_analysis": {
+          "peak_memory_usage": 0,
+          "avg_cpu_usage": 0,
+          "peak_connections": 1,
+          "resource_stability": 1.0,
+          "memory_leak_detected": false
+        },
+        "user_experience_analysis": {
+          "avg_decision_accuracy": 0.5599999999999999,
+          "avg_context_retention": 0.3375,
+          "user_satisfaction_estimate": 0.44799999999999995,
+          "consistency_across_users": 0.40415869530246784
+        }
+      },
+      "individual_results": [
+        {
+          "user_id": "sim_user_1",
+          "conversation_id": "concurrent_sim_user_1_1754155640",
+          "persona_id": "eager_junior",
+          "persona_type": "Eager Junior Developer",
+          "success": true,
+          "duration": 1.4313404560089111,
+          "start_time": 1754155640.936771,
+          "end_time": 1754155642.3681114,
+          "message_count": 1,
+          "decisions_made": [
+            "SCHEDULE"
+          ],
+          "response_times": [
+            1.4313404560089111
+          ],
+          "avg_response_time": 1.4313404560089111,
+          "max_response_time": 1.4313404560089111,
+          "errors": [],
+          "decision_accuracy": 0.8,
+          "context_retention_score": 0.1875,
+          "conversation_log": [
+            {
+              "type": "agent",
+              "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+              "timestamp": 1754155640.936771
+            },
+            {
+              "type": "user",
+              "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer! What kind of development methodologies do you follow?",
+              "timestamp": 1754155640.936771
+            },
+            {
+              "type": "agent",
+              "message": "Based on what you've shared, I think you'd be a good candidate. Shall we schedule an interview?",
+              "decision": "SCHEDULE",
+              "reasoning": "Smart ConcurrentTestAgent decision: SCHEDULE based on 2 messages, high engagement, readiness: 0.78",
+              "response_time": 1.4313404560089111,
+              "timestamp": 1754155642.3681114
+            }
+          ]
+        },
+        {
+          "user_id": "sim_user_2",
+          "conversation_id": "concurrent_sim_user_2_1754155640",
+          "persona_id": "experienced_senior",
+          "persona_type": "Experienced Senior Developer",
+          "success": false,
+          "duration": 2.2318954467773438,
+          "start_time": 1754155640.9377797,
+          "end_time": 1754155643.169675,
+          "message_count": 1,
+          "decisions_made": [
+            "INFO"
+          ],
+          "response_times": [
+            2.2318954467773438
+          ],
+          "avg_response_time": 2.2318954467773438,
+          "max_response_time": 2.2318954467773438,
+          "errors": [],
+          "decision_accuracy": 0.4,
+          "context_retention_score": 0.1875,
+          "conversation_log": [
+            {
+              "type": "agent",
+              "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+              "timestamp": 1754155640.9377797
+            },
+            {
+              "type": "user",
+              "message": "Hi, I'm looking to understand if this position aligns with my experience in Python development and team leadership. What opportunities are there for technical leadership and mentoring?",
+              "timestamp": 1754155640.9377797
+            },
+            {
+              "type": "agent",
+              "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+              "decision": "INFO",
+              "reasoning": "Smart ConcurrentTestAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+              "response_time": 2.2318954467773438,
+              "timestamp": 1754155643.169675
+            }
+          ]
+        },
+        {
+          "user_id": "sim_user_3",
+          "conversation_id": "concurrent_sim_user_3_1754155640",
+          "persona_id": "career_changer",
+          "persona_type": "Career Changer",
+          "success": true,
+          "duration": 6.509515047073364,
+          "start_time": 1754155640.9387615,
+          "end_time": 1754155647.4482765,
+          "message_count": 2,
+          "decisions_made": [
+            "INFO",
+            "SCHEDULE"
+          ],
+          "response_times": [
+            2.3772974014282227,
+            1.258363962173462
+          ],
+          "avg_response_time": 1.8178306818008423,
+          "max_response_time": 2.3772974014282227,
+          "errors": [],
+          "decision_accuracy": 0.8,
+          "context_retention_score": 0.3125,
+          "conversation_log": [
+            {
+              "type": "agent",
+              "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+              "timestamp": 1754155640.9387615
+            },
+            {
+              "type": "user",
+              "message": "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile.",
+              "timestamp": 1754155640.9387615
+            },
+            {
+              "type": "agent",
+              "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+              "decision": "INFO",
+              "reasoning": "Smart ConcurrentTestAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.56",
+              "response_time": 2.3772974014282227,
+              "timestamp": 1754155643.3160589
+            },
+            {
+              "type": "user",
+              "message": "That sounds good. I'm interested in learning more. Are there opportunities to work on projects that might use my marketing background?",
+              "timestamp": 1754155646.1899126
+            },
+            {
+              "type": "agent",
+              "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+              "decision": "SCHEDULE",
+              "reasoning": "Smart ConcurrentTestAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.86",
+              "response_time": 1.258363962173462,
+              "timestamp": 1754155647.4482765
+            }
+          ]
+        },
+        {
+          "user_id": "sim_user_4",
+          "conversation_id": "concurrent_sim_user_4_1754155640",
+          "persona_id": "passive_candidate",
+          "persona_type": "Passive Candidate",
+          "success": false,
+          "duration": 6.754178524017334,
+          "start_time": 1754155640.939776,
+          "end_time": 1754155647.6939545,
+          "message_count": 2,
+          "decisions_made": [
+            "CONTINUE",
+            "END"
+          ],
+          "response_times": [
+            2.2731218338012695,
+            1.636465072631836
+          ],
+          "avg_response_time": 1.9547934532165527,
+          "max_response_time": 2.2731218338012695,
+          "errors": [],
+          "decision_accuracy": 0.4,
+          "context_retention_score": 0.3125,
+          "conversation_log": [
+            {
+              "type": "agent",
+              "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+              "timestamp": 1754155640.939776
+            },
+            {
+              "type": "user",
+              "message": "Hi.",
+              "timestamp": 1754155640.939776
+            },
+            {
+              "type": "agent",
+              "message": "Tell me more about your experience with Python development.",
+              "decision": "CONTINUE",
+              "reasoning": "Smart ConcurrentTestAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+              "response_time": 2.2731218338012695,
+              "timestamp": 1754155643.2128978
+            },
+            {
+              "type": "user",
+              "message": "4 years Python development. Working with Django mostly.",
+              "timestamp": 1754155646.0574894
+            },
+            {
+              "type": "agent",
+              "message": "Thank you for your interest. We'll review your profile and contact you with any updates.",
+              "decision": "END",
+              "reasoning": "Smart ConcurrentTestAgent decision: END based on 5 messages, low engagement, readiness: 0.56",
+              "response_time": 1.636465072631836,
+              "timestamp": 1754155647.6939545
+            }
+          ]
+        },
+        {
+          "user_id": "sim_user_5",
+          "conversation_id": "concurrent_sim_user_5_1754155640",
+          "persona_id": "difficult_candidate",
+          "persona_type": "Difficult Candidate",
+          "success": false,
+          "duration": 19.429625272750854,
+          "start_time": 1754155640.940778,
+          "end_time": 1754155660.3704033,
+          "message_count": 5,
+          "decisions_made": [
+            "CONTINUE",
+            "INFO",
+            "SCHEDULE",
+            "SCHEDULE",
+            "INFO"
+          ],
+          "response_times": [
+            2.1641933917999268,
+            0.9608054161071777,
+            1.6366755962371826,
+            2.0015082359313965,
+            1.233924150466919
+          ],
+          "avg_response_time": 1.5994213581085206,
+          "max_response_time": 2.1641933917999268,
+          "errors": [],
+          "decision_accuracy": 0.4,
+          "context_retention_score": 0.6875,
+          "conversation_log": [
+            {
+              "type": "agent",
+              "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+              "timestamp": 1754155640.940778
+            },
+            {
+              "type": "user",
+              "message": "Hi there. Another recruiting call, huh?",
+              "timestamp": 1754155640.940778
+            },
+            {
+              "type": "agent",
+              "message": "Tell me more about your experience with Python development.",
+              "decision": "CONTINUE",
+              "reasoning": "Smart ConcurrentTestAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.30",
+              "response_time": 2.1641933917999268,
+              "timestamp": 1754155643.1049714
+            },
+            {
+              "type": "user",
+              "message": "I've been working with Python for a while. Some projects worked out, some didn't. That's just how it is in this industry.",
+              "timestamp": 1754155646.0414588
+            },
+            {
+              "type": "agent",
+              "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+              "decision": "INFO",
+              "reasoning": "Smart ConcurrentTestAgent decision: INFO based on 5 messages, medium engagement, readiness: 0.78",
+              "response_time": 0.9608054161071777,
+              "timestamp": 1754155647.0022643
+            },
+            {
+              "type": "user",
+              "message": "I guess that's fine.",
+              "timestamp": 1754155650.1877778
+            },
+            {
+              "type": "agent",
+              "message": "Based on our conversation, I'd like to schedule an interview. Are you available this week?",
+              "decision": "SCHEDULE",
+              "reasoning": "Smart ConcurrentTestAgent decision: SCHEDULE based on 7 messages, medium engagement, readiness: 0.78",
+              "response_time": 1.6366755962371826,
+              "timestamp": 1754155651.8244534
+            },
+            {
+              "type": "user",
+              "message": "I'd rather not get into all the details right now.",
+              "timestamp": 1754155655.0623245
+            },
+            {
+              "type": "agent",
+              "message": "Based on our conversation, I'd like to schedule an interview. Are you available this week?",
+              "decision": "SCHEDULE",
+              "reasoning": "Smart ConcurrentTestAgent decision: SCHEDULE based on 9 messages, medium engagement, readiness: 0.78",
+              "response_time": 2.0015082359313965,
+              "timestamp": 1754155657.0638328
+            },
+            {
+              "type": "user",
+              "message": "How is this different from other companies I've talked to?",
+              "timestamp": 1754155659.1358812
+            },
+            {
+              "type": "agent",
+              "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+              "decision": "INFO",
+              "reasoning": "Smart ConcurrentTestAgent decision: INFO based on 11 messages, medium engagement, readiness: 0.78",
+              "response_time": 1.233924150466919,
+              "timestamp": 1754155660.3698053
+            }
+          ]
+        }
+      ],
+      "scenario_difficulty": "medium",
+      "concurrency_type": "simultaneous_start",
+      "load_pattern": "spike"
+    }
+  ],
+  "comprehensive_analysis": {
+    "performance_analysis": {
+      "avg_response_time_across_scenarios": 1.7459628148512407,
+      "best_response_time": 1.7459628148512407,
+      "worst_response_time": 1.7459628148512407,
+      "response_time_consistency": 1.0
+    },
+    "scalability_analysis": {
+      "max_users_tested": 1,
+      "avg_concurrent_capacity": 1.0,
+      "success_rate_vs_concurrency": [
+        {
+          "concurrent_users": 1,
+          "success_rate": 0.4,
+          "scenario": "concurrent_simultaneous_start"
+        }
+      ],
+      "scalability_score": 0.4
+    },
+    "reliability_analysis": {
+      "test_completion_rate": 1.0,
+      "avg_success_rate": 0.4,
+      "reliability_score": 0.4
+    },
+    "resource_utilization": {
+      "avg_peak_memory": 0.0,
+      "avg_cpu_usage": 0.0,
+      "resource_efficiency": 1.0,
+      "memory_stability": true
+    },
+    "concurrency_insights": [
+      "Concurrent performance needs improvement (40.0% success rate)",
+      "Limited concurrency testing (1 users) - expand test coverage",
+      "Excellent response times under concurrent load",
+      "Memory usage remained stable across all concurrent tests"
+    ]
+  }
+}

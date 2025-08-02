@@ -3,7 +3,14 @@
     "allow": [
       "Bash(python:*)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(timeout:*)",
+      "Bash(move agent_decision_debugger.py testing_tools/)",
+      "Bash(move end_decision_tester.py testing_tools/)",
+      "Bash(move quick_fix_validation.py testing_tools/)",
+      "Bash(move improved_conversation_flow.py testing_tools/)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

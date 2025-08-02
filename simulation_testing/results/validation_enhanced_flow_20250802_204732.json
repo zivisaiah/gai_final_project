@@ -1,0 +1,2942 @@
+{
+  "validation_timestamp": "2025-08-02T20:47:32.467878",
+  "test_configuration": {
+    "personas_tested": [
+      "eager_junior",
+      "experienced_senior",
+      "career_changer",
+      "passive_candidate",
+      "difficult_candidate"
+    ],
+    "rounds_per_persona": 3,
+    "total_tests": 30
+  },
+  "original_engine_results": {
+    "total_tests": 15,
+    "successful_tests": 1,
+    "failed_tests": 14,
+    "success_rate": 6.666666666666667,
+    "avg_conversation_length": 1.4,
+    "avg_response_time": 1.534699418809679,
+    "avg_first_response_length": 102.73333333333333,
+    "avg_engagement_score": 0.4933333333333332,
+    "dropout_reasons": {
+      "user_ended_conversation": 10,
+      "extremely_short_response": 3,
+      "agent_ended_conversation": 1
+    }
+  },
+  "enhanced_engine_results": {
+    "total_tests": 15,
+    "successful_tests": 3,
+    "failed_tests": 12,
+    "success_rate": 20.0,
+    "avg_conversation_length": 7.2,
+    "avg_response_time": 1.6797979328367445,
+    "avg_first_response_length": 331.26666666666665,
+    "avg_engagement_score": 1.0,
+    "dropout_reasons": {}
+  },
+  "comparative_analysis": {
+    "success_rate_improvement": 13.333333333333332,
+    "conversation_length_improvement": 5.800000000000001,
+    "engagement_score_improvement": 0.5066666666666668,
+    "first_response_improvement": 228.5333333333333,
+    "persona_specific_analysis": {
+      "eager_junior": {
+        "original_success_rate": 0.0,
+        "enhanced_success_rate": 0.0,
+        "improvement": 0.0
+      },
+      "experienced_senior": {
+        "original_success_rate": 0.0,
+        "enhanced_success_rate": 0.0,
+        "improvement": 0.0
+      },
+      "career_changer": {
+        "original_success_rate": 33.33333333333333,
+        "enhanced_success_rate": 100.0,
+        "improvement": 66.66666666666667
+      },
+      "passive_candidate": {
+        "original_success_rate": 0.0,
+        "enhanced_success_rate": 0.0,
+        "improvement": 0.0
+      },
+      "difficult_candidate": {
+        "original_success_rate": 0.0,
+        "enhanced_success_rate": 0.0,
+        "improvement": 0.0
+      }
+    },
+    "statistical_significance": "significant"
+  },
+  "individual_results": [
+    {
+      "conversation_id": "validation_original_eager_junior_1754156671",
+      "persona_id": "eager_junior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 1.8779876232147217,
+      "decisions_made": [
+        "INFO"
+      ],
+      "avg_response_time": 1.8779876232147217,
+      "first_user_response_length": 210,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "short_conversation"
+        ],
+        "avg_message_length": 210.0,
+        "positive_word_count": 1,
+        "negative_word_count": 1,
+        "question_count": 1
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156671.305753
+        },
+        {
+          "type": "user",
+          "message": "Hi! I'm so excited to be here! I've been learning Python for the past year and I'm really passionate about joining a development team! Are there opportunities for mentorship and learning from senior developers?",
+          "timestamp": 1754156671.305753,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.68",
+          "response_time": 1.8779876232147217,
+          "timestamp": 1754156673.1837406
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_eager_junior_1754156673",
+      "persona_id": "eager_junior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 2.493626117706299,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "avg_response_time": 2.493626117706299,
+      "first_user_response_length": 96,
+      "engagement_indicators": {
+        "engagement_score": 0.49999999999999994,
+        "indicators": [
+          "detailed_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 96.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156673.1837406
+        },
+        {
+          "type": "user",
+          "message": "Hello! Thank you for this opportunity. I'm really eager to discuss Python development positions!",
+          "timestamp": 1754156673.1837406,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 2.493626117706299,
+          "timestamp": 1754156675.6773667
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_eager_junior_1754156675",
+      "persona_id": "eager_junior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 1.7682273387908936,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "avg_response_time": 1.7682273387908936,
+      "first_user_response_length": 97,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "short_conversation"
+        ],
+        "avg_message_length": 97.0,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156675.6773667
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Alex, and I'm super excited about the possibility of working as a Python developer!",
+          "timestamp": 1754156675.6773667,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.70",
+          "response_time": 1.7682273387908936,
+          "timestamp": 1754156677.445594
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_eager_junior_1754156677",
+      "persona_id": "eager_junior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 9.598490476608276,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.4823593695958455,
+      "first_user_response_length": 337,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 183.0,
+        "positive_word_count": 1,
+        "negative_word_count": 1,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi there! I'm excited to learn about your background and interest in our Python developer role. What drew you to apply for this position?",
+          "timestamp": 1754156677.445594
+        },
+        {
+          "type": "user",
+          "message": "Hi! I'm really excited about this opportunity! I've been learning Python for about 6 months and I'm passionate about developing my skills in a professional environment. I've worked on several personal projects including web scraping tools and I'm eager to contribute to a team. What aspects of the role would you like to know more about?",
+          "timestamp": 1754156677.445594,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156677.445594
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156677.5465114,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156677.5465114
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156677.6470258,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 1.2193617820739746,
+          "timestamp": 1754156678.8663876
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156678.9669156,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.56",
+          "response_time": 2.310574531555176,
+          "timestamp": 1754156681.2774901
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156681.3779688,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.60",
+          "response_time": 1.5528252124786377,
+          "timestamp": 1754156682.930794
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156683.0313597,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.60",
+          "response_time": 1.3509619235992432,
+          "timestamp": 1754156684.3823216
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156684.483143,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.60",
+          "response_time": 1.5651485919952393,
+          "timestamp": 1754156686.0482917
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156686.1488004,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.60",
+          "response_time": 0.8952841758728027,
+          "timestamp": 1754156687.0440845
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_eager_junior_1754156687",
+      "persona_id": "eager_junior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 10.729697227478027,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.670888066291809,
+      "first_user_response_length": 329,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 182.0,
+        "positive_word_count": 1,
+        "negative_word_count": 1,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi there! I'm excited to learn about your background and interest in our Python developer role. What drew you to apply for this position?",
+          "timestamp": 1754156687.1448185
+        },
+        {
+          "type": "user",
+          "message": "Hi! I'm really excited about this opportunity! I've been learning Python for about 18 months and I'm passionate about developing my skills in a professional environment. I've worked on several personal projects including REST APIs and I'm eager to contribute to a team. What aspects of the role would you like to know more about?",
+          "timestamp": 1754156687.1448185,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156687.1448185
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156687.2457032,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156687.2457032
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156687.3460417,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.52",
+          "response_time": 1.0244026184082031,
+          "timestamp": 1754156688.3704443
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156688.4710934,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 1.4766714572906494,
+          "timestamp": 1754156689.9477649
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156690.0485778,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 7 messages, high engagement, readiness: 0.60",
+          "response_time": 1.4783594608306885,
+          "timestamp": 1754156691.5269372
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156691.6275392,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 9 messages, high engagement, readiness: 0.60",
+          "response_time": 2.399980068206787,
+          "timestamp": 1754156694.0275192
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156694.128081,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 11 messages, high engagement, readiness: 0.60",
+          "response_time": 2.3436310291290283,
+          "timestamp": 1754156696.471712
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156696.572232,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 13 messages, high engagement, readiness: 0.60",
+          "response_time": 1.302283763885498,
+          "timestamp": 1754156697.8745158
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_eager_junior_1754156697",
+      "persona_id": "eager_junior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 11.426352500915527,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.7869698603947957,
+      "first_user_response_length": 335,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 182.75,
+        "positive_word_count": 1,
+        "negative_word_count": 1,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi there! I'm excited to learn about your background and interest in our Python developer role. What drew you to apply for this position?",
+          "timestamp": 1754156697.9750006
+        },
+        {
+          "type": "user",
+          "message": "Hi! I'm really excited about this opportunity! I've been learning Python for about 1 year and I'm passionate about developing my skills in a professional environment. I've worked on several personal projects including web scraping tools and I'm eager to contribute to a team. What aspects of the role would you like to know more about?",
+          "timestamp": 1754156697.9750006,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156697.9750006
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156698.075861,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156698.075861
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156698.1762927,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 1.192073106765747,
+          "timestamp": 1754156699.3683658
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156699.4693015,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.56",
+          "response_time": 1.4745185375213623,
+          "timestamp": 1754156700.94382
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156701.0444882,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.60",
+          "response_time": 2.132671594619751,
+          "timestamp": 1754156703.1771598
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156703.2777662,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.60",
+          "response_time": 2.2163631916046143,
+          "timestamp": 1754156705.4941294
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156705.594544,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.60",
+          "response_time": 2.2485787868499756,
+          "timestamp": 1754156707.8431227
+        },
+        {
+          "type": "user",
+          "message": "That sounds really exciting! I'd love to learn more about the technical challenges and how I could contribute. When could we schedule a more detailed discussion?",
+          "timestamp": 1754156707.9437392,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our Python development team works primarily with Django and FastAPI for web applications.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.60",
+          "response_time": 1.4576139450073242,
+          "timestamp": 1754156709.4013531
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_experienced_senior_1754156709",
+      "persona_id": "experienced_senior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 1.6798264980316162,
+      "decisions_made": [
+        "INFO"
+      ],
+      "avg_response_time": 1.6798264980316162,
+      "first_user_response_length": 120,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "short_conversation"
+        ],
+        "avg_message_length": 120.0,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156709.502094
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role.",
+          "timestamp": 1754156709.502094,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.56",
+          "response_time": 1.6798264980316162,
+          "timestamp": 1754156711.1819205
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_experienced_senior_1754156711",
+      "persona_id": "experienced_senior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 2.4375672340393066,
+      "decisions_made": [
+        "INFO"
+      ],
+      "avg_response_time": 2.4375672340393066,
+      "first_user_response_length": 120,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "short_conversation"
+        ],
+        "avg_message_length": 120.0,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156711.1819205
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role.",
+          "timestamp": 1754156711.1819205,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.56",
+          "response_time": 2.4375672340393066,
+          "timestamp": 1754156713.6194878
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_experienced_senior_1754156713",
+      "persona_id": "experienced_senior",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 2.4295473098754883,
+      "decisions_made": [
+        "INFO"
+      ],
+      "avg_response_time": 2.4295473098754883,
+      "first_user_response_length": 120,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "short_conversation"
+        ],
+        "avg_message_length": 120.0,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156713.6194878
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role.",
+          "timestamp": 1754156713.6194878,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.56",
+          "response_time": 2.4295473098754883,
+          "timestamp": 1754156716.049035
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_experienced_senior_1754156716",
+      "persona_id": "experienced_senior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 12.622909307479858,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.9863136212031047,
+      "first_user_response_length": 339,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 193.25,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 6
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Good day! I'd love to discuss how your experience aligns with our Python developer position. Could you share what interests you most about this opportunity?",
+          "timestamp": 1754156716.0495412
+        },
+        {
+          "type": "user",
+          "message": "Hello. I'm currently a Senior Python Developer with extensive experience in fintech applications. I've architected and deployed scalable web applications and am skilled in database optimization and system design. What I'd like to know is how this role would leverage my expertise in distributed systems and what growth opportunities exist.",
+          "timestamp": 1754156716.0495412,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156716.0495412
+        },
+        {
+          "type": "user",
+          "message": "I have 8+ years of Python development experience, primarily in backend systems. I've worked with Django, Flask, and FastAPI, and have experience with database design and optimization. I've also led development teams and mentored junior developers.",
+          "timestamp": 1754156716.1498468,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156716.1498468
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156716.2506878,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 2.084259271621704,
+          "timestamp": 1754156718.334947
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156718.4356515,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.56",
+          "response_time": 2.4166862964630127,
+          "timestamp": 1754156720.8523378
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156720.953051,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.60",
+          "response_time": 1.7934832572937012,
+          "timestamp": 1754156722.7465343
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156722.8473036,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.60",
+          "response_time": 2.312544822692871,
+          "timestamp": 1754156725.1598485
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156725.2605896,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.60",
+          "response_time": 2.0871222019195557,
+          "timestamp": 1754156727.3477118
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156727.4486647,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.60",
+          "response_time": 1.2237858772277832,
+          "timestamp": 1754156728.6724505
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_experienced_senior_1754156728",
+      "persona_id": "experienced_senior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 10.553090333938599,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.6414048274358113,
+      "first_user_response_length": 390,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 199.625,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 7
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Good day! I'd love to discuss how your experience aligns with our Python developer position. Could you share what interests you most about this opportunity?",
+          "timestamp": 1754156728.7732012
+        },
+        {
+          "type": "user",
+          "message": "Hi. I bring 10+ years of Python development experience across various industries including healthcare and e-commerce. I've managed full-stack development projects and have deep expertise in performance optimization. I'm evaluating this opportunity based on technical complexity, team dynamics, and potential for innovation. Could you elaborate on the current technical stack and challenges?",
+          "timestamp": 1754156728.7732012,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156728.7732012
+        },
+        {
+          "type": "user",
+          "message": "I have 8+ years of Python development experience, primarily in backend systems. I've worked with Django, Flask, and FastAPI, and have experience with database design and optimization. I've also led development teams and mentored junior developers.",
+          "timestamp": 1754156728.873965,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156728.873965
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156728.9746041,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 2.1614456176757812,
+          "timestamp": 1754156731.1360497
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156731.2368839,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.56",
+          "response_time": 0.9778420925140381,
+          "timestamp": 1754156732.214726
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156732.315259,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.60",
+          "response_time": 1.9208838939666748,
+          "timestamp": 1754156734.2361429
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156734.3368902,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.60",
+          "response_time": 0.8107147216796875,
+          "timestamp": 1754156735.147605
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156735.2480814,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.60",
+          "response_time": 2.416240930557251,
+          "timestamp": 1754156737.6643224
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156737.7649899,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.60",
+          "response_time": 1.5613017082214355,
+          "timestamp": 1754156739.3262916
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_experienced_senior_1754156739",
+      "persona_id": "experienced_senior",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 11.490829467773438,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.7977017164230347,
+      "first_user_response_length": 328,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 191.875,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 6
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Good day! I'd love to discuss how your experience aligns with our Python developer position. Could you share what interests you most about this opportunity?",
+          "timestamp": 1754156739.4269595
+        },
+        {
+          "type": "user",
+          "message": "Good day. I have 8+ years of experience in Python development, specializing in backend systems and API design. I've led teams of 3-5 developers and have experience with Django, FastAPI, and microservices architecture. I'm interested in understanding more about the technical challenges this role involves and the team structure.",
+          "timestamp": 1754156739.4269595,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156739.4269595
+        },
+        {
+          "type": "user",
+          "message": "I have 8+ years of Python development experience, primarily in backend systems. I've worked with Django, Flask, and FastAPI, and have experience with database design and optimization. I've also led development teams and mentored junior developers.",
+          "timestamp": 1754156739.527644,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156739.527644
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156739.6284654,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.48",
+          "response_time": 1.9371986389160156,
+          "timestamp": 1754156741.565664
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156741.6661208,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.56",
+          "response_time": 0.8516190052032471,
+          "timestamp": 1754156742.5177398
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156742.6180978,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.60",
+          "response_time": 1.7076284885406494,
+          "timestamp": 1754156744.3257263
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156744.426527,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.60",
+          "response_time": 2.1188220977783203,
+          "timestamp": 1754156746.5453491
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156746.6462283,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.60",
+          "response_time": 2.3499152660369873,
+          "timestamp": 1754156748.9961436
+        },
+        {
+          "type": "user",
+          "message": "This aligns well with my experience and interests. I'd like to discuss the technical architecture and team dynamics in more detail. What would be the next step?",
+          "timestamp": 1754156749.0967622,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.60",
+          "response_time": 1.8210268020629883,
+          "timestamp": 1754156750.917789
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_career_changer_1754156751",
+      "persona_id": "career_changer",
+      "engine_type": "original",
+      "success": true,
+      "dropout_reason": null,
+      "conversation_length": 2,
+      "total_duration": 3.3745129108428955,
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 1.6367145776748657,
+      "first_user_response_length": 233,
+      "engagement_indicators": {
+        "engagement_score": 0.7,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions",
+          "short_conversation"
+        ],
+        "avg_message_length": 141.5,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 1
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156751.018463
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team. How do you typically onboard developers who are new to the field?",
+          "timestamp": 1754156751.018463,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Can you describe some of the projects you've worked on?",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.62",
+          "response_time": 0.9809467792510986,
+          "timestamp": 1754156751.9994097
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754156752.1004934,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to continue this conversation in a formal interview. Are you interested?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.80",
+          "response_time": 2.292482376098633,
+          "timestamp": 1754156754.3929758
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_career_changer_1754156754",
+      "persona_id": "career_changer",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 2,
+      "total_duration": 3.438223361968994,
+      "decisions_made": [
+        "CONTINUE",
+        "INFO"
+      ],
+      "avg_response_time": 1.6688462495803833,
+      "first_user_response_length": 167,
+      "engagement_indicators": {
+        "engagement_score": 0.5999999999999999,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "short_conversation"
+        ],
+        "avg_message_length": 241.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 1
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156754.3929758
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm Michael, and I'm making a career transition into Python development. I have some questions about how someone with my background might fit into your team.",
+          "timestamp": 1754156754.3929758,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.40",
+          "response_time": 0.9705889225006104,
+          "timestamp": 1754156755.3635647
+        },
+        {
+          "type": "user",
+          "message": "I have marketing experience but I've been dedicating myself to learning Python for the past 18 months. I've worked with basic web development, some data analysis, and I'm comfortable with the fundamentals, though I know I have a lot more to learn. What does the learning curve look like for someone in my situation?",
+          "timestamp": 1754156755.4640956,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 5 messages, high engagement, readiness: 0.70",
+          "response_time": 2.3671035766601562,
+          "timestamp": 1754156757.8311992
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_career_changer_1754156757",
+      "persona_id": "career_changer",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 3,
+      "total_duration": 6.391764402389526,
+      "decisions_made": [
+        "INFO",
+        "SCHEDULE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 2.0632707277933755,
+      "first_user_response_length": 252,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions"
+        ],
+        "avg_message_length": 140.0,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 2
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156757.8311992
+        },
+        {
+          "type": "user",
+          "message": "Hi, I'm Michael. I'm currently transitioning into Python development from a marketing background, so I'd love to learn more about opportunities for someone with my profile. How important is formal computer science education versus practical experience?",
+          "timestamp": 1754156757.8311992,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.78",
+          "response_time": 1.3985705375671387,
+          "timestamp": 1754156759.2297697
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more.",
+          "timestamp": 1754156759.3302536,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 4 messages, high engagement, readiness: 0.86",
+          "response_time": 2.373354196548462,
+          "timestamp": 1754156761.7036078
+        },
+        {
+          "type": "user",
+          "message": "That sounds good. I'm interested in learning more. What does the learning curve look like for someone in my situation?",
+          "timestamp": 1754156761.8050761,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "You seem like a great fit for our team. Would you like to set up an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 6 messages, high engagement, readiness: 0.90",
+          "response_time": 2.4178874492645264,
+          "timestamp": 1754156764.2229636
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_career_changer_1754156764",
+      "persona_id": "career_changer",
+      "engine_type": "enhanced",
+      "success": true,
+      "dropout_reason": null,
+      "conversation_length": 4,
+      "total_duration": 4.758577346801758,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 2.227928638458252,
+      "first_user_response_length": 398,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions"
+        ],
+        "avg_message_length": 233.75,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 4
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I understand you're exploring opportunities in Python development. I'd be happy to discuss how this role might fit your career transition goals. What's driving your interest in this field?",
+          "timestamp": 1754156764.2239687
+        },
+        {
+          "type": "user",
+          "message": "Hi there! I'm making a career change into Python development after 5 years in project management. I've been studying intensively and have completed projects in web development and data analysis. I'm particularly interested in how my background in stakeholder management could complement technical skills. Could you tell me about the learning curve and support available for someone with my profile?",
+          "timestamp": 1754156764.2239687,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156764.2239687
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156764.324748,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156764.324748
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156764.4256046,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.52",
+          "response_time": 2.4691619873046875,
+          "timestamp": 1754156766.8947666
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156766.9958508,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'm impressed with your background. Let's schedule a technical interview.",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 1.9866952896118164,
+          "timestamp": 1754156768.982546
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_career_changer_1754156768",
+      "persona_id": "career_changer",
+      "engine_type": "enhanced",
+      "success": true,
+      "dropout_reason": null,
+      "conversation_length": 4,
+      "total_duration": 3.3040947914123535,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 1.0006554126739502,
+      "first_user_response_length": 405,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions"
+        ],
+        "avg_message_length": 235.5,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 4
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I understand you're exploring opportunities in Python development. I'd be happy to discuss how this role might fit your career transition goals. What's driving your interest in this field?",
+          "timestamp": 1754156768.982546
+        },
+        {
+          "type": "user",
+          "message": "Hello! I'm in the process of transitioning from marketing to Python development. I've been learning for about 18 months and I'm eager to find the right opportunity to start my tech career. I've completed several bootcamp projects and built a portfolio website. I bring strong analytical and communication skills from my previous role. What kind of mentorship and growth opportunities does your team offer?",
+          "timestamp": 1754156768.982546,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156768.982546
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156769.0834038,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156769.0834038
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156769.1841211,
+          "response_time": 0.00037741661071777344
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.52",
+          "response_time": 1.718602180480957,
+          "timestamp": 1754156770.9027233
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156771.0036542,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to continue this conversation in a formal interview. Are you interested?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 1.2829866409301758,
+          "timestamp": 1754156772.286641
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_career_changer_1754156772",
+      "persona_id": "career_changer",
+      "engine_type": "enhanced",
+      "success": true,
+      "dropout_reason": null,
+      "conversation_length": 4,
+      "total_duration": 3.680656909942627,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 1.126048485438029,
+      "first_user_response_length": 368,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions"
+        ],
+        "avg_message_length": 226.25,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 4
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I understand you're exploring opportunities in Python development. I'd be happy to discuss how this role might fit your career transition goals. What's driving your interest in this field?",
+          "timestamp": 1754156772.286641
+        },
+        {
+          "type": "user",
+          "message": "Good day! I'm transitioning into Python development from a finance background. I've been coding for over a year and have built applications for portfolio management and data visualization. I believe my domain expertise combined with programming skills could bring unique value. What opportunities are there for someone looking to bridge business and technical domains?",
+          "timestamp": 1754156772.286641,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0011069774627685547,
+          "timestamp": 1754156772.2877479
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156772.3883486,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156772.3883486
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156772.4893801,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, high engagement, readiness: 0.52",
+          "response_time": 1.9042000770568848,
+          "timestamp": 1754156774.3935802
+        },
+        {
+          "type": "user",
+          "message": "This sounds like exactly the kind of opportunity I've been preparing for! I'm very interested in moving forward. Could we schedule an interview to discuss my background in detail?",
+          "timestamp": 1754156774.4944594,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Based on what you've shared, I think you'd be a good candidate. Shall we schedule an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 5 messages, high engagement, readiness: 0.60",
+          "response_time": 1.4728384017944336,
+          "timestamp": 1754156775.9672978
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_passive_candidate_1754156775",
+      "persona_id": "passive_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "extremely_short_response",
+      "conversation_length": 1,
+      "total_duration": 0.0,
+      "decisions_made": [],
+      "avg_response_time": 0,
+      "first_user_response_length": 3,
+      "engagement_indicators": {
+        "engagement_score": 0.09999999999999998,
+        "indicators": [
+          "brief_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 3.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156775.9672978
+        },
+        {
+          "type": "user",
+          "message": "Hi.",
+          "timestamp": 1754156775.9672978,
+          "response_time": 0.0
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_passive_candidate_1754156775",
+      "persona_id": "passive_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "extremely_short_response",
+      "conversation_length": 1,
+      "total_duration": 0.0,
+      "decisions_made": [],
+      "avg_response_time": 0,
+      "first_user_response_length": 3,
+      "engagement_indicators": {
+        "engagement_score": 0.09999999999999998,
+        "indicators": [
+          "brief_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 3.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156775.9672978
+        },
+        {
+          "type": "user",
+          "message": "Hi.",
+          "timestamp": 1754156775.9672978,
+          "response_time": 0.0
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_passive_candidate_1754156775",
+      "persona_id": "passive_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "extremely_short_response",
+      "conversation_length": 1,
+      "total_duration": 0.0,
+      "decisions_made": [],
+      "avg_response_time": 0,
+      "first_user_response_length": 3,
+      "engagement_indicators": {
+        "engagement_score": 0.09999999999999998,
+        "indicators": [
+          "brief_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 3.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156775.9672978
+        },
+        {
+          "type": "user",
+          "message": "Hi.",
+          "timestamp": 1754156775.9672978,
+          "response_time": 0.0
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_passive_candidate_1754156775",
+      "persona_id": "passive_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 11.749245882034302,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.8408593734105427,
+      "first_user_response_length": 323,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 105.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi! Thanks for taking the time to explore this Python developer opportunity. I know you might not be actively looking, so I'd love to understand what caught your attention about this role.",
+          "timestamp": 1754156775.9672978
+        },
+        {
+          "type": "user",
+          "message": "Hi, thanks for reaching out. I'm not actively looking but I'm always open to hearing about interesting opportunities. I currently work as a Python developer focusing on automation and data processing. What makes this role particularly compelling? I'd need to understand the unique aspects that would make a move worthwhile.",
+          "timestamp": 1754156775.9672978,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156775.9672978
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156776.0681443,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156776.0681443
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156776.1686351,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.26",
+          "response_time": 1.6426444053649902,
+          "timestamp": 1754156777.8112795
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156777.9118998,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, medium engagement, readiness: 0.34",
+          "response_time": 1.318288803100586,
+          "timestamp": 1754156779.2301886
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156779.3309312,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, medium engagement, readiness: 0.38",
+          "response_time": 2.4632484912872314,
+          "timestamp": 1754156781.7941797
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156781.8945804,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, medium engagement, readiness: 0.38",
+          "response_time": 1.7412023544311523,
+          "timestamp": 1754156783.6357827
+        },
+        {
+          "type": "user",
+          "message": "I'd want to know what makes your company different from others. What are the unique aspects of working there?",
+          "timestamp": 1754156783.7364335,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, medium engagement, readiness: 0.48",
+          "response_time": 2.097118616104126,
+          "timestamp": 1754156785.8335521
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156785.93389,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, medium engagement, readiness: 0.48",
+          "response_time": 1.782653570175171,
+          "timestamp": 1754156787.7165437
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_passive_candidate_1754156787",
+      "persona_id": "passive_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 11.23099684715271,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.7544837792714436,
+      "first_user_response_length": 304,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 107.75,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi! Thanks for taking the time to explore this Python developer opportunity. I know you might not be actively looking, so I'd love to understand what caught your attention about this role.",
+          "timestamp": 1754156787.817045
+        },
+        {
+          "type": "user",
+          "message": "Good afternoon. I appreciate you thinking of me for this role. I'm currently employed and reasonably satisfied, but I'm always interested in learning about opportunities that could advance my career significantly. What can you tell me about the technical challenges and growth potential in this position?",
+          "timestamp": 1754156787.817045,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156787.817045
+        },
+        {
+          "type": "user",
+          "message": "I'd want to know what makes your company different from others. What are the unique aspects of working there?",
+          "timestamp": 1754156787.9176912,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156787.9176912
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156788.0179553,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.26",
+          "response_time": 2.1173620223999023,
+          "timestamp": 1754156790.1353173
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156790.2361574,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, medium engagement, readiness: 0.34",
+          "response_time": 1.7609784603118896,
+          "timestamp": 1754156791.9971359
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156792.0975645,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, medium engagement, readiness: 0.38",
+          "response_time": 1.1582458019256592,
+          "timestamp": 1754156793.2558103
+        },
+        {
+          "type": "user",
+          "message": "I'd want to know what makes your company different from others. What are the unique aspects of working there?",
+          "timestamp": 1754156793.3564093,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The role involves working on microservices architecture with Docker and Kubernetes.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, medium engagement, readiness: 0.48",
+          "response_time": 2.3644278049468994,
+          "timestamp": 1754156795.720837
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156795.8217402,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, medium engagement, readiness: 0.48",
+          "response_time": 1.6964974403381348,
+          "timestamp": 1754156797.5182376
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156797.6186507,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our team uses agile development practices with code reviews and continuous integration.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, medium engagement, readiness: 0.48",
+          "response_time": 1.4293911457061768,
+          "timestamp": 1754156799.0480418
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_passive_candidate_1754156799",
+      "persona_id": "passive_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 12.24409794807434,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.9233944813410442,
+      "first_user_response_length": 304,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "positive_language",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 107.75,
+        "positive_word_count": 1,
+        "negative_word_count": 0,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hi! Thanks for taking the time to explore this Python developer opportunity. I know you might not be actively looking, so I'd love to understand what caught your attention about this role.",
+          "timestamp": 1754156799.148501
+        },
+        {
+          "type": "user",
+          "message": "Good afternoon. I appreciate you thinking of me for this role. I'm currently employed and reasonably satisfied, but I'm always interested in learning about opportunities that could advance my career significantly. What can you tell me about the technical challenges and growth potential in this position?",
+          "timestamp": 1754156799.148501,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Wonderful! I can tell you're enthusiastic about this opportunity. Let me share more about what makes this role special - you'd be working with a collaborative team on challenging technical problems. What aspects of the role would you like to explore first?",
+          "decision": "CONTINUE",
+          "reasoning": "User showing strong interest - continuing engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156799.148501
+        },
+        {
+          "type": "user",
+          "message": "I'd want to know what makes your company different from others. What are the unique aspects of working there?",
+          "timestamp": 1754156799.2490838,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156799.2490838
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156799.3495874,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We offer competitive salary, remote work flexibility, and excellent learning opportunities.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, medium engagement, readiness: 0.26",
+          "response_time": 2.2449817657470703,
+          "timestamp": 1754156801.5945692
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156801.6951814,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, medium engagement, readiness: 0.34",
+          "response_time": 2.1106998920440674,
+          "timestamp": 1754156803.8058813
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156803.9065318,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "We focus on building scalable web applications and APIs using modern Python frameworks.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, medium engagement, readiness: 0.38",
+          "response_time": 0.8383383750915527,
+          "timestamp": 1754156804.7448702
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156804.8451653,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our Python development team works primarily with Django and FastAPI for web applications.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, medium engagement, readiness: 0.38",
+          "response_time": 1.7674810886383057,
+          "timestamp": 1754156806.6126463
+        },
+        {
+          "type": "user",
+          "message": "I'd want to know what makes your company different from others. What are the unique aspects of working there?",
+          "timestamp": 1754156806.7131364,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, medium engagement, readiness: 0.48",
+          "response_time": 2.281561851501465,
+          "timestamp": 1754156808.9946983
+        },
+        {
+          "type": "user",
+          "message": "What specific aspects of this opportunity make it worth considering?",
+          "timestamp": 1754156809.095295,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "The position includes working on both backend APIs and some full-stack development.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, medium engagement, readiness: 0.48",
+          "response_time": 2.2973039150238037,
+          "timestamp": 1754156811.3925989
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_difficult_candidate_1754156811",
+      "persona_id": "difficult_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 1,
+      "total_duration": 1.3186376094818115,
+      "decisions_made": [
+        "CONTINUE"
+      ],
+      "avg_response_time": 1.3186376094818115,
+      "first_user_response_length": 36,
+      "engagement_indicators": {
+        "engagement_score": 0.3,
+        "indicators": [
+          "short_conversation"
+        ],
+        "avg_message_length": 36.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156811.4928548
+        },
+        {
+          "type": "user",
+          "message": "Hello. Let's see what this is about.",
+          "timestamp": 1754156811.4928548,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 1.3186376094818115,
+          "timestamp": 1754156812.8114924
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_difficult_candidate_1754156812",
+      "persona_id": "difficult_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "agent_ended_conversation",
+      "conversation_length": 2,
+      "total_duration": 2.883863925933838,
+      "decisions_made": [
+        "CONTINUE",
+        "END"
+      ],
+      "avg_response_time": 1.3916383981704712,
+      "first_user_response_length": 36,
+      "engagement_indicators": {
+        "engagement_score": 0.49999999999999994,
+        "indicators": [
+          "detailed_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 60.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156812.8114924
+        },
+        {
+          "type": "user",
+          "message": "Hello. Let's see what this is about.",
+          "timestamp": 1754156812.8114924,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 1.9475557804107666,
+          "timestamp": 1754156814.7590482
+        },
+        {
+          "type": "user",
+          "message": "My experience is pretty extensive. I don't think I need to prove anything to anyone.",
+          "timestamp": 1754156814.8596354,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I appreciate you sharing your background with me. We'll be in touch regarding next steps.",
+          "decision": "END",
+          "reasoning": "Smart ValidationAgent decision: END based on 5 messages, medium engagement, readiness: 0.48",
+          "response_time": 0.8357210159301758,
+          "timestamp": 1754156815.6953564
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_original_difficult_candidate_1754156815",
+      "persona_id": "difficult_candidate",
+      "engine_type": "original",
+      "success": false,
+      "dropout_reason": "user_ended_conversation",
+      "conversation_length": 2,
+      "total_duration": 4.609583854675293,
+      "decisions_made": [
+        "CONTINUE",
+        "SCHEDULE"
+      ],
+      "avg_response_time": 2.2546015977859497,
+      "first_user_response_length": 45,
+      "engagement_indicators": {
+        "engagement_score": 0.49999999999999994,
+        "indicators": [
+          "detailed_responses",
+          "short_conversation"
+        ],
+        "avg_message_length": 83.0,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 0
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! Thank you for your interest in our Python developer position. Could you tell me a bit about yourself and your experience?",
+          "timestamp": 1754156815.6953564
+        },
+        {
+          "type": "user",
+          "message": "Hi. I guess we're doing this interview thing.",
+          "timestamp": 1754156815.6953564,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, low engagement, readiness: 0.18",
+          "response_time": 2.0987205505371094,
+          "timestamp": 1754156817.794077
+        },
+        {
+          "type": "user",
+          "message": "I've been working with Python for a while. Some projects worked out, some didn't. That's just how it is in this industry.",
+          "timestamp": 1754156817.8944576,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Your skills and experience look promising. Would you like to move forward with an interview?",
+          "decision": "SCHEDULE",
+          "reasoning": "Smart ValidationAgent decision: SCHEDULE based on 5 messages, medium engagement, readiness: 0.78",
+          "response_time": 2.41048264503479,
+          "timestamp": 1754156820.3049402
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_difficult_candidate_1754156820",
+      "persona_id": "difficult_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 10.965281963348389,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.7100964784622192,
+      "first_user_response_length": 261,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 129.375,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 6
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I appreciate you considering our Python developer position. What would you like to know about the role and our team?",
+          "timestamp": 1754156820.3054552
+        },
+        {
+          "type": "user",
+          "message": "I suppose I can hear you out, but I have some concerns. I've seen a lot of job descriptions that don't match reality. How do I know this role is actually what you're describing? What evidence can you provide about the company culture and actual day-to-day work?",
+          "timestamp": 1754156820.3054552,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156820.3054552
+        },
+        {
+          "type": "user",
+          "message": "I need more concrete details about what this role actually involves.",
+          "timestamp": 1754156820.4060376,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "I'd love to learn more about your background and interests. This Python developer position offers great opportunities for growth and technical challenges. What draws you to Python development?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - building engagement",
+          "response_time": 0.0,
+          "timestamp": 1754156820.4060376
+        },
+        {
+          "type": "user",
+          "message": "I need more concrete details about what this role actually involves.",
+          "timestamp": 1754156820.506651,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Tell me more about your experience with Python development.",
+          "decision": "CONTINUE",
+          "reasoning": "Smart ValidationAgent decision: CONTINUE based on 3 messages, medium engagement, readiness: 0.30",
+          "response_time": 2.3274459838867188,
+          "timestamp": 1754156822.834097
+        },
+        {
+          "type": "user",
+          "message": "I have several years of Python experience, but I want to make sure this role actually uses modern practices. Are you using current versions of Python? What about testing frameworks and deployment practices?",
+          "timestamp": 1754156822.934901,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our Python development team works primarily with Django and FastAPI for web applications.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 5 messages, high engagement, readiness: 0.70",
+          "response_time": 2.1607754230499268,
+          "timestamp": 1754156825.0956764
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156825.196412,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 7 messages, high engagement, readiness: 0.80",
+          "response_time": 1.583897352218628,
+          "timestamp": 1754156826.7803094
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156826.8809836,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 9 messages, high engagement, readiness: 0.80",
+          "response_time": 0.8423089981079102,
+          "timestamp": 1754156827.7232926
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156827.8238914,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 11 messages, high engagement, readiness: 0.80",
+          "response_time": 1.8929836750030518,
+          "timestamp": 1754156829.716875
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156829.8175697,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 13 messages, high engagement, readiness: 0.80",
+          "response_time": 1.45316743850708,
+          "timestamp": 1754156831.2707372
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_difficult_candidate_1754156831",
+      "persona_id": "difficult_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 10.129823207855225,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.5709829727808635,
+      "first_user_response_length": 274,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 153.25,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I appreciate you considering our Python developer position. What would you like to know about the role and our team?",
+          "timestamp": 1754156831.3717747
+        },
+        {
+          "type": "user",
+          "message": "Hmm, I'm not sure this is what I'm looking for. I've had some bad experiences with recruitment processes before. What makes your company different? I need to know this isn't going to be a waste of my time. What exactly are the requirements and what's the compensation range?",
+          "timestamp": 1754156831.3717747,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156831.3717747
+        },
+        {
+          "type": "user",
+          "message": "I have several years of Python experience, but I want to make sure this role actually uses modern practices. Are you using current versions of Python? What about testing frameworks and deployment practices?",
+          "timestamp": 1754156831.4726431,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156831.4726431
+        },
+        {
+          "type": "user",
+          "message": "I have several years of Python experience, but I want to make sure this role actually uses modern practices. Are you using current versions of Python? What about testing frameworks and deployment practices?",
+          "timestamp": 1754156831.5731711,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our Python development team works primarily with Django and FastAPI for web applications.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 2.3290534019470215,
+          "timestamp": 1754156833.9022245
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156834.0029843,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 1.332261323928833,
+          "timestamp": 1754156835.3352456
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156835.4355423,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.80",
+          "response_time": 1.0117757320404053,
+          "timestamp": 1754156836.447318
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156836.547868,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.80",
+          "response_time": 2.460207462310791,
+          "timestamp": 1754156839.0080755
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156839.1086318,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.80",
+          "response_time": 1.0025286674499512,
+          "timestamp": 1754156840.1111605
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156840.2115266,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.80",
+          "response_time": 1.2900712490081787,
+          "timestamp": 1754156841.501598
+        }
+      ]
+    },
+    {
+      "conversation_id": "validation_enhanced_difficult_candidate_1754156841",
+      "persona_id": "difficult_candidate",
+      "engine_type": "enhanced",
+      "success": false,
+      "dropout_reason": null,
+      "conversation_length": 8,
+      "total_duration": 10.765231370925903,
+      "decisions_made": [
+        "CONTINUE",
+        "CONTINUE",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO",
+        "INFO"
+      ],
+      "avg_response_time": 1.6768819093704224,
+      "first_user_response_length": 274,
+      "engagement_indicators": {
+        "engagement_score": 1.0,
+        "indicators": [
+          "detailed_responses",
+          "asks_questions",
+          "sustained_conversation"
+        ],
+        "avg_message_length": 153.25,
+        "positive_word_count": 0,
+        "negative_word_count": 0,
+        "question_count": 8
+      },
+      "conversation_log": [
+        {
+          "type": "agent",
+          "message": "Hello! I appreciate you considering our Python developer position. What would you like to know about the role and our team?",
+          "timestamp": 1754156841.602053
+        },
+        {
+          "type": "user",
+          "message": "Hmm, I'm not sure this is what I'm looking for. I've had some bad experiences with recruitment processes before. What makes your company different? I need to know this isn't going to be a waste of my time. What exactly are the requirements and what's the compensation range?",
+          "timestamp": 1754156841.602053,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156841.602053
+        },
+        {
+          "type": "user",
+          "message": "I have several years of Python experience, but I want to make sure this role actually uses modern practices. Are you using current versions of Python? What about testing frameworks and deployment practices?",
+          "timestamp": 1754156841.7027154,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "That's great to hear about your experience! Our Python developer role involves working on scalable web applications and APIs. We use modern frameworks like Django and FastAPI. What specific areas of Python development are you most passionate about?",
+          "decision": "CONTINUE",
+          "reasoning": "Early conversation - gathering more information about experience",
+          "response_time": 0.0,
+          "timestamp": 1754156841.7027154
+        },
+        {
+          "type": "user",
+          "message": "I have several years of Python experience, but I want to make sure this role actually uses modern practices. Are you using current versions of Python? What about testing frameworks and deployment practices?",
+          "timestamp": 1754156841.8034496,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our Python development team works primarily with Django and FastAPI for web applications.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 2 messages, high engagement, readiness: 0.58",
+          "response_time": 0.8821494579315186,
+          "timestamp": 1754156842.685599
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156842.7861059,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 4 messages, high engagement, readiness: 0.76",
+          "response_time": 1.6822257041931152,
+          "timestamp": 1754156844.4683316
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156844.5688522,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 6 messages, high engagement, readiness: 0.80",
+          "response_time": 1.9604346752166748,
+          "timestamp": 1754156846.5292869
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156846.6299195,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 8 messages, high engagement, readiness: 0.80",
+          "response_time": 1.7916030883789062,
+          "timestamp": 1754156848.4215226
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156848.5220292,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 10 messages, high engagement, readiness: 0.80",
+          "response_time": 2.2870726585388184,
+          "timestamp": 1754156850.8091018
+        },
+        {
+          "type": "user",
+          "message": "I need to know the real story about the company culture. What are the actual pros and cons of working there?",
+          "timestamp": 1754156850.9094784,
+          "response_time": 0.0
+        },
+        {
+          "type": "agent",
+          "message": "Our company culture emphasizes collaboration, continuous learning, and work-life balance.",
+          "decision": "INFO",
+          "reasoning": "Smart ValidationAgent decision: INFO based on 12 messages, high engagement, readiness: 0.80",
+          "response_time": 1.457805871963501,
+          "timestamp": 1754156852.3672843
+        }
+      ]
+    }
+  ],
+  "recommendations": [
+    "Consider deploying enhanced flow after additional testing",
+    "Enhanced engagement strategies are working well",
+    "Enhanced flow working excellently for career_changer"
+  ]
+}

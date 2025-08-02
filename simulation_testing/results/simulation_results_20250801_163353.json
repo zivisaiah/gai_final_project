@@ -1,0 +1,17 @@
+{
+  "session_info": {
+    "timestamp": "2025-08-01T16:33:53.975048",
+    "session_duration": 22.79591941833496,
+    "total_conversations": 2
+  },
+  "conversations": {
+    "sim_eager_junior_1754055213": {
+      "conversation_id": "sim_eager_junior_1754055213",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "start_time": 1754055213.4634924,
+      "end_time": 1754055224.9089797,
+      "total_messages": 1,
+      "agent_decisions": [
+        {
+          "decision": 

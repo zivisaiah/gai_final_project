@@ -1,0 +1,104 @@
+{
+  "session_info": {
+    "timestamp": "2025-08-01T15:49:19.455793",
+    "session_duration": 16.82378125190735,
+    "total_conversations": 2
+  },
+  "conversations": {
+    "sim_eager_junior_1754052544": {
+      "conversation_id": "sim_eager_junior_1754052544",
+      "persona_id": "eager_junior",
+      "persona_type": "Eager Junior Developer",
+      "start_time": 1754052544.654314,
+      "end_time": 1754052552.3063197,
+      "total_messages": 3,
+      "agent_decisions": [
+        {
+          "decision": "INFO",
+          "reasoning": "Mock CoreAgent decision based on message length and content",
+          "response_time": 0.9076058864593506,
+          "timestamp": 1754052545.56192
+        },
+        {
+          "decision": "CONTINUE",
+          "reasoning": "Mock CoreAgent decision based on message length and content",
+          "response_time": 1.581350326538086,
+          "timestamp": 1754052549.1436062
+        },
+        {
+          "decision": "INFO",
+          "reasoning": "Mock CoreAgent decision based on message length and content",
+          "response_time": 1.161945104598999,
+          "timestamp": 1754052552.3063197
+        }
+      ],
+      "response_times": [
+        0.9076058864593506,
+        1.581350326538086,
+        1.161945104598999
+      ],
+      "success": false,
+      "completion_stage": "user_ended",
+      "errors": []
+    },
+    "sim_experienced_senior_1754052553": {
+      "conversation_id": "sim_experienced_senior_1754052553",
+      "persona_id": "experienced_senior",
+      "persona_type": "Experienced Senior Developer",
+      "start_time": 1754052553.3071637,
+      "end_time": 1754052558.4537637,
+      "total_messages": 2,
+      "agent_decisions": [
+        {
+          "decision": "CONTINUE",
+          "reasoning": "Mock CoreAgent decision based on message length and content",
+          "response_time": 1.3982174396514893,
+          "timestamp": 1754052554.7053812
+        },
+        {
+          "decision": "CONTINUE",
+          "reasoning": "Mock CoreAgent decision based on message length and content",
+          "response_time": 1.745800495147705,
+          "timestamp": 1754052558.4537637
+        }
+      ],
+      "response_times": [
+        1.3982174396514893,
+        1.745800495147705
+      ],
+      "success": false,
+      "completion_stage": "user_ended",
+      "errors": []
+    }
+  },
+  "summary": {
+    "session_summary": {
+      "total_conversations": 2,
+      "successful_conversations": 0,
+      "success_rate": 0.0,
+      "total_messages": 5,
+      "total_decisions": 5,
+      "total_errors": 0,
+      "average_response_time": 1.36,
+      "session_duration": 16.82378125190735
+    },
+    "decision_breakdown": {
+      "INFO": 2,
+      "CONTINUE": 3
+    },
+    "completion_stages": {
+      "user_ended": 2
+    },
+    "persona_performance": {
+      "Eager Junior Developer": {
+        "total": 1,
+        "successful": 0
+      },
+      "Experienced Senior Developer": {
+        "total": 1,
+        "successful": 0
+      }
+    },
+    "error_rate": 0.0
+  }
+}

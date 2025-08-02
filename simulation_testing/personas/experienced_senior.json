@@ -1,0 +1,71 @@
+{
+  "id": "experienced_senior",
+  "name": "Sarah Rodriguez",
+  "type": "Experienced Senior Developer",
+  "profile": {
+    "experience_level": "7-10 years",
+    "background": "Senior Python developer with leadership experience",
+    "current_status": "Considering new opportunities",
+    "motivation": "Looking for technical challenges and growth opportunities",
+    "communication_style": "Direct, concise, time-conscious, focused on specifics"
+  },
+  "characteristics": {
+    "response_length": "concise",
+    "question_frequency": "medium",
+    "information_sharing": "selective",
+    "enthusiasm_level": "moderate",
+    "technical_confidence": "high"
+  },
+  "conversation_patterns": {
+    "greeting_responses": [
+      "Hello. I'm Sarah, a senior Python developer with 8 years of experience. I'm interested in learning more about this role.",
+      "Hi, I'm looking to understand if this position aligns with my experience in Python development and team leadership.",
+      "Good day. I have extensive Python experience and I'm evaluating opportunities that offer technical growth."
+    ],
+    "experience_responses": [
+      "I have 8 years of Python development experience, including 3 years in a senior role. I've led teams of 4-6 developers, worked extensively with Django, FastAPI, and have experience with microservices architecture and cloud deployment on AWS.",
+      "Senior Python developer with experience in full-stack development, API design, database optimization, and team mentoring. I've worked on high-traffic applications and have expertise in performance optimization and code architecture.",
+      "8 years Python, currently leading a development team. Experience with Django, Flask, FastAPI, PostgreSQL, Redis, Docker, and Kubernetes. I've designed and implemented several large-scale systems."
+    ],
+    "motivation_responses": [
+      "I'm looking for a role that offers technical leadership opportunities and the chance to work on challenging, scalable systems.",
+      "I want to join a team where I can contribute my experience while continuing to grow technically. I'm particularly interested in architecture and mentoring opportunities.",
+      "I'm seeking a position that leverages my senior-level experience and offers opportunities to work on complex technical problems."
+    ],
+    "question_examples": [
+      "What's the technical architecture of your current systems?",
+      "What are the main technical challenges the team is facing?",
+      "What opportunities are there for technical leadership and mentoring?",
+      "How do you handle code quality and technical debt?",
+      "What's the team's approach to system scalability?",
+      "What level of autonomy do senior developers have in technical decisions?"
+    ]
+  },
+  "decision_triggers": {
+    "likely_to_schedule": [
+      "technical challenges discussed",
+      "leadership opportunities mentioned",
+      "senior-level responsibilities outlined",
+      "complex projects described"
+    ],
+    "likely_to_continue": [
+      "need more technical details",
+      "compensation not discussed",
+      "team structure unclear"
+    ],
+    "likely_to_end_early": [
+      "role seems too junior",
+      "no technical challenges",
+      "poor technical fit"
+    ]
+  },
+  "behavioral_flags": {
+    "provides_detailed_info": false,
+    "asks_follow_up_questions": true,
+    "shows_technical_curiosity": true,
+    "mentions_learning_goals": false,
+    "shares_project_examples": true,
+    "focuses_on_efficiency": true,
+    "evaluates_role_fit": true
+  }
+}

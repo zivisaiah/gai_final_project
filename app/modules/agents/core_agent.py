@@ -140,7 +140,7 @@ class ConversationState:
                     # CONVERSATION-BASED MODE: Full LLM extraction from conversation
                     agent.logger.info(f"💬 CONVERSATION-BASED MODE: Full LLM extraction (existing data: {existing_data_count} fields)")
                     if existing_data_count > 0:
-                        agent.logger.warning(f"⚠️  CONVERSATION MODE WITH EXISTING DATA: {self.candidate_info}")
+                        agent.logger.warning(f"!!  CONVERSATION MODE WITH EXISTING DATA: {self.candidate_info}")
                     await self._handle_conversation_based_extraction(agent)
                 else:
                     # MINIMAL DATA MODE: Basic extraction for very limited conversation
@@ -178,11 +178,11 @@ class ConversationState:
         
         if not missing_fields:
             # No missing fields, set HIGH engagement for form-submitted candidates
-            agent.logger.info("✅ NO MISSING FIELDS: Setting HIGH engagement for form-submitted candidate")
+            agent.logger.info("OK NO MISSING FIELDS: Setting HIGH engagement for form-submitted candidate")
             self.candidate_info["conversation_sentiment"] = {
                 "overall_tone": "positive", 
-                "engagement_level": "high",      # ✅ HIGH - they filled out the form!
-                "communication_quality": "excellent"  # ✅ EXCELLENT - structured data provided
+                "engagement_level": "high",      # OK HIGH - they filled out the form!
+                "communication_quality": "excellent"  # OK EXCELLENT - structured data provided
             }
             return
         
@@ -200,7 +200,7 @@ class ConversationState:
                     current_exp = self.candidate_info.get("experience")
                     new_exp = extracted_info[field]
                     if not current_exp or current_exp in ["unknown", "mentioned"]:
-                        agent.logger.info(f"📝 UPDATING EXPERIENCE: '{current_exp}' → '{new_exp}'")
+                        agent.logger.info(f">> UPDATING EXPERIENCE: '{current_exp}' -> '{new_exp}'")
                         self.candidate_info[field] = new_exp
                         changes_made.append(f"experience: {new_exp}")
                     else:
@@ -209,7 +209,7 @@ class ConversationState:
                     # Only update if current value is missing/empty
                     current_val = self.candidate_info.get(field)
                     if not current_val or current_val in [None, "unknown", ""]:
-                        agent.logger.info(f"📝 UPDATING {field}: '{current_val}' → '{extracted_info[field]}'")
+                        agent.logger.info(f">> UPDATING {field}: '{current_val}' -> '{extracted_info[field]}'")
                         self.candidate_info[field] = extracted_info[field]
                         changes_made.append(f"{field}: {extracted_info[field]}")
                     else:
@@ -236,21 +236,21 @@ class ConversationState:
                 
                 self.candidate_info["conversation_sentiment"] = final_sentiment
                 changes_made.append("conversation_sentiment (smart-form)")
-                agent.logger.info(f"✅ SMART FORM SENTIMENT: Base={base_form_sentiment}, LLM={llm_sentiment}, Final={final_sentiment}")
+                agent.logger.info(f"OK SMART FORM SENTIMENT: Base={base_form_sentiment}, LLM={llm_sentiment}, Final={final_sentiment}")
             else:
                 # Non-form users: use LLM assessment directly
                 self.candidate_info["conversation_sentiment"] = llm_sentiment
                 changes_made.append("conversation_sentiment (llm-direct)")
-                agent.logger.info(f"✅ LLM SENTIMENT: {llm_sentiment}")
+                agent.logger.info(f"OK LLM SENTIMENT: {llm_sentiment}")
         
-        agent.logger.info(f"✅ FORM-BASED EXTRACTION COMPLETE: Changes made: {changes_made if changes_made else 'None (all data preserved)'}")
+        agent.logger.info(f"OK FORM-BASED EXTRACTION COMPLETE: Changes made: {changes_made if changes_made else 'None (all data preserved)'}")
         
         # Verify no critical form data was lost (but allow sentiment to evolve)
         for key, original_value in original_data.items():
             if original_value not in [None, "", {}, [], "unknown"]:
                 # Skip conversation_sentiment - it should be allowed to evolve during conversation
                 if key == "conversation_sentiment":
-                    agent.logger.debug(f"✅ SENTIMENT EVOLUTION ALLOWED: {key} can change during conversation")
+                    agent.logger.debug(f"OK SENTIMENT EVOLUTION ALLOWED: {key} can change during conversation")
                     continue
                     
                 current_value = self.candidate_info.get(key)
@@ -260,7 +260,7 @@ class ConversationState:
                     self.candidate_info[key] = original_value
                     agent.logger.info(f"🔧 RESTORED: '{key}' back to '{original_value}'")
                 else:
-                    agent.logger.debug(f"✅ PRESERVED: {key} = {original_value}")
+                    agent.logger.debug(f"OK PRESERVED: {key} = {original_value}")
     
     async def _handle_conversation_based_extraction(self, agent: 'CoreAgent'):
         """Handle full conversation-based extraction when no structured form data exists."""
@@ -276,24 +276,24 @@ class ConversationState:
         for key, value in extracted_info.items():
             if value not in [None, "unknown", "", {}, []]:
                 existing_value = self.candidate_info.get(key)
-                agent.logger.info(f"📝 MERGING FIELD '{key}': existing='{existing_value}' → new='{value}'")
+                agent.logger.info(f">> MERGING FIELD '{key}': existing='{existing_value}' -> new='{value}'")
                 
                 # Special handling for different data types
                 if key == "experience":
                     # Preserve specific experience over generic, but allow upgrades
                     if not existing_value or existing_value in ["unknown", "mentioned"]:
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPDATED EXPERIENCE: '{existing_value}' → '{value}'")
+                        agent.logger.info(f"OK UPDATED EXPERIENCE: '{existing_value}' -> '{value}'")
                     elif (isinstance(value, str) and isinstance(existing_value, str) and 
                           "year" in value.lower() and "year" not in existing_value.lower()):
                         # Prioritize experience with year information
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPGRADED EXPERIENCE (year info): '{existing_value}' → '{value}'")
+                        agent.logger.info(f"OK UPGRADED EXPERIENCE (year info): '{existing_value}' -> '{value}'")
                     elif (isinstance(value, str) and isinstance(existing_value, str) and 
                           len(value) > len(existing_value) and 
                           existing_value in ["unknown", "mentioned"]):
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPGRADED EXPERIENCE (more detailed): '{existing_value}' → '{value}'")
+                        agent.logger.info(f"OK UPGRADED EXPERIENCE (more detailed): '{existing_value}' -> '{value}'")
                     else:
                         agent.logger.info(f"🔒 PRESERVED EXPERIENCE: '{existing_value}' (ignored: '{value}')")
                         
@@ -301,13 +301,13 @@ class ConversationState:
                     # Always update qualification assessment as it's comprehensive
                     if isinstance(value, dict) and value:
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPDATED QUALIFICATION ASSESSMENT: {value}")
+                        agent.logger.info(f"OK UPDATED QUALIFICATION ASSESSMENT: {value}")
                         
                 elif key in ["experience_details", "extraction_metadata"]:
                     # Always update these comprehensive analysis fields
                     if isinstance(value, dict) and value:
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPDATED {key}: {value}")
+                        agent.logger.info(f"OK UPDATED {key}: {value}")
                         
                 elif key == "conversation_sentiment":
                     # Special handling for conversation sentiment - preserve high engagement for form users
@@ -327,18 +327,18 @@ class ConversationState:
                                 "communication_quality": "excellent"
                             }
                             self.candidate_info[key] = optimized_sentiment
-                            agent.logger.info(f"✅ FORM-OPTIMIZED CONVERSATION SENTIMENT: {optimized_sentiment}")
+                            agent.logger.info(f"OK FORM-OPTIMIZED CONVERSATION SENTIMENT: {optimized_sentiment}")
                         else:
                             # Use LLM sentiment for pure conversation users
                             self.candidate_info[key] = value
-                            agent.logger.info(f"✅ UPDATED CONVERSATION SENTIMENT: {value}")
+                            agent.logger.info(f"OK UPDATED CONVERSATION SENTIMENT: {value}")
                         
                 elif key in ["name", "email", "phone", "interest_level", "current_status", 
                            "availability_mentioned", "availability_details", "position_interest"]:
                     # Update basic fields if they don't exist or are generic
                     if not existing_value or existing_value in [None, "unknown", ""]:
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPDATED BASIC FIELD '{key}': '{existing_value}' → '{value}'")
+                        agent.logger.info(f"OK UPDATED BASIC FIELD '{key}': '{existing_value}' -> '{value}'")
                     else:
                         agent.logger.info(f"🔒 PRESERVED BASIC FIELD '{key}': '{existing_value}' (ignored: '{value}')")
                         
@@ -346,12 +346,12 @@ class ConversationState:
                     # For any other fields, update if current is None/empty
                     if not existing_value:
                         self.candidate_info[key] = value
-                        agent.logger.info(f"✅ UPDATED OTHER FIELD '{key}': '{existing_value}' → '{value}'")
+                        agent.logger.info(f"OK UPDATED OTHER FIELD '{key}': '{existing_value}' -> '{value}'")
             else:
-                agent.logger.info(f"⏭️  SKIPPED FIELD '{key}': value is None/empty/unknown ({value})")
+                agent.logger.info(f">>  SKIPPED FIELD '{key}': value is None/empty/unknown ({value})")
         
         agent.logger.info(f"🔍 POST-MERGE CANDIDATE INFO: {self.candidate_info}")
-        agent.logger.info("✅ CONVERSATION-BASED EXTRACTION COMPLETE")
+        agent.logger.info("OK CONVERSATION-BASED EXTRACTION COMPLETE")
 
     async def _handle_minimal_extraction(self, agent: 'CoreAgent'):
         """Handle minimal data mode: very basic extraction for short interactions."""
@@ -600,7 +600,7 @@ Analyze this context and respond with the JSON decision format only.""")
                 conversation.candidate_info["qualification_assessment"] = enhanced_info["qualification_assessment"]
                 assessment = enhanced_info["qualification_assessment"]
                 
-                self.logger.info(f"✅ SAFE ASSESSMENT UPDATE: Added qualification only")
+                self.logger.info(f"OK SAFE ASSESSMENT UPDATE: Added qualification only")
                 self.logger.info(f"Enhanced qualification assessment: {assessment}")
                 return assessment
             else:
@@ -1523,7 +1523,7 @@ JSON_RESPONSE_ONLY:"""
                 # Add calculated fields for backward compatibility
                 assessment["should_continue"] = not assessment.get("meets_requirements", True)
                 
-                self.logger.info(f"✅ QUALIFICATION ASSESSMENT EXTRACTED: {assessment}")
+                self.logger.info(f"OK QUALIFICATION ASSESSMENT EXTRACTED: {assessment}")
                 return {"qualification_assessment": assessment}
             else:
                 raise ValueError("No qualification_assessment key in LLM response")

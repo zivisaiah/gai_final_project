@@ -81,7 +81,7 @@ def setup_vector_database(
         
         # Verify the setup
         final_info = vector_store.get_collection_info()
-        logger.info(f"✅ Vector database setup complete!")
+        logger.info(f"OK Vector database setup complete!")
         logger.info(f"   Collection: {final_info['name']}")
         logger.info(f"   Documents: {final_info['count']}")
         logger.info(f"   Location: {final_info['persist_directory']}")
@@ -94,11 +94,11 @@ def setup_vector_database(
         )
         
         if test_results:
-            logger.info(f"✅ Search test successful - found {len(test_results)} relevant documents")
+            logger.info(f"OK Search test successful - found {len(test_results)} relevant documents")
             for i, result in enumerate(test_results[:2]):  # Show first 2 results
                 logger.info(f"   Result {i+1}: {result['document'][:100]}...")
         else:
-            logger.warning("⚠️ Search test returned no results")
+            logger.warning("!! Search test returned no results")
         
         return True
         
@@ -152,20 +152,20 @@ def test_vector_database(collection_name: str = "job_description_docs") -> bool:
             results = embedding_manager.search_documents(query, n_results=2)
             
             if results:
-                logger.info(f"  ✅ Found {len(results)} results")
+                logger.info(f"  OK Found {len(results)} results")
                 for i, result in enumerate(results):
                     distance = result.get('distance', 'N/A')
                     logger.info(f"    {i+1}. Distance: {distance}, Preview: {result['document'][:80]}...")
             else:
-                logger.warning(f"  ⚠️ No results found for query")
+                logger.warning(f"  !! No results found for query")
                 all_tests_passed = False
             
             print()  # Add spacing
         
         if all_tests_passed:
-            logger.info("✅ All vector database tests passed!")
+            logger.info("OK All vector database tests passed!")
         else:
-            logger.warning("⚠️ Some tests failed")
+            logger.warning("!! Some tests failed")
         
         return all_tests_passed
         
